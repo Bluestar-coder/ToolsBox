@@ -4,23 +4,31 @@ import CryptoJS from 'crypto-js';
 
 const { TextArea } = Input;
 
-// 加密模式选项
-const modeOptions = [
-  { value: 'CBC', label: 'CBC 默认' },
+// AES 加密模式选项
+const aesModeOptions = [
+  { value: 'CBC', label: 'CBC (推荐)' },
+  { value: 'ECB', label: 'ECB (不安全)' },
   { value: 'CFB', label: 'CFB' },
-  { value: 'CTR', label: 'CTR' },
   { value: 'OFB', label: 'OFB' },
-  { value: 'ECB', label: 'ECB' },
+  { value: 'CTR', label: 'CTR' },
+];
+
+// DES/3DES 加密模式选项 (不包含 CTR)
+const desModeOptions = [
+  { value: 'CBC', label: 'CBC (推荐)' },
+  { value: 'ECB', label: 'ECB (不安全)' },
+  { value: 'CFB', label: 'CFB' },
+  { value: 'OFB', label: 'OFB' },
 ];
 
 // 填充方式选项
 const paddingOptions = [
-  { value: 'Pkcs7', label: 'Pkcs7 默认' },
-  { value: 'Iso97971', label: 'Iso97971' },
-  { value: 'AnsiX923', label: 'AnsiX923' },
-  { value: 'Iso10126', label: 'Iso10126' },
-  { value: 'ZeroPadding', label: 'ZeroPadding' },
-  { value: 'NoPadding', label: 'NoPadding' },
+  { value: 'Pkcs7', label: 'Pkcs7/Pkcs5 (推荐)' },
+  { value: 'Iso97971', label: 'ISO/IEC 9797-1' },
+  { value: 'AnsiX923', label: 'ANSI X.923' },
+  { value: 'Iso10126', label: 'ISO 10126' },
+  { value: 'ZeroPadding', label: 'Zero Padding' },
+  { value: 'NoPadding', label: 'No Padding (需对齐)' },
 ];
 
 // 编码格式选项
@@ -30,11 +38,21 @@ const encodingOptions = [
   { value: 'Utf8', label: 'Utf8' },
 ];
 
-// 密钥长度选项
-const keyLengthOptions = [
-  { value: 16, label: '随机16B' },
-  { value: 24, label: '随机24B' },
-  { value: 32, label: '随机32B' },
+// AES 密钥长度选项
+const aesKeyLengthOptions = [
+  { value: 16, label: 'AES-128 (16B)' },
+  { value: 24, label: 'AES-192 (24B)' },
+  { value: 32, label: 'AES-256 (32B)' },
+];
+
+// DES 密钥长度选项
+const desKeyLengthOptions = [
+  { value: 8, label: 'DES (8B)' },
+];
+
+// 3DES 密钥长度选项
+const tripleDesKeyLengthOptions = [
+  { value: 24, label: '3DES (24B)' },
 ];
 
 const CryptoTool: React.FC = () => {
@@ -45,11 +63,11 @@ const CryptoTool: React.FC = () => {
   const [mode, setMode] = useState('CBC');
   const [padding, setPadding] = useState('Pkcs7');
   const [key, setKey] = useState('');
-  const [keyEncoding, setKeyEncoding] = useState('Hex');
+  const [keyEncoding, setKeyEncoding] = useState('Utf8');
   const [iv, setIv] = useState('');
   const [ivEncoding, setIvEncoding] = useState('Utf8');
-  const [ciphertextEncoding, setCiphertextEncoding] = useState('Hex'); // 密文格式
-  const [outputEncoding, setOutputEncoding] = useState('Hex'); // 输出格式
+  const [ciphertextEncoding, setCiphertextEncoding] = useState('Base64'); // 密文格式
+  const [outputEncoding, setOutputEncoding] = useState('Base64'); // 输出格式
   
   // 结果状态
   const [outputText, setOutputText] = useState('');
@@ -108,8 +126,48 @@ const CryptoTool: React.FC = () => {
 
   // 一键生成密钥和 IV
   const generateKeyAndIv = () => {
-    generateRandomKey(16);
-    generateRandomIv(16);
+    // 根据算法类型生成正确长度的密钥
+    if (activeTab === 'aes') {
+      generateRandomKey(16); // AES-128
+      generateRandomIv(16);
+    } else if (activeTab === 'des') {
+      generateRandomKey(8);
+      generateRandomIv(8);
+    } else if (activeTab === '3des') {
+      generateRandomKey(24);
+      generateRandomIv(8);
+    }
+  };
+
+  // 验证密钥长度
+  const validateKeyLength = (keyBytes: number): boolean => {
+    if (activeTab === 'aes') {
+      if (![16, 24, 32].includes(keyBytes)) {
+        message.error(`AES 密钥长度必须是 16/24/32 字节，当前: ${keyBytes} 字节`);
+        return false;
+      }
+    } else if (activeTab === 'des') {
+      if (keyBytes !== 8) {
+        message.error(`DES 密钥长度必须是 8 字节，当前: ${keyBytes} 字节`);
+        return false;
+      }
+    } else if (activeTab === '3des') {
+      if (keyBytes !== 24) {
+        message.error(`3DES 密钥长度必须是 24 字节，当前: ${keyBytes} 字节`);
+        return false;
+      }
+    }
+    return true;
+  };
+
+  // 验证 IV 长度
+  const validateIvLength = (ivBytes: number): boolean => {
+    const requiredLength = activeTab === 'aes' ? 16 : 8;
+    if (ivBytes !== requiredLength) {
+      message.error(`${activeTab.toUpperCase()} IV 长度必须是 ${requiredLength} 字节，当前: ${ivBytes} 字节`);
+      return false;
+    }
+    return true;
   };
 
   // 加密
@@ -125,6 +183,9 @@ const CryptoTool: React.FC = () => {
 
     try {
       const keyWordArray = parseValue(key, keyEncoding);
+      
+      // 验证密钥长度
+      if (!validateKeyLength(keyWordArray.sigBytes)) return;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const options: any = {
         mode: getCryptoMode(mode),
@@ -136,7 +197,10 @@ const CryptoTool: React.FC = () => {
           message.warning('请输入偏移量IV');
           return;
         }
-        options.iv = parseValue(iv, ivEncoding);
+        const ivWordArray = parseValue(iv, ivEncoding);
+        // 验证 IV 长度
+        if (!validateIvLength(ivWordArray.sigBytes)) return;
+        options.iv = ivWordArray;
       }
 
       let encrypted;
@@ -178,6 +242,10 @@ const CryptoTool: React.FC = () => {
 
     try {
       const keyWordArray = parseValue(key, keyEncoding);
+      
+      // 验证密钥长度
+      if (!validateKeyLength(keyWordArray.sigBytes)) return;
+      
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const options: any = {
         mode: getCryptoMode(mode),
@@ -189,7 +257,10 @@ const CryptoTool: React.FC = () => {
           message.warning('请输入偏移量IV');
           return;
         }
-        options.iv = parseValue(iv, ivEncoding);
+        const ivWordArray = parseValue(iv, ivEncoding);
+        // 验证 IV 长度
+        if (!validateIvLength(ivWordArray.sigBytes)) return;
+        options.iv = ivWordArray;
       }
 
       // 根据密文格式解析
@@ -440,8 +511,8 @@ const CryptoTool: React.FC = () => {
           <Select
             value={mode}
             onChange={setMode}
-            options={modeOptions}
-            style={{ width: 140 }}
+            options={activeTab === 'aes' ? aesModeOptions : desModeOptions}
+            style={{ width: 160 }}
           />
 
           {/* 填充方式 */}
@@ -450,7 +521,7 @@ const CryptoTool: React.FC = () => {
             value={padding}
             onChange={setPadding}
             options={paddingOptions}
-            style={{ width: 140 }}
+            style={{ width: 180 }}
           />
 
           {/* 密钥 */}
@@ -459,7 +530,7 @@ const CryptoTool: React.FC = () => {
             <Input
               value={key}
               onChange={(e) => setKey(e.target.value)}
-              placeholder="请输入密钥"
+              placeholder={activeTab === 'aes' ? '16/24/32字节' : activeTab === 'des' ? '8字节' : '24字节'}
               style={{ width: 240 }}
             />
             <Select
@@ -469,10 +540,10 @@ const CryptoTool: React.FC = () => {
               style={{ width: 80 }}
             />
             <Select
-              placeholder="随机"
+              placeholder="随机生成"
               onChange={(value) => generateRandomKey(value)}
-              options={keyLengthOptions}
-              style={{ width: 100 }}
+              options={activeTab === 'aes' ? aesKeyLengthOptions : activeTab === 'des' ? desKeyLengthOptions : tripleDesKeyLengthOptions}
+              style={{ width: 130 }}
               allowClear
             />
             <Button onClick={generateKeyAndIv}>一键生成</Button>
@@ -484,7 +555,7 @@ const CryptoTool: React.FC = () => {
             <Input
               value={iv}
               onChange={(e) => setIv(e.target.value)}
-              placeholder="请输入IV"
+              placeholder={activeTab === 'aes' ? '16字节' : '8字节'}
               style={{ width: 240 }}
               disabled={mode === 'ECB'}
             />
@@ -495,8 +566,8 @@ const CryptoTool: React.FC = () => {
               style={{ width: 80 }}
               disabled={mode === 'ECB'}
             />
-            <Button onClick={() => generateRandomIv(16)} disabled={mode === 'ECB'}>
-              随机16B
+            <Button onClick={() => generateRandomIv(activeTab === 'aes' ? 16 : 8)} disabled={mode === 'ECB'}>
+              随机{activeTab === 'aes' ? '16' : '8'}B
             </Button>
           </Space>
 
