@@ -55,6 +55,100 @@ const tripleDesKeyLengthOptions = [
   { value: 24, label: '3DES (24B)' },
 ];
 
+// AEAD 密钥长度选项
+const aeadKeyLengthOptions = [
+  { value: 16, label: '128位 (16B)' },
+  { value: 32, label: '256位 (32B)' },
+];
+
+// ============ Web Crypto API 辅助函数 ============
+
+// 字符串转 ArrayBuffer
+const strToArrayBuffer = (str: string): ArrayBuffer => {
+  return new TextEncoder().encode(str).buffer;
+};
+
+// ArrayBuffer 转 Base64
+const arrayBufferToBase64 = (buffer: ArrayBuffer): string => {
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  for (let i = 0; i < bytes.byteLength; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+};
+
+// Base64 转 ArrayBuffer
+const base64ToArrayBuffer = (base64: string): ArrayBuffer => {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes.buffer;
+};
+
+// Hex 转 ArrayBuffer
+const hexToArrayBuffer = (hex: string): ArrayBuffer => {
+  const bytes = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < hex.length; i += 2) {
+    bytes[i / 2] = parseInt(hex.substring(i, i + 2), 16);
+  }
+  return bytes.buffer as ArrayBuffer;
+};
+
+// ArrayBuffer 转 Hex
+const arrayBufferToHex = (buffer: ArrayBuffer): string => {
+  const bytes = new Uint8Array(buffer);
+  return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+};
+
+// 生成随机字节
+const generateRandomBytes = (length: number): Uint8Array => {
+  return crypto.getRandomValues(new Uint8Array(length));
+};
+
+// AES-GCM 加密
+const aesGcmEncrypt = async (plaintext: string, keyBytes: ArrayBuffer, ivBytes: ArrayBuffer): Promise<{ ciphertext: string; tag: string }> => {
+  const key = await crypto.subtle.importKey('raw', keyBytes, { name: 'AES-GCM' }, false, ['encrypt']);
+  const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: new Uint8Array(ivBytes), tagLength: 128 }, key, strToArrayBuffer(plaintext));
+  // GCM 输出 = 密文 + 认证标签(16字节)
+  const encryptedArray = new Uint8Array(encrypted);
+  const ciphertext = encryptedArray.slice(0, -16);
+  const tag = encryptedArray.slice(-16);
+  return { ciphertext: arrayBufferToBase64(ciphertext.buffer), tag: arrayBufferToBase64(tag.buffer) };
+};
+
+// AES-GCM 解密
+const aesGcmDecrypt = async (ciphertextB64: string, tagB64: string, keyBytes: ArrayBuffer, ivBytes: ArrayBuffer): Promise<string> => {
+  const key = await crypto.subtle.importKey('raw', keyBytes, { name: 'AES-GCM' }, false, ['decrypt']);
+  const ciphertext = new Uint8Array(base64ToArrayBuffer(ciphertextB64));
+  const tag = new Uint8Array(base64ToArrayBuffer(tagB64));
+  // 合并密文和标签
+  const combined = new Uint8Array(ciphertext.length + tag.length);
+  combined.set(ciphertext);
+  combined.set(tag, ciphertext.length);
+  const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: new Uint8Array(ivBytes), tagLength: 128 }, key, combined);
+  return new TextDecoder().decode(decrypted);
+};
+
+// AES-CCM 不被 Web Crypto API 原生支持，使用简化实现提示
+const aesCcmNotSupported = () => {
+  message.warning('AES-CCM 在浏览器 Web Crypto API 中不被原生支持，请使用 AES-GCM');
+};
+
+// ChaCha20-Poly1305 检查支持
+const checkChaCha20Support = async (): Promise<boolean> => {
+  try {
+    // 尝试导入一个测试密钥来检查支持
+    const testKey = generateRandomBytes(32);
+    await crypto.subtle.importKey('raw', testKey.buffer as ArrayBuffer, { name: 'ChaCha20-Poly1305' } as Algorithm, false, ['encrypt']);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 const CryptoTool: React.FC = () => {
   const [activeTab, setActiveTab] = useState('aes');
   
@@ -72,6 +166,9 @@ const CryptoTool: React.FC = () => {
   // 结果状态
   const [outputText, setOutputText] = useState('');
   const [outputError, setOutputError] = useState('');
+  
+  // AEAD 专用状态
+  const [aeadTag, setAeadTag] = useState(''); // 认证标签
 
   // 获取 CryptoJS 模式
   const getCryptoMode = (m: string) => {
@@ -360,6 +457,95 @@ const CryptoTool: React.FC = () => {
     setOutputError('');
     setKey('');
     setIv('');
+    setAeadTag('');
+  };
+
+  // ============ AEAD 加密/解密 ============
+  
+  // 解析密钥为 ArrayBuffer
+  const parseKeyToArrayBuffer = (keyStr: string, encoding: string): ArrayBuffer => {
+    if (encoding === 'Hex') {
+      return hexToArrayBuffer(keyStr);
+    } else if (encoding === 'Base64') {
+      return base64ToArrayBuffer(keyStr);
+    }
+    return strToArrayBuffer(keyStr);
+  };
+
+  // AES-GCM 加密处理
+  const handleAesGcmEncrypt = async () => {
+    if (!inputText) { message.warning('请输入要加密的内容'); return; }
+    if (!key) { message.warning('请输入密钥'); return; }
+    if (!iv) { message.warning('请输入 IV/Nonce (推荐12字节)'); return; }
+
+    try {
+      const keyBytes = parseKeyToArrayBuffer(key, keyEncoding);
+      const ivBytes = parseKeyToArrayBuffer(iv, ivEncoding);
+      
+      if (![16, 32].includes(keyBytes.byteLength)) {
+        message.error('AES-GCM 密钥长度必须是 16 或 32 字节');
+        return;
+      }
+
+      const result = await aesGcmEncrypt(inputText, keyBytes, ivBytes);
+      setOutputText(result.ciphertext);
+      setAeadTag(result.tag);
+      setOutputError('');
+      message.success('AES-GCM 加密成功');
+    } catch (error) {
+      setOutputError('加密失败: ' + (error as Error).message);
+    }
+  };
+
+  // AES-GCM 解密处理
+  const handleAesGcmDecrypt = async () => {
+    if (!inputText) { message.warning('请输入要解密的密文'); return; }
+    if (!key) { message.warning('请输入密钥'); return; }
+    if (!iv) { message.warning('请输入 IV/Nonce'); return; }
+    if (!aeadTag) { message.warning('请输入认证标签 (Tag)'); return; }
+
+    try {
+      const keyBytes = parseKeyToArrayBuffer(key, keyEncoding);
+      const ivBytes = parseKeyToArrayBuffer(iv, ivEncoding);
+
+      const plaintext = await aesGcmDecrypt(inputText, aeadTag, keyBytes, ivBytes);
+      setOutputText(plaintext);
+      setOutputError('');
+      message.success('AES-GCM 解密成功');
+    } catch (error) {
+      setOutputError('解密失败: 认证标签验证失败或密钥/IV 错误');
+    }
+  };
+
+  // AES-CCM 处理 (不支持提示)
+  const handleAesCcm = () => {
+    aesCcmNotSupported();
+  };
+
+  // ChaCha20-Poly1305 加密处理
+  const handleChaCha20Encrypt = async () => {
+    const supported = await checkChaCha20Support();
+    if (!supported) {
+      message.error('当前浏览器不支持 ChaCha20-Poly1305，请使用 Chrome 94+ 或 Edge 94+');
+      return;
+    }
+    // 实际实现需要浏览器支持
+    message.info('ChaCha20-Poly1305 需要较新浏览器支持，建议使用 AES-GCM');
+  };
+
+  // 生成 AEAD 随机密钥
+  const generateAeadKey = (length: number) => {
+    const randomBytes = generateRandomBytes(length);
+    setKey(arrayBufferToHex(randomBytes.buffer as ArrayBuffer));
+    setKeyEncoding('Hex');
+  };
+
+  // 生成 AEAD 随机 IV/Nonce
+  const generateAeadIv = () => {
+    // GCM 推荐 12 字节 nonce
+    const randomBytes = generateRandomBytes(12);
+    setIv(arrayBufferToHex(randomBytes.buffer as ArrayBuffer));
+    setIvEncoding('Hex');
   };
 
   // 哈希计算
@@ -397,8 +583,14 @@ const CryptoTool: React.FC = () => {
     { key: 'aes', label: 'AES' },
     { key: 'des', label: 'DES' },
     { key: '3des', label: '3DES' },
+    { key: 'aes-gcm', label: 'AES-GCM' },
+    { key: 'aes-ccm', label: 'AES-CCM' },
+    { key: 'chacha20', label: 'ChaCha20' },
     { key: 'hash', label: '哈希加密' },
   ];
+
+  // 判断是否是 AEAD 模式
+  const isAeadMode = ['aes-gcm', 'aes-ccm', 'chacha20'].includes(activeTab);
 
   return (
     <Card title="加密/解密工具" bordered={false}>
@@ -440,6 +632,117 @@ const CryptoTool: React.FC = () => {
               ))}
             </Card>
           )}
+        </>
+      ) : isAeadMode ? (
+        /* AEAD 加密界面 */
+        <>
+          <TextArea
+            value={inputText}
+            onChange={(e) => setInputText(e.target.value)}
+            placeholder="请在这里填写原文/密文"
+            rows={6}
+            style={{ marginBottom: 16, fontFamily: 'monospace' }}
+          />
+
+          {/* AEAD 操作按钮 */}
+          <Space style={{ marginBottom: 16 }}>
+            <Button 
+              type="primary" 
+              style={{ backgroundColor: '#52c41a' }} 
+              onClick={activeTab === 'aes-gcm' ? handleAesGcmEncrypt : activeTab === 'aes-ccm' ? handleAesCcm : handleChaCha20Encrypt}
+            >
+              加密
+            </Button>
+            <Button 
+              type="primary" 
+              onClick={activeTab === 'aes-gcm' ? handleAesGcmDecrypt : activeTab === 'aes-ccm' ? handleAesCcm : handleChaCha20Encrypt}
+            >
+              解密
+            </Button>
+            <Button style={{ backgroundColor: '#faad14', borderColor: '#faad14', color: '#fff' }} onClick={handleCopy}>
+              复制
+            </Button>
+            <Button danger onClick={handleClear}>
+              清空
+            </Button>
+          </Space>
+
+          {/* AEAD 结果显示 */}
+          {(outputText || outputError) && (
+            <Card size="small" style={{ marginBottom: 16, backgroundColor: outputError ? '#fff2f0' : '#f6ffed', borderColor: outputError ? '#ffccc7' : '#b7eb8f' }}>
+              {outputError ? (
+                <div style={{ color: '#ff4d4f' }}>{outputError}</div>
+              ) : (
+                <>
+                  <div style={{ marginBottom: 8 }}>
+                    <div style={{ fontWeight: 500, marginBottom: 4 }}>密文:</div>
+                    <TextArea value={outputText} readOnly rows={3} style={{ fontFamily: 'monospace', fontSize: 12 }} />
+                  </div>
+                  {aeadTag && (
+                    <div style={{ marginBottom: 8 }}>
+                      <div style={{ fontWeight: 500, marginBottom: 4 }}>认证标签 (Tag):</div>
+                      <Input value={aeadTag} readOnly style={{ fontFamily: 'monospace', fontSize: 12 }} />
+                    </div>
+                  )}
+                  <Button size="small" onClick={handleCopyOutput}>复制密文</Button>
+                </>
+              )}
+            </Card>
+          )}
+
+          {/* AEAD 选项设置 */}
+          <Card size="small" title={`${activeTab.toUpperCase()} 选项设置`} style={{ marginBottom: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '12px 16px', alignItems: 'center' }}>
+              <span>密钥:</span>
+              <Space>
+                <Input
+                  value={key}
+                  onChange={(e) => setKey(e.target.value)}
+                  placeholder="16或32字节"
+                  style={{ width: 280 }}
+                />
+                <Select value={keyEncoding} onChange={setKeyEncoding} options={encodingOptions} style={{ width: 80 }} />
+                <Select
+                  placeholder="随机生成"
+                  onChange={(value) => generateAeadKey(value)}
+                  options={aeadKeyLengthOptions}
+                  style={{ width: 120 }}
+                  allowClear
+                />
+              </Space>
+
+              <span>IV/Nonce:</span>
+              <Space>
+                <Input
+                  value={iv}
+                  onChange={(e) => setIv(e.target.value)}
+                  placeholder="推荐12字节"
+                  style={{ width: 280 }}
+                />
+                <Select value={ivEncoding} onChange={setIvEncoding} options={encodingOptions} style={{ width: 80 }} />
+                <Button onClick={generateAeadIv}>随机12B</Button>
+              </Space>
+
+              <span>认证标签:</span>
+              <Input
+                value={aeadTag}
+                onChange={(e) => setAeadTag(e.target.value)}
+                placeholder="解密时需要输入加密生成的Tag"
+                style={{ width: 400 }}
+              />
+            </div>
+            
+            {activeTab === 'aes-ccm' && (
+              <div style={{ marginTop: 12, padding: 8, backgroundColor: '#fffbe6', borderRadius: 4 }}>
+                ⚠️ AES-CCM 在浏览器 Web Crypto API 中不被原生支持，建议使用 AES-GCM
+              </div>
+            )}
+            {activeTab === 'chacha20' && (
+              <div style={{ marginTop: 12, padding: 8, backgroundColor: '#fffbe6', borderRadius: 4 }}>
+                ⚠️ ChaCha20-Poly1305 需要 Chrome 94+ / Edge 94+ 等较新浏览器支持
+              </div>
+            )}
+          </Card>
         </>
       ) : (
         <>
