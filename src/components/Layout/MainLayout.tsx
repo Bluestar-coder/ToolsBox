@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { Layout, theme, Button, Dropdown } from 'antd';
-import { SunOutlined, MoonOutlined, DesktopOutlined } from '@ant-design/icons';
+import { Layout, theme, Button } from 'antd';
+import { SunOutlined, MoonOutlined } from '@ant-design/icons';
 import SideMenu from './SideMenu';
 import { moduleManager } from '../../modules';
 import { useTheme } from '../../hooks/useTheme';
-import type { ThemeMode } from '../../context/ThemeContext';
 
 const { Header, Content, Sider } = Layout;
 
@@ -15,7 +14,7 @@ interface MainLayoutProps {
 const MainLayout: React.FC<MainLayoutProps> = ({ initialModuleId = 'encoder-decoder' }) => {
   const { token: { colorBgContainer, borderRadiusLG } } = theme.useToken();
   const [currentModuleId, setCurrentModuleId] = useState<string>(initialModuleId);
-  const { theme: currentTheme, isDark, setTheme } = useTheme();
+  const { isDark, toggleTheme } = useTheme();
 
   // 获取当前选中的模块
   const currentModule = moduleManager.getModuleById(currentModuleId);
@@ -26,18 +25,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ initialModuleId = 'encoder-deco
     setCurrentModuleId(moduleId);
   };
 
-  // 主题菜单项
-  const themeMenuItems = [
-    { key: 'light', label: '☀️ 浅色模式', onClick: () => setTheme('light' as ThemeMode) },
-    { key: 'dark', label: '🌙 深色模式', onClick: () => setTheme('dark' as ThemeMode) },
-    { key: 'system', label: '💻 跟随系统', onClick: () => setTheme('system' as ThemeMode) },
-  ];
-
-  const getThemeIcon = () => {
-    if (currentTheme === 'system') return <DesktopOutlined />;
-    return isDark ? <MoonOutlined /> : <SunOutlined />;
-  };
-
   return (
     <Layout style={{ minHeight: '100vh', background: isDark ? '#141414' : '#f0f2f5' }}>
       {/* 顶部导航栏 */}
@@ -46,9 +33,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ initialModuleId = 'encoder-deco
         <h1 style={{ margin: 0, color: '#1890ff', fontSize: '24px', fontWeight: 600 }}>
           🔧 效率工具箱
         </h1>
-        <Dropdown menu={{ items: themeMenuItems, selectedKeys: [currentTheme] }} placement="bottomRight">
-          <Button type="text" icon={getThemeIcon()} size="large" />
-        </Dropdown>
+        <Button type="text" icon={isDark ? <SunOutlined /> : <MoonOutlined />} size="large" onClick={toggleTheme} title={isDark ? '切换到浅色模式' : '切换到深色模式'} />
       </Header>
 
       <Layout style={{ background: isDark ? '#141414' : '#f0f2f5' }}>
