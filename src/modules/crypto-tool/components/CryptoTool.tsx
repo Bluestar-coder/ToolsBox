@@ -5,6 +5,7 @@ import {
   symmetricTabItems,
   asymmetricTabItems,
   hashTabItems,
+  classicalTabItems,
   gmTabItems,
 } from '../utils/constants';
 import {
@@ -23,6 +24,7 @@ import {
   HashTab,
   SM3Tab,
   KDFTab,
+  ClassicalTab,
   GMInfoTab,
 } from './tabs';
 
@@ -38,6 +40,8 @@ const CryptoTool: React.FC = () => {
         return asymmetricTabItems;
       case 'hash':
         return hashTabItems;
+      case 'classical':
+        return classicalTabItems;
       case 'gm':
         return gmTabItems;
       default:
@@ -52,6 +56,7 @@ const CryptoTool: React.FC = () => {
       symmetric: 'aes',
       asymmetric: 'rsa',
       hash: 'hash',
+      classical: 'substitute',
       gm: 'sm2',
     };
     setActiveSubTab(defaultTabs[category] || 'aes');
@@ -90,6 +95,11 @@ const CryptoTool: React.FC = () => {
         return <SM3Tab />;
       case 'kdf':
         return <KDFTab />;
+      // 古典密码
+      case 'substitute':
+      case 'transpose':
+      case 'encode':
+        return <ClassicalTab activeTab={activeSubTab} />;
       // 国密
       case 'sm2':
         return <SM2Tab />;

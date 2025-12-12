@@ -111,7 +111,7 @@ const ECDSATab: React.FC = () => {
             <Select
               value={curve}
               onChange={setCurve}
-              style={{ width: 180 }}
+              style={{ width: 220 }}
               options={[
                 { value: 'secp256k1', label: 'secp256k1 (比特币/以太坊)' },
                 { value: 'p256', label: 'P-256 (NIST)' },

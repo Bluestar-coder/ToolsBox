@@ -59,7 +59,7 @@ const ECDHTab: React.FC = () => {
             value={curve}
             onChange={setCurve}
             options={curveOptions}
-            style={{ width: 200 }}
+            style={{ width: 220 }}
           />
           <Button type="primary" onClick={handleGenerateKeyPair}>
             生成密钥对

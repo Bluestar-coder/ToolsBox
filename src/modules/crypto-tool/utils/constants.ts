@@ -56,7 +56,15 @@ export const categoryItems = [
   { key: 'symmetric', label: '🔐 对称加密' },
   { key: 'asymmetric', label: '🔑 非对称加密' },
   { key: 'hash', label: '#️⃣ 哈希算法' },
+  { key: 'classical', label: '📜 古典密码' },
   { key: 'gm', label: '🇨🇳 国密算法' },
+];
+
+// 古典密码二级标签
+export const classicalTabItems = [
+  { key: 'substitute', label: '替换密码' },
+  { key: 'transpose', label: '换位密码' },
+  { key: 'encode', label: '特殊编码' },
 ];
 
 // 对称加密二级标签
