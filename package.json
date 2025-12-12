@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@noble/ciphers": "^2.1.1",
+    "@noble/curves": "^2.0.1",
     "antd": "^6.0.1",
     "crypto-js": "^4.2.0",
     "html-entities": "^2.6.0",

@@ -40,14 +40,10 @@ export const aesKeyLengthOptions = [
 ];
 
 // DES 密钥长度选项
-export const desKeyLengthOptions = [
-  { value: 8, label: 'DES (8B)' },
-];
+export const desKeyLengthOptions = [{ value: 8, label: 'DES (8B)' }];
 
 // 3DES 密钥长度选项
-export const tripleDesKeyLengthOptions = [
-  { value: 24, label: '3DES (24B)' },
-];
+export const tripleDesKeyLengthOptions = [{ value: 24, label: '3DES (24B)' }];
 
 // AEAD 密钥长度选项
 export const aeadKeyLengthOptions = [
@@ -55,18 +51,46 @@ export const aeadKeyLengthOptions = [
   { value: 32, label: '256位 (32B)' },
 ];
 
-// 标签页配置
-export const tabItems = [
+// 一级分类标签页
+export const categoryItems = [
+  { key: 'symmetric', label: '🔐 对称加密' },
+  { key: 'asymmetric', label: '🔑 非对称加密' },
+  { key: 'hash', label: '#️⃣ 哈希算法' },
+  { key: 'gm', label: '🇨🇳 国密算法' },
+];
+
+// 对称加密二级标签
+export const symmetricTabItems = [
   { key: 'aes', label: 'AES' },
   { key: 'des', label: 'DES' },
   { key: '3des', label: '3DES' },
   { key: 'aes-gcm', label: 'AES-GCM' },
   { key: 'aes-siv', label: 'AES-SIV' },
   { key: 'chacha20', label: 'ChaCha20' },
-  { key: 'sm2', label: 'SM2 国密' },
-  { key: 'sm4', label: 'SM4 国密' },
-  { key: 'zuc', label: 'ZUC 祖冲之' },
-  { key: 'hash', label: '哈希加密' },
+  { key: 'rc', label: 'RC系列' },
+  { key: 'blowfish', label: 'Blowfish' },
+];
+
+// 非对称加密二级标签
+export const asymmetricTabItems = [
+  { key: 'rsa', label: 'RSA' },
+  { key: 'ecdsa', label: 'ECDSA' },
+  { key: 'ed25519', label: 'Ed25519' },
+  { key: 'x25519', label: 'X25519' },
+  { key: 'ecdh', label: 'ECDH' },
+];
+
+// 哈希算法二级标签
+export const hashTabItems = [
+  { key: 'hash', label: 'MD5/SHA' },
   { key: 'sm3', label: 'SM3 国密' },
+  { key: 'kdf', label: 'KDF/HMAC' },
+];
+
+// 国密算法二级标签
+export const gmTabItems = [
+  { key: 'sm2', label: 'SM2 非对称' },
+  { key: 'sm4', label: 'SM4 对称' },
+  { key: 'zuc', label: 'ZUC 祖冲之' },
   { key: 'gm-info', label: '国密说明' },
 ];

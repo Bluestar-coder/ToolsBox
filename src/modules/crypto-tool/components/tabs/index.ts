@@ -1,8 +1,16 @@
 export { default as SymmetricTab } from './SymmetricTab';
 export { default as AEADTab } from './AEADTab';
+export { default as RCTab } from './RCTab';
+export { default as BlowfishTab } from './BlowfishTab';
+export { default as RSATab } from './RSATab';
+export { default as ECDSATab } from './ECDSATab';
+export { default as Ed25519Tab } from './Ed25519Tab';
+export { default as X25519Tab } from './X25519Tab';
+export { default as ECDHTab } from './ECDHTab';
 export { default as SM2Tab } from './SM2Tab';
 export { default as SM4Tab } from './SM4Tab';
 export { default as ZUCTab } from './ZUCTab';
 export { default as HashTab } from './HashTab';
 export { default as SM3Tab } from './SM3Tab';
+export { default as KDFTab } from './KDFTab';
 export { default as GMInfoTab } from './GMInfoTab';
