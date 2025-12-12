@@ -34,7 +34,8 @@ const BlowfishTab: React.FC = () => {
       setOutput(result);
       message.success('解密成功');
     } catch (error) {
-      message.error(`解密失败: ${error}`);
+      const errMsg = error instanceof Error ? error.message : String(error);
+      message.error(`解密失败: ${errMsg}`);
     }
   };
 

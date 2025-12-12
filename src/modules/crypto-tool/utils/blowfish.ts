@@ -194,9 +194,28 @@ export const blowfishEncrypt = (plaintext: string, keyHex: string): string => {
 };
 
 export const blowfishDecrypt = (ciphertextHex: string, keyHex: string): string => {
+  // 验证输入
+  if (!ciphertextHex || ciphertextHex.length === 0) {
+    throw new Error('密文不能为空');
+  }
+  if (!keyHex || keyHex.length < 8) {
+    throw new Error('密钥长度至少为 4 字节 (8 个十六进制字符)');
+  }
+  if (!/^[0-9a-fA-F]+$/.test(ciphertextHex)) {
+    throw new Error('密文必须是有效的十六进制字符串');
+  }
+  if (ciphertextHex.length % 16 !== 0) {
+    throw new Error('密文长度必须是 16 的倍数 (8 字节块)');
+  }
+
   const key = hexToBytes(keyHex);
   const bf = new Blowfish(key);
   const data = hexToBytes(ciphertextHex);
+  
+  if (data.length === 0 || data.length % 8 !== 0) {
+    throw new Error('密文数据长度无效');
+  }
+
   const result = new Uint8Array(data.length);
 
   for (let i = 0; i < data.length; i += 8) {
@@ -204,6 +223,13 @@ export const blowfishDecrypt = (ciphertextHex: string, keyHex: string): string =
     const decrypted = bf.decryptBlock(block);
     result.set(decrypted, i);
   }
+  
+  // 验证填充
+  const padLen = result[result.length - 1];
+  if (padLen === 0 || padLen > 8) {
+    throw new Error('解密失败：填充无效，请检查密钥是否正确');
+  }
+  
   return new TextDecoder().decode(pkcs7Unpad(result));
 };
 
