@@ -20,7 +20,11 @@ export interface EncodeDecodeResult {
  */
 export const base64Encode = (input: string): EncodeDecodeResult => {
   try {
-    const result = btoa(unescape(encodeURIComponent(input)));
+    // 使用 TextEncoder 替代废弃的 unescape
+    const encoder = new TextEncoder();
+    const bytes = encoder.encode(input);
+    const binary = Array.from(bytes).map(b => String.fromCharCode(b)).join('');
+    const result = btoa(binary);
     return { success: true, result };
   } catch (error) {
     return { success: false, result: '', error: error instanceof Error ? error.message : 'Base64 encode error' };
@@ -34,7 +38,14 @@ export const base64Encode = (input: string): EncodeDecodeResult => {
  */
 export const base64Decode = (input: string): EncodeDecodeResult => {
   try {
-    const result = decodeURIComponent(escape(atob(input)));
+    // 使用 TextDecoder 替代废弃的 escape
+    const binary = atob(input);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    const decoder = new TextDecoder();
+    const result = decoder.decode(bytes);
     return { success: true, result };
   } catch (error) {
     return { success: false, result: '', error: error instanceof Error ? error.message : 'Base64 decode error' };
