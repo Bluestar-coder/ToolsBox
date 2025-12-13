@@ -14,9 +14,11 @@
   "dependencies": {
     "@noble/ciphers": "^2.1.1",
     "@noble/curves": "^2.0.1",
+    "@types/prismjs": "^1.26.5",
     "antd": "^6.0.1",
     "crypto-js": "^4.2.0",
     "html-entities": "^2.6.0",
+    "prismjs": "^1.30.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "sm-crypto": "^0.3.13"

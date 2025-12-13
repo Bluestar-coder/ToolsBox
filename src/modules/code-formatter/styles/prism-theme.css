@@ -1,0 +1,169 @@
+/* Prism.js Monokai Pro 主题 */
+
+code[class*="language-"],
+pre[class*="language-"] {
+  color: #fcfcfa;
+  font-family: "Fira Code", "Fira Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace;
+  direction: ltr;
+  text-align: left;
+  white-space: pre;
+  word-spacing: normal;
+  word-break: normal;
+  line-height: 1.5;
+  tab-size: 2;
+  hyphens: none;
+}
+
+/* 代码块背景 - Monokai Pro 深色背景 */
+pre[class*="language-"] {
+  padding: 1em;
+  margin: 0;
+  overflow: auto;
+  border-radius: 6px;
+  background: #2d2a2e;
+}
+
+/* 内联代码 */
+:not(pre) > code[class*="language-"] {
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  background: #2d2a2e;
+}
+
+/* 注释 - 灰色 */
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+  color: #727072;
+  font-style: italic;
+}
+
+/* 标点符号 */
+.token.punctuation {
+  color: #939293;
+}
+
+/* 命名空间 */
+.token.namespace {
+  opacity: 0.7;
+}
+
+/* 标签、布尔值、数字、常量、符号、删除 - 紫色 */
+.token.tag,
+.token.boolean,
+.token.number,
+.token.constant,
+.token.symbol,
+.token.deleted {
+  color: #ab9df2;
+}
+
+/* 属性名 - 绿色 */
+.token.property {
+  color: #a9dc76;
+}
+
+/* 选择器、字符串、字符、内置、插入 - 黄色 */
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted {
+  color: #ffd866;
+}
+
+/* 操作符、实体、URL - 红色/粉色 */
+.token.operator,
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string {
+  color: #ff6188;
+}
+
+/* at 规则、属性值、关键字 - 红色/粉色 */
+.token.atrule,
+.token.attr-value,
+.token.keyword {
+  color: #ff6188;
+}
+
+/* 函数 - 绿色 */
+.token.function {
+  color: #a9dc76;
+}
+
+/* 类名 - 青色 */
+.token.class-name {
+  color: #78dce8;
+}
+
+/* 正则表达式、重要、变量 - 橙色 */
+.token.regex,
+.token.important,
+.token.variable {
+  color: #fc9867;
+}
+
+/* 重要、粗体 */
+.token.important,
+.token.bold {
+  font-weight: bold;
+}
+
+/* 斜体 */
+.token.italic {
+  font-style: italic;
+}
+
+/* 实体 */
+.token.entity {
+  cursor: help;
+}
+
+/* 行号 */
+pre[class*="language-"].line-numbers {
+  position: relative;
+  padding-left: 3.8em;
+  counter-reset: linenumber;
+}
+
+pre[class*="language-"].line-numbers > code {
+  position: relative;
+  white-space: inherit;
+}
+
+.line-numbers .line-numbers-rows {
+  position: absolute;
+  pointer-events: none;
+  top: 0;
+  font-size: 100%;
+  left: -3.8em;
+  width: 3em;
+  letter-spacing: -1px;
+  border-right: 1px solid #5b595c;
+  user-select: none;
+}
+
+.line-numbers-rows > span {
+  display: block;
+  counter-increment: linenumber;
+}
+
+.line-numbers-rows > span:before {
+  content: counter(linenumber);
+  color: #5b595c;
+  display: block;
+  padding-right: 0.8em;
+  text-align: right;
+}
+
+/* 选中文本 */
+pre[class*="language-"]::selection,
+pre[class*="language-"] ::selection,
+code[class*="language-"]::selection,
+code[class*="language-"] ::selection {
+  background: #49483e;
+}

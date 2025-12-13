@@ -56,3 +56,11 @@ moduleManager.registerModule(TimeToolModule);
 // 导入并注册加密/解密工具模块
 import CryptoToolModule from './crypto-tool';
 moduleManager.registerModule(CryptoToolModule);
+
+// 导入并注册代码格式化模块
+import CodeFormatterModule from './code-formatter';
+moduleManager.registerModule(CodeFormatterModule);
+
+// 导入并注册正则表达式工具模块
+import RegexToolModule from './regex-tool';
+moduleManager.registerModule(RegexToolModule);
