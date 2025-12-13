@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card, Tabs } from 'antd';
 import { useAppContext } from '../../../hooks/useAppContext';
-import { categoryItems, baseEncoders, otherEncoders } from '../utils/constants';
+import { categoryItems, baseEncoders, utfEncoders, otherEncoders } from '../utils/constants';
 import { EncodingTab, RadixTab, ImageTab } from './tabs';
 
 const EncoderDecoder: React.FC = () => {
@@ -10,8 +10,8 @@ const EncoderDecoder: React.FC = () => {
 
   const handleCategoryChange = (category: string) => {
     setActiveCategory(category);
-    if (category === 'base' || category === 'other') {
-      const encoders = category === 'base' ? baseEncoders : otherEncoders;
+    if (category === 'base' || category === 'utf' || category === 'other') {
+      const encoders = category === 'base' ? baseEncoders : category === 'utf' ? utfEncoders : otherEncoders;
       if (!encoders.includes(state.currentType as typeof encoders[number])) {
         dispatch({ type: 'SET_CURRENT_TYPE', payload: encoders[0] });
       }
@@ -22,6 +22,8 @@ const EncoderDecoder: React.FC = () => {
     switch (activeCategory) {
       case 'base':
         return <EncodingTab activeCategory="base" />;
+      case 'utf':
+        return <EncodingTab activeCategory="utf" />;
       case 'other':
         return <EncodingTab activeCategory="other" />;
       case 'radix':

@@ -16,6 +16,19 @@ const SM4Tab: React.FC = () => {
   const [iv, setIv] = useState('');
   const [ivEncoding, setIvEncoding] = useState('Utf8');
   const [sm4Mode, setSm4Mode] = useState('ecb');
+  const [ciphertextEncoding, setCiphertextEncoding] = useState<'Hex' | 'Base64'>('Hex');
+  const [outputEncoding, setOutputEncoding] = useState<'Hex' | 'Base64'>('Hex');
+
+  const hexToBase64 = (hex: string): string => {
+    const bytes = new Uint8Array(hex.length / 2);
+    for (let i = 0; i < hex.length; i += 2) bytes[i / 2] = parseInt(hex.substr(i, 2), 16);
+    return btoa(String.fromCharCode(...bytes));
+  };
+
+  const base64ToHex = (b64: string): string => {
+    const binary = atob(b64);
+    return Array.from(binary).map(c => c.charCodeAt(0).toString(16).padStart(2, '0')).join('');
+  };
 
   const handleSm4Encrypt = () => {
     if (!inputText) { message.warning('请输入要加密的内容'); return; }
@@ -47,7 +60,8 @@ const SM4Tab: React.FC = () => {
         encrypted = sm4.encrypt(inputText, keyHex);
       }
       
-      setOutputText(encrypted);
+      const result = outputEncoding === 'Base64' ? hexToBase64(encrypted) : encrypted;
+      setOutputText(result);
       setOutputError('');
       message.success('SM4 加密成功');
     } catch (error) {
@@ -73,6 +87,7 @@ const SM4Tab: React.FC = () => {
         return;
       }
 
+      const cipherHex = ciphertextEncoding === 'Base64' ? base64ToHex(inputText) : inputText;
       let decrypted: string;
       if (sm4Mode === 'cbc') {
         if (!iv) { message.warning('CBC 模式需要输入 IV'); return; }
@@ -80,9 +95,9 @@ const SM4Tab: React.FC = () => {
         if (ivEncoding === 'Utf8') {
           ivHex = Array.from(new TextEncoder().encode(iv)).map(b => b.toString(16).padStart(2, '0')).join('');
         }
-        decrypted = sm4.decrypt(inputText, keyHex, { mode: 'cbc', iv: ivHex });
+        decrypted = sm4.decrypt(cipherHex, keyHex, { mode: 'cbc', iv: ivHex });
       } else {
-        decrypted = sm4.decrypt(inputText, keyHex);
+        decrypted = sm4.decrypt(cipherHex, keyHex);
       }
       
       if (!decrypted) {
@@ -204,6 +219,14 @@ const SM4Tab: React.FC = () => {
             />
             <Select value={keyEncoding} onChange={setKeyEncoding} options={encodingOptions} style={{ width: 80 }} />
             <Button onClick={generateSm4Key}>随机生成</Button>
+          </Space>
+
+          <span>密文格式:</span>
+          <Space>
+            <Select value={ciphertextEncoding} onChange={setCiphertextEncoding} style={{ width: 160 }}
+              options={[{ value: 'Hex', label: 'Hex (解密用)' }, { value: 'Base64', label: 'Base64 (解密用)' }]} />
+            <Select value={outputEncoding} onChange={setOutputEncoding} style={{ width: 170 }}
+              options={[{ value: 'Hex', label: 'Hex (加密输出)' }, { value: 'Base64', label: 'Base64 (加密输出)' }]} />
           </Space>
 
           {sm4Mode === 'cbc' && (

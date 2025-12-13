@@ -12,14 +12,29 @@ const hashOptions = [
 ];
 
 const hmacHashOptions = [
-  { value: 'SHA256', label: 'SHA-256' },
-  { value: 'SHA512', label: 'SHA-512' },
-  { value: 'SHA1', label: 'SHA-1' },
   { value: 'MD5', label: 'MD5' },
+  { value: 'SHA1', label: 'SHA-1' },
+  { value: 'SHA224', label: 'SHA-224' },
+  { value: 'SHA256', label: 'SHA-256' },
+  { value: 'SHA384', label: 'SHA-384' },
+  { value: 'SHA512', label: 'SHA-512' },
+  { value: 'SHA3', label: 'SHA3-512' },
+  { value: 'RIPEMD160', label: 'RIPEMD-160' },
 ];
 
 const KDFTab: React.FC = () => {
   const [activeTab, setActiveTab] = useState('pbkdf2');
+
+  // 输出格式
+  const [outputEncoding, setOutputEncoding] = useState<'Hex' | 'Base64'>('Hex');
+
+  const hexToBase64 = (hex: string): string => {
+    const bytes = new Uint8Array(hex.length / 2);
+    for (let i = 0; i < hex.length; i += 2) bytes[i / 2] = parseInt(hex.slice(i, i + 2), 16);
+    return btoa(String.fromCharCode(...bytes));
+  };
+
+  const formatOutput = (hex: string): string => outputEncoding === 'Base64' ? hexToBase64(hex) : hex;
 
   // PBKDF2 状态
   const [password, setPassword] = useState('');
@@ -32,7 +47,7 @@ const KDFTab: React.FC = () => {
   // HMAC 状态
   const [hmacMessage, setHmacMessage] = useState('');
   const [hmacKey, setHmacKey] = useState('');
-  const [hmacHash, setHmacHash] = useState<'MD5' | 'SHA1' | 'SHA256' | 'SHA512'>('SHA256');
+  const [hmacHash, setHmacHash] = useState<'MD5' | 'SHA1' | 'SHA224' | 'SHA256' | 'SHA384' | 'SHA512' | 'SHA3' | 'RIPEMD160'>('SHA256');
   const [hmacResult, setHmacResult] = useState('');
   const [hmacVerifyInput, setHmacVerifyInput] = useState('');
 
@@ -50,7 +65,7 @@ const KDFTab: React.FC = () => {
     }
     try {
       const key = pbkdf2Derive(password, salt, iterations, keySize, hash);
-      setDerivedKey(key);
+      setDerivedKey(formatOutput(key));
       message.success('密钥派生成功');
     } catch (error) {
       message.error(`派生失败: ${error}`);
@@ -64,7 +79,7 @@ const KDFTab: React.FC = () => {
     }
     try {
       const result = hmacGenerate(hmacMessage, hmacKey, hmacHash);
-      setHmacResult(result);
+      setHmacResult(formatOutput(result));
       message.success('HMAC 生成成功');
     } catch (error) {
       message.error(`生成失败: ${error}`);
@@ -91,7 +106,7 @@ const KDFTab: React.FC = () => {
     }
     try {
       const result = await hkdfDerive(hkdfIkm, hkdfSalt, hkdfInfo, hkdfKeyLen);
-      setHkdfResult(result);
+      setHkdfResult(formatOutput(result));
       message.success('HKDF 派生成功');
     } catch (error) {
       message.error(`派生失败: ${error}`);
@@ -133,6 +148,9 @@ const KDFTab: React.FC = () => {
                 ]} style={{ width: 100 }} />
                 <Text>哈希:</Text>
                 <Select value={hash} onChange={setHash} options={hashOptions} style={{ width: 120 }} />
+                <Text>输出格式:</Text>
+                <Select value={outputEncoding} onChange={setOutputEncoding} style={{ width: 100 }}
+                  options={[{ value: 'Hex', label: 'Hex' }, { value: 'Base64', label: 'Base64' }]} />
               </Space>
             </Space>
           </Card>
@@ -161,9 +179,12 @@ const KDFTab: React.FC = () => {
                 onChange={(e) => setHmacKey(e.target.value)}
                 placeholder="输入密钥"
               />
-              <Space>
+              <Space wrap>
                 <Text>哈希算法:</Text>
                 <Select value={hmacHash} onChange={setHmacHash} options={hmacHashOptions} style={{ width: 120 }} />
+                <Text>输出格式:</Text>
+                <Select value={outputEncoding} onChange={setOutputEncoding} style={{ width: 100 }}
+                  options={[{ value: 'Hex', label: 'Hex' }, { value: 'Base64', label: 'Base64' }]} />
               </Space>
             </Space>
           </Card>
@@ -210,10 +231,13 @@ const KDFTab: React.FC = () => {
                 onChange={(e) => setHkdfInfo(e.target.value)}
                 placeholder="上下文信息 (可选)"
               />
-              <Space>
+              <Space wrap>
                 <Text>输出长度:</Text>
                 <InputNumber value={hkdfKeyLen} onChange={(v) => setHkdfKeyLen(v || 32)} min={1} max={255} />
                 <Text>字节</Text>
+                <Text>输出格式:</Text>
+                <Select value={outputEncoding} onChange={setOutputEncoding} style={{ width: 100 }}
+                  options={[{ value: 'Hex', label: 'Hex' }, { value: 'Base64', label: 'Base64' }]} />
               </Space>
             </Space>
           </Card>

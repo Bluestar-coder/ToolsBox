@@ -19,6 +19,22 @@ const AEADTab: React.FC<AEADTabProps> = ({ activeTab }) => {
   const [iv, setIv] = useState('');
   const [ivEncoding, setIvEncoding] = useState('Utf8');
   const [aeadTag, setAeadTag] = useState('');
+  const [ciphertextEncoding, setCiphertextEncoding] = useState<'Hex' | 'Base64'>('Hex');
+  const [outputEncoding, setOutputEncoding] = useState<'Hex' | 'Base64'>('Hex');
+
+  const hexToBase64 = (hex: string): string => {
+    const bytes = new Uint8Array(hex.length / 2);
+    for (let i = 0; i < hex.length; i += 2) bytes[i / 2] = parseInt(hex.substr(i, 2), 16);
+    return btoa(String.fromCharCode(...bytes));
+  };
+
+  const base64ToHex = (b64: string): string => {
+    const binary = atob(b64);
+    return Array.from(binary).map(c => c.charCodeAt(0).toString(16).padStart(2, '0')).join('');
+  };
+
+  const formatOutput = (hex: string): string => outputEncoding === 'Base64' ? hexToBase64(hex) : hex;
+  const parseInput = (input: string): string => ciphertextEncoding === 'Base64' ? base64ToHex(input) : input;
 
   const handleAesGcmEncrypt = () => {
     if (!inputText) { message.warning('请输入要加密的内容'); return; }
@@ -35,8 +51,8 @@ const AEADTab: React.FC<AEADTabProps> = ({ activeTab }) => {
       }
 
       const result = nobleAesGcmEncrypt(inputText, keyBytes, ivBytes);
-      setOutputText(result.ciphertext);
-      setAeadTag(result.tag);
+      setOutputText(formatOutput(result.ciphertext));
+      setAeadTag(formatOutput(result.tag));
       setOutputError('');
       message.success('AES-GCM 加密成功');
     } catch (error) {
@@ -54,7 +70,7 @@ const AEADTab: React.FC<AEADTabProps> = ({ activeTab }) => {
       const keyBytes = parseKeyToUint8Array(key, keyEncoding);
       const ivBytes = parseKeyToUint8Array(iv, ivEncoding);
 
-      const plaintext = nobleAesGcmDecrypt(inputText, aeadTag, keyBytes, ivBytes);
+      const plaintext = nobleAesGcmDecrypt(parseInput(inputText), parseInput(aeadTag), keyBytes, ivBytes);
       setOutputText(plaintext);
       setOutputError('');
       message.success('AES-GCM 解密成功');
@@ -78,8 +94,8 @@ const AEADTab: React.FC<AEADTabProps> = ({ activeTab }) => {
       }
 
       const result = aesSivEncrypt(inputText, keyBytes, ivBytes);
-      setOutputText(result.ciphertext);
-      setAeadTag(result.tag);
+      setOutputText(formatOutput(result.ciphertext));
+      setAeadTag(formatOutput(result.tag));
       setOutputError('');
       message.success('AES-SIV 加密成功');
     } catch (error) {
@@ -97,7 +113,7 @@ const AEADTab: React.FC<AEADTabProps> = ({ activeTab }) => {
       const keyBytes = parseKeyToUint8Array(key, keyEncoding);
       const ivBytes = parseKeyToUint8Array(iv, ivEncoding);
 
-      const plaintext = aesSivDecrypt(inputText, aeadTag, keyBytes, ivBytes);
+      const plaintext = aesSivDecrypt(parseInput(inputText), parseInput(aeadTag), keyBytes, ivBytes);
       setOutputText(plaintext);
       setOutputError('');
       message.success('AES-SIV 解密成功');
@@ -125,8 +141,8 @@ const AEADTab: React.FC<AEADTabProps> = ({ activeTab }) => {
       }
 
       const result = chacha20Encrypt(inputText, keyBytes, ivBytes);
-      setOutputText(result.ciphertext);
-      setAeadTag(result.tag);
+      setOutputText(formatOutput(result.ciphertext));
+      setAeadTag(formatOutput(result.tag));
       setOutputError('');
       message.success('ChaCha20-Poly1305 加密成功');
     } catch (error) {
@@ -144,7 +160,7 @@ const AEADTab: React.FC<AEADTabProps> = ({ activeTab }) => {
       const keyBytes = parseKeyToUint8Array(key, keyEncoding);
       const ivBytes = parseKeyToUint8Array(iv, ivEncoding);
 
-      const plaintext = chacha20Decrypt(inputText, aeadTag, keyBytes, ivBytes);
+      const plaintext = chacha20Decrypt(parseInput(inputText), parseInput(aeadTag), keyBytes, ivBytes);
       setOutputText(plaintext);
       setOutputError('');
       message.success('ChaCha20-Poly1305 解密成功');
@@ -300,6 +316,14 @@ const AEADTab: React.FC<AEADTabProps> = ({ activeTab }) => {
             placeholder="解密时需要输入加密生成的Tag"
             style={{ width: 400 }}
           />
+
+          <span>密文格式:</span>
+          <Space>
+            <Select value={ciphertextEncoding} onChange={setCiphertextEncoding} style={{ width: 160 }}
+              options={[{ value: 'Hex', label: 'Hex (解密用)' }, { value: 'Base64', label: 'Base64 (解密用)' }]} />
+            <Select value={outputEncoding} onChange={setOutputEncoding} style={{ width: 170 }}
+              options={[{ value: 'Hex', label: 'Hex (加密输出)' }, { value: 'Base64', label: 'Base64 (加密输出)' }]} />
+          </Space>
         </div>
         
         {activeTab === 'aes-siv' && (

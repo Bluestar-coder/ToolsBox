@@ -401,19 +401,19 @@ const SymmetricTab: React.FC<SymmetricTabProps> = ({ activeTab }) => {
             <Select
               value={ciphertextEncoding}
               onChange={setCiphertextEncoding}
-              style={{ width: 140 }}
+              style={{ width: 160 }}
               options={[
-                { value: 'Hex', label: 'Hex（解密用）' },
-                { value: 'Base64', label: 'Base64（解密用）' },
+                { value: 'Hex', label: 'Hex (解密用)' },
+                { value: 'Base64', label: 'Base64 (解密用)' },
               ]}
             />
             <Select
               value={outputEncoding}
               onChange={setOutputEncoding}
-              style={{ width: 140 }}
+              style={{ width: 170 }}
               options={[
-                { value: 'Hex', label: 'Hex（加密输出）' },
-                { value: 'Base64', label: 'Base64（加密输出）' },
+                { value: 'Hex', label: 'Hex (加密输出)' },
+                { value: 'Base64', label: 'Base64 (加密输出)' },
               ]}
             />
           </Space>

@@ -21,11 +21,14 @@ export const pbkdf2Derive = (
   return key.toString(CryptoJS.enc.Hex);
 };
 
+// HMAC 支持的哈希算法类型
+export type HmacHashType = 'MD5' | 'SHA1' | 'SHA224' | 'SHA256' | 'SHA384' | 'SHA512' | 'SHA3' | 'RIPEMD160';
+
 // HMAC 消息认证码
 export const hmacGenerate = (
   message: string,
   key: string,
-  hash: 'MD5' | 'SHA1' | 'SHA256' | 'SHA512' = 'SHA256'
+  hash: HmacHashType = 'SHA256'
 ): string => {
   let hmac;
   switch (hash) {
@@ -35,8 +38,20 @@ export const hmacGenerate = (
     case 'SHA1':
       hmac = CryptoJS.HmacSHA1(message, key);
       break;
+    case 'SHA224':
+      hmac = CryptoJS.HmacSHA224(message, key);
+      break;
+    case 'SHA384':
+      hmac = CryptoJS.HmacSHA384(message, key);
+      break;
     case 'SHA512':
       hmac = CryptoJS.HmacSHA512(message, key);
+      break;
+    case 'SHA3':
+      hmac = CryptoJS.HmacSHA3(message, key);
+      break;
+    case 'RIPEMD160':
+      hmac = CryptoJS.HmacRIPEMD160(message, key);
       break;
     default:
       hmac = CryptoJS.HmacSHA256(message, key);
@@ -49,10 +64,13 @@ export const hmacVerify = (
   message: string,
   key: string,
   expectedHmac: string,
-  hash: 'MD5' | 'SHA1' | 'SHA256' | 'SHA512' = 'SHA256'
+  hash: HmacHashType = 'SHA256'
 ): boolean => {
   const computed = hmacGenerate(message, key, hash);
-  return computed.toLowerCase() === expectedHmac.toLowerCase();
+  // 支持 Hex 和 Base64 格式的验证
+  const normalizedExpected = expectedHmac.toLowerCase().replace(/\s/g, '');
+  const normalizedComputed = computed.toLowerCase();
+  return normalizedComputed === normalizedExpected;
 };
 
 // 生成随机盐

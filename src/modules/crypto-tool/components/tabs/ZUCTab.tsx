@@ -14,6 +14,19 @@ const ZUCTab: React.FC = () => {
   const [keyEncoding, setKeyEncoding] = useState('Utf8');
   const [iv, setIv] = useState('');
   const [ivEncoding, setIvEncoding] = useState('Utf8');
+  const [ciphertextEncoding, setCiphertextEncoding] = useState<'Hex' | 'Base64'>('Hex');
+  const [outputEncoding, setOutputEncoding] = useState<'Hex' | 'Base64'>('Hex');
+
+  const hexToBase64 = (hex: string): string => {
+    const bytes = new Uint8Array(hex.length / 2);
+    for (let i = 0; i < hex.length; i += 2) bytes[i / 2] = parseInt(hex.slice(i, i + 2), 16);
+    return btoa(String.fromCharCode(...bytes));
+  };
+
+  const base64ToHex = (b64: string): string => {
+    const binary = atob(b64);
+    return Array.from(binary).map(c => c.charCodeAt(0).toString(16).padStart(2, '0')).join('');
+  };
 
   const handleZucEncrypt = () => {
     if (!inputText) { message.warning('请输入要加密的内容'); return; }
@@ -51,7 +64,8 @@ const ZUCTab: React.FC = () => {
       const zuc = new ZUCCipher(keyBytes, ivBytes);
       const plaintextBytes = new TextEncoder().encode(inputText);
       const encrypted = zuc.encrypt(plaintextBytes);
-      setOutputText(zucBytesToHex(encrypted));
+      const resultHex = zucBytesToHex(encrypted);
+      setOutputText(outputEncoding === 'Base64' ? hexToBase64(resultHex) : resultHex);
       setOutputError('');
       message.success('ZUC 加密成功');
     } catch (error) {
@@ -93,7 +107,8 @@ const ZUCTab: React.FC = () => {
       const keyBytes = zucHexToBytes(keyHex);
       const ivBytes = zucHexToBytes(ivHex);
       const zuc = new ZUCCipher(keyBytes, ivBytes);
-      const ciphertextBytes = zucHexToBytes(inputText);
+      const cipherHex = ciphertextEncoding === 'Base64' ? base64ToHex(inputText) : inputText;
+      const ciphertextBytes = zucHexToBytes(cipherHex);
       const decrypted = zuc.decrypt(ciphertextBytes);
       const decryptedText = new TextDecoder().decode(decrypted);
       if (!decryptedText) {
@@ -216,6 +231,14 @@ const ZUCTab: React.FC = () => {
             />
             <Select value={ivEncoding} onChange={setIvEncoding} options={encodingOptions} style={{ width: 80 }} />
             <Button onClick={generateZucIv}>随机生成</Button>
+          </Space>
+
+          <span>密文格式:</span>
+          <Space>
+            <Select value={ciphertextEncoding} onChange={setCiphertextEncoding} style={{ width: 160 }}
+              options={[{ value: 'Hex', label: 'Hex (解密用)' }, { value: 'Base64', label: 'Base64 (解密用)' }]} />
+            <Select value={outputEncoding} onChange={setOutputEncoding} style={{ width: 170 }}
+              options={[{ value: 'Hex', label: 'Hex (加密输出)' }, { value: 'Base64', label: 'Base64 (加密输出)' }]} />
           </Space>
         </div>
         <div style={{ marginTop: 12, padding: 8, backgroundColor: '#e6f7ff', borderRadius: 4 }}>

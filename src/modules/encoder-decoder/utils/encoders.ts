@@ -1,10 +1,13 @@
 import { encode, decode } from 'html-entities';
 
 // 编码/解码类型定义
-export type EncoderType = 'base64' | 'base16' | 'base32' | 'base32hex' | 'base36' | 'base64url' | 'base58' | 'base62' | 'base85' | 'base91' | 'url' | 'html' | 'json' | 'unicode';
+export type EncoderType = 'base64' | 'base16' | 'base32' | 'base32hex' | 'base36' | 'base64url' | 'base58' | 'base62' | 'base85' | 'base91' | 'url' | 'html' | 'json' | 'unicode' | 'utf7' | 'utf8' | 'utf16be' | 'utf16le' | 'utf32be' | 'utf32le';
 
 // Base64家族编码类型
 export type BaseFamilyType = 'base16' | 'base32' | 'base32hex' | 'base36' | 'base64' | 'base64url' | 'base58' | 'base62' | 'base85' | 'base91';
+
+// UTF家族编码类型
+export type UTFFamilyType = 'utf7' | 'utf8' | 'utf16be' | 'utf16le' | 'utf32be' | 'utf32le';
 
 // 编码/解码操作类型
 export type OperationType = 'encode' | 'decode';
@@ -123,60 +126,36 @@ export const base16Decode = (input: string): EncodeDecodeResult => {
 
 /**
  * Base32 编码 - RFC 4648 标准实现
- * 
- * 编码原理：
- * 1. 将输入的每个字节（8位）转换为二进制
- * 2. 将二进制流按5位分组
- * 3. 每组5位转换为0-31的十进制数
- * 4. 使用Base32字母表（A-Z, 2-7）映射到对应的字符
- * 5. 不足5位的部分补0，并添加适当数量的=作为填充
- * 6. 确保输出长度为8的倍数
- * 
- * @param input 输入字符串
- * @returns 编码结果
  */
 export const base32Encode = (input: string): EncodeDecodeResult => {
   try {
-    // Base32字母表，RFC 4648标准
     const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+    const bytes = new TextEncoder().encode(input);
     
-    // 位缓冲区，用于存储待处理的位
     let buffer = 0;
-    // 缓冲区中剩余的位数
     let bitsLeft = 0;
-    // 最终编码结果
     let result = '';
 
-    // 遍历输入字符串的每个字符
-    for (let i = 0; i < input.length; i++) {
-      // 将当前字符的ASCII码添加到缓冲区（左移8位腾出空间）
-      buffer = (buffer << 8) | input.charCodeAt(i);
-      // 缓冲区中增加8位
+    for (let i = 0; i < bytes.length; i++) {
+      buffer = (buffer << 8) | bytes[i];
       bitsLeft += 8;
 
-      // 当缓冲区中至少有5位时，提取5位进行编码
       while (bitsLeft >= 5) {
-        // 计算当前要提取的5位在缓冲区中的位置，并获取这5位的值（0-31）
-        const index = (buffer >>> (bitsLeft - 5)) & 0x1F; // 0x1F = 31，确保只取5位
-        // 根据索引从字母表中获取对应的字符
+        const index = (buffer >>> (bitsLeft - 5)) & 0x1F;
         result += alphabet[index];
-        // 缓冲区中减少5位
         bitsLeft -= 5;
       }
     }
 
-    // 处理剩余的位数（如果有的话）
     if (bitsLeft > 0) {
-      // 左移补0，确保剩余位长度为5位
       const index = (buffer << (5 - bitsLeft)) & 0x1F;
-      // 添加对应的字符
       result += alphabet[index];
-      // 添加填充字符=，数量为(5 - bitsLeft) % 5
-      result += '='.repeat((5 - bitsLeft) % 5);
     }
 
-    // 确保结果长度是8的倍数，不足的部分用=填充
-    result += '='.repeat((8 - result.length % 8) % 8);
+    // 填充到8的倍数
+    while (result.length % 8 !== 0) {
+      result += '=';
+    }
 
     return { success: true, result };
   } catch (error) {
@@ -186,59 +165,34 @@ export const base32Encode = (input: string): EncodeDecodeResult => {
 
 /**
  * Base32 解码 - RFC 4648 标准实现
- * 
- * 解码原理：
- * 1. 移除输入中的填充字符=
- * 2. 将每个Base32字符转换为对应的0-31十进制值
- * 3. 将这些值按5位分组拼接成二进制流
- * 4. 每8位一组转换为对应的字节
- * 5. 将字节数组转换为字符串
- * 
- * @param input 输入字符串
- * @returns 解码结果
  */
 export const base32Decode = (input: string): EncodeDecodeResult => {
   try {
-    // Base32字母表，RFC 4648标准
     const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-    
-    // 将输入转换为大写并移除填充字符=
     const inputUpper = input.toUpperCase().replace(/=/g, '');
     
-    // 位缓冲区，用于存储待处理的位
     let buffer = 0;
-    // 缓冲区中剩余的位数
     let bitsLeft = 0;
-    // 最终解码结果
-    let result = '';
+    const bytes: number[] = [];
 
-    // 遍历输入的每个字符
     for (let i = 0; i < inputUpper.length; i++) {
       const char = inputUpper[i];
-      // 查找字符在字母表中的索引
       const index = alphabet.indexOf(char);
       
-      // 验证字符是否有效
       if (index === -1) {
         throw new Error(`Invalid Base32 character: ${char}`);
       }
 
-      // 将当前字符的索引添加到缓冲区（左移5位腾出空间）
       buffer = (buffer << 5) | index;
-      // 缓冲区中增加5位
       bitsLeft += 5;
 
-      // 当缓冲区中至少有8位时，提取8位转换为字符
       while (bitsLeft >= 8) {
-        // 计算当前要提取的8位在缓冲区中的位置，并获取这8位的值（0-255）
-        const charCode = (buffer >>> (bitsLeft - 8)) & 0xFF; // 0xFF = 255，确保只取8位
-        // 将字符码转换为对应的字符
-        result += String.fromCharCode(charCode);
-        // 缓冲区中减少8位
+        bytes.push((buffer >>> (bitsLeft - 8)) & 0xFF);
         bitsLeft -= 8;
       }
     }
 
+    const result = new TextDecoder().decode(new Uint8Array(bytes));
     return { success: true, result };
   } catch (error) {
     return { success: false, result: '', error: error instanceof Error ? error.message : 'Base32解码错误' };
@@ -604,17 +558,19 @@ export const base64UrlDecode = (input: string): EncodeDecodeResult => {
 
 /**
  * Base58 编码
- * @param input 输入字符串
- * @returns 编码结果
  */
 export const base58Encode = (input: string): EncodeDecodeResult => {
   try {
     const alphabet = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-    let value = BigInt(0);
+    const bytes = new TextEncoder().encode(input);
     
-    // 将输入字符串转换为BigInt
-    for (let i = 0; i < input.length; i++) {
-      value = (value << BigInt(8)) | BigInt(input.charCodeAt(i));
+    let value = BigInt(0);
+    for (let i = 0; i < bytes.length; i++) {
+      value = (value << BigInt(8)) | BigInt(bytes[i]);
+    }
+    
+    if (value === BigInt(0)) {
+      return { success: true, result: alphabet[0] };
     }
     
     let result = '';
@@ -624,8 +580,8 @@ export const base58Encode = (input: string): EncodeDecodeResult => {
       value = value / BigInt(58);
     }
     
-    // 处理前导零
-    for (let i = 0; i < input.length && input[i] === '\x00'; i++) {
+    // 处理前导零字节
+    for (let i = 0; i < bytes.length && bytes[i] === 0; i++) {
       result = alphabet[0] + result;
     }
     
@@ -637,8 +593,6 @@ export const base58Encode = (input: string): EncodeDecodeResult => {
 
 /**
  * Base58 解码
- * @param input 输入字符串
- * @returns 解码结果
  */
 export const base58Decode = (input: string): EncodeDecodeResult => {
   try {
@@ -654,18 +608,19 @@ export const base58Decode = (input: string): EncodeDecodeResult => {
       value = value * BigInt(58) + BigInt(index);
     }
     
-    let result = '';
+    // 转换为字节数组
+    const bytes: number[] = [];
     while (value > BigInt(0)) {
-      const charCode = Number(value & BigInt(0xFF));
-      result = String.fromCharCode(charCode) + result;
+      bytes.unshift(Number(value & BigInt(0xFF)));
       value = value >> BigInt(8);
     }
     
-    // 处理前导零
+    // 处理前导1（代表零字节）
     for (let i = 0; i < input.length && input[i] === alphabet[0]; i++) {
-      result = '\x00' + result;
+      bytes.unshift(0);
     }
     
+    const result = new TextDecoder().decode(new Uint8Array(bytes));
     return { success: true, result };
   } catch (error) {
     return { success: false, result: '', error: error instanceof Error ? error.message : 'Base58解码错误' };
@@ -811,35 +766,110 @@ export const unicodeDecode = (input: string): EncodeDecodeResult => {
 };
 
 /**
- * UTF-8 编码
- * @param input 输入字符串
- * @returns 编码结果
+ * UTF-7 编码 (RFC 2152)
+ */
+export const utf7Encode = (input: string): EncodeDecodeResult => {
+  try {
+    const base64Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+    let result = '';
+    let i = 0;
+    
+    while (i < input.length) {
+      const char = input[i];
+      const code = char.charCodeAt(0);
+      
+      // 直接可打印的ASCII字符（除了+）
+      if ((code >= 0x20 && code <= 0x7E && char !== '+') || code === 0x09 || code === 0x0A || code === 0x0D) {
+        result += char;
+        i++;
+      } else if (char === '+') {
+        result += '+-';
+        i++;
+      } else {
+        // 需要Base64编码的Unicode字符
+        result += '+';
+        let buffer = 0;
+        let bits = 0;
+        
+        while (i < input.length) {
+          const c = input[i];
+          const cc = c.charCodeAt(0);
+          if ((cc >= 0x20 && cc <= 0x7E) || cc === 0x09 || cc === 0x0A || cc === 0x0D) break;
+          
+          buffer = (buffer << 16) | cc;
+          bits += 16;
+          
+          while (bits >= 6) {
+            bits -= 6;
+            result += base64Chars[(buffer >> bits) & 0x3F];
+          }
+          i++;
+        }
+        
+        if (bits > 0) {
+          result += base64Chars[(buffer << (6 - bits)) & 0x3F];
+        }
+        result += '-';
+      }
+    }
+    return { success: true, result };
+  } catch (error) {
+    return { success: false, result: '', error: error instanceof Error ? error.message : 'UTF-7编码错误' };
+  }
+};
+
+/**
+ * UTF-7 解码
+ */
+export const utf7Decode = (input: string): EncodeDecodeResult => {
+  try {
+    const base64Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+    let result = '';
+    let i = 0;
+    
+    while (i < input.length) {
+      if (input[i] === '+') {
+        if (input[i + 1] === '-') {
+          result += '+';
+          i += 2;
+        } else {
+          i++;
+          let buffer = 0;
+          let bits = 0;
+          
+          while (i < input.length && input[i] !== '-') {
+            const idx = base64Chars.indexOf(input[i]);
+            if (idx === -1) break;
+            buffer = (buffer << 6) | idx;
+            bits += 6;
+            
+            if (bits >= 16) {
+              bits -= 16;
+              result += String.fromCharCode((buffer >> bits) & 0xFFFF);
+            }
+            i++;
+          }
+          if (input[i] === '-') i++;
+        }
+      } else {
+        result += input[i];
+        i++;
+      }
+    }
+    return { success: true, result };
+  } catch (error) {
+    return { success: false, result: '', error: error instanceof Error ? error.message : 'UTF-7解码错误' };
+  }
+};
+
+/**
+ * UTF-8 编码（输出十六进制）
  */
 export const utf8Encode = (input: string): EncodeDecodeResult => {
   try {
-    let result = '';
-    for (let i = 0; i < input.length; i++) {
-      const charCode = input.charCodeAt(i);
-      if (charCode < 128) {
-        // 单字节字符
-        result += charCode.toString(16).padStart(2, '0');
-      } else if (charCode < 2048) {
-        // 双字节字符
-        result += ((charCode >> 6) | 192).toString(16);
-        result += ((charCode & 63) | 128).toString(16);
-      } else if (charCode < 65536) {
-        // 三字节字符
-        result += ((charCode >> 12) | 224).toString(16);
-        result += (((charCode >> 6) & 63) | 128).toString(16);
-        result += ((charCode & 63) | 128).toString(16);
-      } else {
-        // 四字节字符
-        result += ((charCode >> 18) | 240).toString(16);
-        result += (((charCode >> 12) & 63) | 128).toString(16);
-        result += (((charCode >> 6) & 63) | 128).toString(16);
-        result += ((charCode & 63) | 128).toString(16);
-      }
-    }
+    const encoder = new TextEncoder();
+    const bytes = encoder.encode(input);
+    const result = Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join(' ');
     return { success: true, result };
   } catch (error) {
     return { success: false, result: '', error: error instanceof Error ? error.message : 'UTF-8编码错误' };
@@ -847,109 +877,172 @@ export const utf8Encode = (input: string): EncodeDecodeResult => {
 };
 
 /**
- * UTF-8 解码
- * @param input 输入字符串（十六进制格式）
- * @returns 解码结果
+ * UTF-8 解码（从十六进制）
  */
 export const utf8Decode = (input: string): EncodeDecodeResult => {
   try {
-    let result = '';
-    let i = 0;
-    while (i < input.length) {
-      const byte1 = parseInt(input.substr(i, 2), 16);
-      i += 2;
-      
-      if (byte1 < 128) {
-        // 单字节字符
-        result += String.fromCharCode(byte1);
-      } else if (byte1 < 224) {
-        // 双字节字符
-        const byte2 = parseInt(input.substr(i, 2), 16);
-        i += 2;
-        const charCode = ((byte1 & 31) << 6) | (byte2 & 63);
-        result += String.fromCharCode(charCode);
-      } else if (byte1 < 240) {
-        // 三字节字符
-        const byte2 = parseInt(input.substr(i, 2), 16);
-        const byte3 = parseInt(input.substr(i + 2, 2), 16);
-        i += 4;
-        const charCode = ((byte1 & 15) << 12) | ((byte2 & 63) << 6) | (byte3 & 63);
-        result += String.fromCharCode(charCode);
-      } else {
-        // 四字节字符
-        const byte2 = parseInt(input.substr(i, 2), 16);
-        const byte3 = parseInt(input.substr(i + 2, 2), 16);
-        const byte4 = parseInt(input.substr(i + 4, 2), 16);
-        i += 6;
-        const codePoint = ((byte1 & 7) << 18) | ((byte2 & 63) << 12) | ((byte3 & 63) << 6) | (byte4 & 63);
-        // 处理代理对
-        if (codePoint <= 0xFFFF) {
-          result += String.fromCharCode(codePoint);
-        } else {
-          const highSurrogate = Math.floor((codePoint - 0x10000) / 0x400) + 0xD800;
-          const lowSurrogate = ((codePoint - 0x10000) % 0x400) + 0xDC00;
-          result += String.fromCharCode(highSurrogate, lowSurrogate);
-        }
-      }
+    const hex = input.replace(/\s+/g, '');
+    const bytes = new Uint8Array(hex.length / 2);
+    for (let i = 0; i < hex.length; i += 2) {
+      bytes[i / 2] = parseInt(hex.substr(i, 2), 16);
     }
-    return { success: true, result };
+    const decoder = new TextDecoder('utf-8');
+    return { success: true, result: decoder.decode(bytes) };
   } catch (error) {
     return { success: false, result: '', error: error instanceof Error ? error.message : 'UTF-8解码错误' };
   }
 };
 
 /**
- * UTF-16 编码
- * @param input 输入字符串
- * @param bigEndian 是否使用大端序
- * @returns 编码结果
+ * UTF-16 BE 编码（大端序）
  */
-export const utf16Encode = (input: string, bigEndian: boolean = false): EncodeDecodeResult => {
+export const utf16BEEncode = (input: string): EncodeDecodeResult => {
   try {
     let result = '';
     for (let i = 0; i < input.length; i++) {
-      const charCode = input.charCodeAt(i);
-      if (bigEndian) {
-        // 大端序：高位字节在前
-        result += charCode.toString(16).padStart(4, '0');
-      } else {
-        // 小端序：低位字节在前
-        const lowByte = (charCode & 0xFF).toString(16).padStart(2, '0');
-        const highByte = ((charCode >> 8) & 0xFF).toString(16).padStart(2, '0');
-        result += lowByte + highByte;
+      const code = input.charCodeAt(i);
+      // 处理代理对
+      if (code >= 0xD800 && code <= 0xDBFF && i + 1 < input.length) {
+        const low = input.charCodeAt(i + 1);
+        if (low >= 0xDC00 && low <= 0xDFFF) {
+          result += code.toString(16).padStart(4, '0') + ' ';
+          result += low.toString(16).padStart(4, '0') + ' ';
+          i++;
+          continue;
+        }
       }
+      result += code.toString(16).padStart(4, '0') + ' ';
     }
-    return { success: true, result };
+    return { success: true, result: result.trim() };
   } catch (error) {
-    return { success: false, result: '', error: error instanceof Error ? error.message : 'UTF-16编码错误' };
+    return { success: false, result: '', error: error instanceof Error ? error.message : 'UTF-16 BE编码错误' };
   }
 };
 
 /**
- * UTF-16 解码
- * @param input 输入字符串（十六进制格式）
- * @param bigEndian 是否使用大端序
- * @returns 解码结果
+ * UTF-16 BE 解码
  */
-export const utf16Decode = (input: string, bigEndian: boolean = false): EncodeDecodeResult => {
+export const utf16BEDecode = (input: string): EncodeDecodeResult => {
   try {
+    const hex = input.replace(/\s+/g, '');
     let result = '';
-    for (let i = 0; i < input.length; i += 4) {
-      let charCode: number;
-      if (bigEndian) {
-        // 大端序：高位字节在前
-        charCode = parseInt(input.substr(i, 4), 16);
-      } else {
-        // 小端序：低位字节在前
-        const lowByte = parseInt(input.substr(i, 2), 16);
-        const highByte = parseInt(input.substr(i + 2, 2), 16);
-        charCode = (highByte << 8) | lowByte;
-      }
-      result += String.fromCharCode(charCode);
+    for (let i = 0; i < hex.length; i += 4) {
+      const code = parseInt(hex.substr(i, 4), 16);
+      result += String.fromCharCode(code);
     }
     return { success: true, result };
   } catch (error) {
-    return { success: false, result: '', error: error instanceof Error ? error.message : 'UTF-16解码错误' };
+    return { success: false, result: '', error: error instanceof Error ? error.message : 'UTF-16 BE解码错误' };
+  }
+};
+
+/**
+ * UTF-16 LE 编码（小端序）
+ */
+export const utf16LEEncode = (input: string): EncodeDecodeResult => {
+  try {
+    let result = '';
+    for (let i = 0; i < input.length; i++) {
+      const code = input.charCodeAt(i);
+      const low = (code & 0xFF).toString(16).padStart(2, '0');
+      const high = ((code >> 8) & 0xFF).toString(16).padStart(2, '0');
+      result += low + high + ' ';
+    }
+    return { success: true, result: result.trim() };
+  } catch (error) {
+    return { success: false, result: '', error: error instanceof Error ? error.message : 'UTF-16 LE编码错误' };
+  }
+};
+
+/**
+ * UTF-16 LE 解码
+ */
+export const utf16LEDecode = (input: string): EncodeDecodeResult => {
+  try {
+    const hex = input.replace(/\s+/g, '');
+    let result = '';
+    for (let i = 0; i < hex.length; i += 4) {
+      const low = parseInt(hex.substr(i, 2), 16);
+      const high = parseInt(hex.substr(i + 2, 2), 16);
+      result += String.fromCharCode((high << 8) | low);
+    }
+    return { success: true, result };
+  } catch (error) {
+    return { success: false, result: '', error: error instanceof Error ? error.message : 'UTF-16 LE解码错误' };
+  }
+};
+
+/**
+ * UTF-32 BE 编码（大端序）
+ */
+export const utf32BEEncode = (input: string): EncodeDecodeResult => {
+  try {
+    let result = '';
+    for (const char of input) {
+      const code = char.codePointAt(0) || 0;
+      result += code.toString(16).padStart(8, '0') + ' ';
+    }
+    return { success: true, result: result.trim() };
+  } catch (error) {
+    return { success: false, result: '', error: error instanceof Error ? error.message : 'UTF-32 BE编码错误' };
+  }
+};
+
+/**
+ * UTF-32 BE 解码
+ */
+export const utf32BEDecode = (input: string): EncodeDecodeResult => {
+  try {
+    const hex = input.replace(/\s+/g, '');
+    let result = '';
+    for (let i = 0; i < hex.length; i += 8) {
+      const code = parseInt(hex.substr(i, 8), 16);
+      result += String.fromCodePoint(code);
+    }
+    return { success: true, result };
+  } catch (error) {
+    return { success: false, result: '', error: error instanceof Error ? error.message : 'UTF-32 BE解码错误' };
+  }
+};
+
+/**
+ * UTF-32 LE 编码（小端序）
+ */
+export const utf32LEEncode = (input: string): EncodeDecodeResult => {
+  try {
+    let result = '';
+    for (const char of input) {
+      const code = char.codePointAt(0) || 0;
+      const b0 = (code & 0xFF).toString(16).padStart(2, '0');
+      const b1 = ((code >> 8) & 0xFF).toString(16).padStart(2, '0');
+      const b2 = ((code >> 16) & 0xFF).toString(16).padStart(2, '0');
+      const b3 = ((code >> 24) & 0xFF).toString(16).padStart(2, '0');
+      result += b0 + b1 + b2 + b3 + ' ';
+    }
+    return { success: true, result: result.trim() };
+  } catch (error) {
+    return { success: false, result: '', error: error instanceof Error ? error.message : 'UTF-32 LE编码错误' };
+  }
+};
+
+/**
+ * UTF-32 LE 解码
+ */
+export const utf32LEDecode = (input: string): EncodeDecodeResult => {
+  try {
+    const hex = input.replace(/\s+/g, '');
+    let result = '';
+    for (let i = 0; i < hex.length; i += 8) {
+      const b0 = parseInt(hex.substr(i, 2), 16);
+      const b1 = parseInt(hex.substr(i + 2, 2), 16);
+      const b2 = parseInt(hex.substr(i + 4, 2), 16);
+      const b3 = parseInt(hex.substr(i + 6, 2), 16);
+      const code = b0 | (b1 << 8) | (b2 << 16) | (b3 << 24);
+      result += String.fromCodePoint(code);
+    }
+    return { success: true, result };
+  } catch (error) {
+    return { success: false, result: '', error: error instanceof Error ? error.message : 'UTF-32 LE解码错误' };
   }
 };
 
@@ -987,6 +1080,19 @@ export const executeEncodeDecode = (input: string, type: EncoderType, operation:
       return operation === 'encode' ? base85Encode(input) : base85Decode(input);
     case 'base91':
       return operation === 'encode' ? base91Encode(input) : base91Decode(input);
+    // UTF家族编码/解码
+    case 'utf7':
+      return operation === 'encode' ? utf7Encode(input) : utf7Decode(input);
+    case 'utf8':
+      return operation === 'encode' ? utf8Encode(input) : utf8Decode(input);
+    case 'utf16be':
+      return operation === 'encode' ? utf16BEEncode(input) : utf16BEDecode(input);
+    case 'utf16le':
+      return operation === 'encode' ? utf16LEEncode(input) : utf16LEDecode(input);
+    case 'utf32be':
+      return operation === 'encode' ? utf32BEEncode(input) : utf32BEDecode(input);
+    case 'utf32le':
+      return operation === 'encode' ? utf32LEEncode(input) : utf32LEDecode(input);
     // 其他编码/解码
     case 'url':
       return operation === 'encode' ? urlEncode(input) : urlDecode(input);
@@ -1018,6 +1124,12 @@ export const getEncoderDisplayName = (type: EncoderType): string => {
     base64url: 'Base64URL',
     base85: 'Base85 (ASCII85)',
     base91: 'Base91',
+    utf7: 'UTF-7',
+    utf8: 'UTF-8',
+    utf16be: 'UTF-16 BE',
+    utf16le: 'UTF-16 LE',
+    utf32be: 'UTF-32 BE',
+    utf32le: 'UTF-32 LE',
     url: 'URL',
     html: 'HTML实体',
     json: 'JSON',

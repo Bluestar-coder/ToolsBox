@@ -5,12 +5,12 @@ import { useAppContext } from '../../../../hooks/useAppContext';
 import { executeEncodeDecode, getEncoderDisplayName } from '../../utils/encoders';
 import type { EncoderType, OperationType } from '../../utils/encoders';
 import { validateBase64, validateBase64Url, validateBase32, validateBase16, validateJson } from '../../../../utils/validators';
-import { baseEncoders, otherEncoders } from '../../utils/constants';
+import { baseEncoders, utfEncoders, otherEncoders } from '../../utils/constants';
 
 const { TextArea } = Input;
 
 interface EncodingTabProps {
-  activeCategory: 'base' | 'other';
+  activeCategory: 'base' | 'utf' | 'other';
 }
 
 const EncodingTab: React.FC<EncodingTabProps> = ({ activeCategory }) => {
@@ -19,7 +19,9 @@ const EncodingTab: React.FC<EncodingTabProps> = ({ activeCategory }) => {
   const [isImageMode, setIsImageMode] = useState<boolean>(false);
 
   const getCurrentEncoders = () => {
-    return activeCategory === 'base' ? baseEncoders : otherEncoders;
+    if (activeCategory === 'base') return baseEncoders;
+    if (activeCategory === 'utf') return utfEncoders;
+    return otherEncoders;
   };
 
   const processInput = useCallback(() => {

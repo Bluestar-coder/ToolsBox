@@ -6,12 +6,18 @@ export const baseEncoders: EncoderType[] = [
   'base62', 'base64', 'base64url', 'base85', 'base91'
 ];
 
+// UTF 家族编码类型
+export const utfEncoders: EncoderType[] = [
+  'utf7', 'utf8', 'utf16be', 'utf16le', 'utf32be', 'utf32le'
+];
+
 // 其他编码类型
 export const otherEncoders: EncoderType[] = ['url', 'html', 'json', 'unicode'];
 
 // 一级分类
 export const categoryItems = [
   { key: 'base', label: 'Base 编码' },
+  { key: 'utf', label: 'UTF 编码' },
   { key: 'other', label: '其他编码' },
   { key: 'radix', label: '进制转换' },
   { key: 'image', label: '图片转换' },

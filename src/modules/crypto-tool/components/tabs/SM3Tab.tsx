@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, Input, Button, Space, message } from 'antd';
+import { Card, Input, Button, Space, message, Select } from 'antd';
 import * as smCrypto from 'sm-crypto';
 import { calculateAllHashes } from '../../utils/hash';
 
@@ -10,6 +10,15 @@ const SM3Tab: React.FC = () => {
   const [hashInput, setHashInput] = useState('');
   const [sm3Results, setSm3Results] = useState<Record<string, string>>({});
   const [hashResults, setHashResults] = useState<Record<string, string>>({});
+  const [outputEncoding, setOutputEncoding] = useState<'Hex' | 'Base64'>('Hex');
+
+  const hexToBase64 = (hex: string): string => {
+    const bytes = new Uint8Array(hex.length / 2);
+    for (let i = 0; i < hex.length; i += 2) bytes[i / 2] = parseInt(hex.slice(i, i + 2), 16);
+    return btoa(String.fromCharCode(...bytes));
+  };
+
+  const formatOutput = (hex: string): string => outputEncoding === 'Base64' ? hexToBase64(hex) : hex;
 
   const calculateSm3 = () => {
     if (!hashInput) {
@@ -17,7 +26,7 @@ const SM3Tab: React.FC = () => {
       return;
     }
     const hash = sm3(hashInput);
-    setSm3Results({ SM3: hash });
+    setSm3Results({ SM3: formatOutput(hash) });
     message.success('SM3 哈希计算完成');
   };
 
@@ -27,7 +36,11 @@ const SM3Tab: React.FC = () => {
       return;
     }
     const results = calculateAllHashes(hashInput);
-    setHashResults(results);
+    const formatted: Record<string, string> = {};
+    for (const [key, value] of Object.entries(results)) {
+      formatted[key] = formatOutput(value);
+    }
+    setHashResults(formatted);
     message.success('哈希计算完成');
   };
 
@@ -55,7 +68,7 @@ const SM3Tab: React.FC = () => {
         rows={6}
         style={{ marginBottom: 16, fontFamily: 'monospace' }}
       />
-      <Space style={{ marginBottom: 16 }}>
+      <Space style={{ marginBottom: 16 }} wrap>
         <Button type="primary" style={{ backgroundColor: '#52c41a' }} onClick={calculateSm3}>
           计算 SM3
         </Button>
@@ -65,6 +78,9 @@ const SM3Tab: React.FC = () => {
         <Button danger onClick={handleClear}>
           清空
         </Button>
+        <span>输出格式:</span>
+        <Select value={outputEncoding} onChange={setOutputEncoding} style={{ width: 100 }}
+          options={[{ value: 'Hex', label: 'Hex' }, { value: 'Base64', label: 'Base64' }]} />
       </Space>
       {(Object.keys(sm3Results).length > 0 || Object.keys(hashResults).length > 0) && (
         <Card size="small" style={{ backgroundColor: '#f6ffed', borderColor: '#b7eb8f' }}>
