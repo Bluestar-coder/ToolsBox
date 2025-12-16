@@ -10,7 +10,13 @@ export interface RegexTestResult {
   matches: MatchResult[];
   error?: string;
   matchCount: number;
+  truncated?: boolean;
 }
+
+// 限制最大匹配数量，防止内存溢出
+const MAX_MATCHES = 1000;
+// 限制最大文本长度
+const MAX_TEXT_LENGTH = 100000;
 
 /**
  * 测试正则表达式
@@ -20,26 +26,43 @@ export function testRegex(pattern: string, flags: string, testString: string): R
     return { isValid: false, matches: [], matchCount: 0, error: '请输入正则表达式' };
   }
 
+  // 限制文本长度
+  const text = testString.length > MAX_TEXT_LENGTH 
+    ? testString.slice(0, MAX_TEXT_LENGTH) 
+    : testString;
+
   try {
     const regex = new RegExp(pattern, flags);
     const matches: MatchResult[] = [];
+    let truncated = false;
 
     if (flags.includes('g')) {
       let match;
-      while ((match = regex.exec(testString)) !== null) {
+      let iterations = 0;
+      const maxIterations = MAX_MATCHES * 2; // 安全阀
+      
+      while ((match = regex.exec(text)) !== null && iterations < maxIterations) {
+        iterations++;
+        
+        if (matches.length >= MAX_MATCHES) {
+          truncated = true;
+          break;
+        }
+        
         matches.push({
           match: match[0],
           index: match.index,
           groups: match.slice(1),
           namedGroups: match.groups,
         });
+        
         // 防止无限循环
         if (match[0].length === 0) {
           regex.lastIndex++;
         }
       }
     } else {
-      const match = regex.exec(testString);
+      const match = regex.exec(text);
       if (match) {
         matches.push({
           match: match[0],
@@ -50,7 +73,12 @@ export function testRegex(pattern: string, flags: string, testString: string): R
       }
     }
 
-    return { isValid: true, matches, matchCount: matches.length };
+    return { 
+      isValid: true, 
+      matches, 
+      matchCount: matches.length,
+      truncated: truncated || testString.length > MAX_TEXT_LENGTH
+    };
   } catch (e) {
     return {
       isValid: false,
@@ -90,10 +118,14 @@ export function replaceWithRegex(
  * 高亮匹配文本（返回带标记的HTML）
  */
 export function highlightMatches(testString: string, matches: MatchResult[]): string {
-  if (matches.length === 0) return testString;
+  if (matches.length === 0) return escapeHtml(testString);
+  
+  // 限制高亮的匹配数量，防止DOM过大
+  const maxHighlights = 200;
+  const limitedMatches = matches.slice(0, maxHighlights);
 
   // 按索引排序
-  const sortedMatches = [...matches].sort((a, b) => a.index - b.index);
+  const sortedMatches = [...limitedMatches].sort((a, b) => a.index - b.index);
   
   let result = '';
   let lastIndex = 0;

@@ -98,7 +98,11 @@ const TestTab: React.FC = () => {
         <>
           <Alert
             type={result.matchCount > 0 ? 'success' : 'info'}
-            message={`找到 ${result.matchCount} 个匹配`}
+            message={
+              result.truncated 
+                ? `找到 ${result.matchCount} 个匹配 (结果已截断，仅显示前1000个)`
+                : `找到 ${result.matchCount} 个匹配`
+            }
             showIcon
           />
 
