@@ -111,7 +111,7 @@ const SqlTab: React.FC = () => {
   };
 
   return (
-    <Space direction="vertical" style={{ width: '100%' }} size="middle">
+    <Space orientation="vertical" style={{ width: '100%' }} size="middle">
       {/* 输入区域 - 带语法高亮 */}
       <div>
         <div style={{ marginBottom: 8, fontWeight: 500 }}>输入 SQL</div>
@@ -154,10 +154,10 @@ const SqlTab: React.FC = () => {
       {validation && (
         <div>
           {validation.valid ? (
-            <Alert message="SQL 语法检查通过" type="success" icon={<CheckCircleOutlined />} showIcon />
+            <Alert title="SQL 语法检查通过" type="success" icon={<CheckCircleOutlined />} showIcon />
           ) : (
             <Alert
-              message="SQL 语法检查发现问题"
+              title="SQL 语法检查发现问题"
               description={
                 <ul style={{ margin: 0, paddingLeft: 20 }}>
                   {validation.errors.map((err, i) => (
@@ -171,7 +171,7 @@ const SqlTab: React.FC = () => {
           )}
           {validation.warnings.length > 0 && (
             <Alert
-              message="建议"
+              title="建议"
               description={
                 <ul style={{ margin: 0, paddingLeft: 20 }}>
                   {validation.warnings.map((warn, i) => (

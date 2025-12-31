@@ -38,7 +38,7 @@ const CalcTab: React.FC = () => {
     <Row gutter={16}>
       <Col span={12}>
         <Card size="small" title="⏱️ 时间差计算">
-          <Space direction="vertical" style={{ width: '100%' }}>
+          <Space orientation="vertical" style={{ width: '100%' }}>
             <div>
               <span style={{ marginRight: 8 }}>从</span>
               <Input
@@ -64,7 +64,7 @@ const CalcTab: React.FC = () => {
       </Col>
       <Col span={12}>
         <Card size="small" title="➕➖ 时间加减运算">
-          <Space direction="vertical" style={{ width: '100%' }}>
+          <Space orientation="vertical" style={{ width: '100%' }}>
             <Input
               value={calcBaseTime}
               onChange={(e) => setCalcBaseTime(e.target.value)}

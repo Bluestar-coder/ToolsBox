@@ -1,35 +1,37 @@
 import React, { useState } from 'react';
 import { Card, Tabs } from 'antd';
+import { useTranslation } from 'react-i18next';
 import { JsonTab, SqlTab, HttpTab, GeneralTab } from './tabs';
 
 const CodeFormatter: React.FC = () => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('json');
 
   const tabItems = [
     {
       key: 'json',
-      label: 'JSON',
+      label: t('modules.formatter.tabs.json'),
       children: <JsonTab />,
     },
     {
       key: 'sql',
-      label: 'SQL',
+      label: t('modules.formatter.tabs.sql'),
       children: <SqlTab />,
     },
     {
       key: 'http',
-      label: 'HTTP',
+      label: t('modules.formatter.tabs.http'),
       children: <HttpTab />,
     },
     {
       key: 'general',
-      label: '其他语言',
+      label: t('modules.formatter.tabs.general'),
       children: <GeneralTab />,
     },
   ];
 
   return (
-    <Card title="代码格式化/美化" variant="borderless">
+    <Card title={t('modules.formatter.title')} variant="borderless">
       <Tabs
         activeKey={activeTab}
         onChange={setActiveTab}

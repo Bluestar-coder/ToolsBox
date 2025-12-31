@@ -147,7 +147,7 @@ const SM2Tab: React.FC = () => {
       <Card size="small" title="SM2 密钥设置" style={{ marginBottom: 16 }}>
         <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '12px 16px', alignItems: 'center' }}>
           <span>公钥:</span>
-          <Space direction="vertical" style={{ width: '100%' }}>
+          <Space orientation="vertical" style={{ width: '100%' }}>
             <TextArea
               value={sm2PublicKey}
               onChange={(e) => setSm2PublicKey(e.target.value)}
@@ -158,7 +158,7 @@ const SM2Tab: React.FC = () => {
           </Space>
 
           <span>私钥:</span>
-          <Space direction="vertical" style={{ width: '100%' }}>
+          <Space orientation="vertical" style={{ width: '100%' }}>
             <TextArea
               value={sm2PrivateKey}
               onChange={(e) => setSm2PrivateKey(e.target.value)}

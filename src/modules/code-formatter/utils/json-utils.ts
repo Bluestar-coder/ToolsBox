@@ -1,9 +1,5 @@
 // JSON 专用工具函数
 
-// 安全限制
-const MAX_DEPTH = 50;
-const MAX_CHILDREN = 1000;
-
 export interface JsonNode {
   key: string;
   value: unknown;
@@ -11,7 +7,6 @@ export interface JsonNode {
   path: string;
   depth: number;
   children?: JsonNode[];
-  truncated?: boolean;
 }
 
 // 解析 JSON 为树结构
@@ -23,43 +18,31 @@ export function parseJsonToTree(json: string): JsonNode {
 function buildTree(value: unknown, key: string, path: string, depth: number): JsonNode {
   const currentPath = path ? `${path}.${key}` : key;
   
-  // 深度限制保护
-  if (depth >= MAX_DEPTH) {
-    return { key, value: '[深度超限]', type: 'string', path: currentPath, depth, truncated: true };
-  }
-  
   if (value === null) {
     return { key, value, type: 'null', path: currentPath, depth };
   }
   
   if (Array.isArray(value)) {
-    const truncated = value.length > MAX_CHILDREN;
-    const items = truncated ? value.slice(0, MAX_CHILDREN) : value;
     return {
       key,
       value,
       type: 'array',
       path: currentPath,
       depth,
-      truncated,
-      children: items.map((item, index) => 
+      children: value.map((item, index) => 
         buildTree(item, `[${index}]`, currentPath, depth + 1)
       ),
     };
   }
   
   if (typeof value === 'object') {
-    const entries = Object.entries(value as Record<string, unknown>);
-    const truncated = entries.length > MAX_CHILDREN;
-    const items = truncated ? entries.slice(0, MAX_CHILDREN) : entries;
     return {
       key,
       value,
       type: 'object',
       path: currentPath,
       depth,
-      truncated,
-      children: items.map(([k, v]) =>
+      children: Object.entries(value as Record<string, unknown>).map(([k, v]) =>
         buildTree(v, k, currentPath, depth + 1)
       ),
     };
@@ -77,29 +60,22 @@ function buildTree(value: unknown, key: string, path: string, depth: number): Js
 // 获取 JSON 深度
 export function getJsonDepth(json: string): number {
   const parsed = JSON.parse(json);
-  return calculateDepth(parsed, 0);
+  return calculateDepth(parsed);
 }
 
-function calculateDepth(value: unknown, currentDepth: number): number {
-  // 深度限制保护
-  if (currentDepth >= MAX_DEPTH) return currentDepth;
-  
+function calculateDepth(value: unknown): number {
   if (value === null || typeof value !== 'object') {
-    return currentDepth;
+    return 0;
   }
   
   if (Array.isArray(value)) {
-    if (value.length === 0) return currentDepth + 1;
-    // 只检查前100个元素
-    const sample = value.slice(0, 100);
-    return Math.max(...sample.map(v => calculateDepth(v, currentDepth + 1)));
+    if (value.length === 0) return 1;
+    return 1 + Math.max(...value.map(calculateDepth));
   }
   
   const values = Object.values(value as Record<string, unknown>);
-  if (values.length === 0) return currentDepth + 1;
-  // 只检查前100个属性
-  const sample = values.slice(0, 100);
-  return Math.max(...sample.map(v => calculateDepth(v, currentDepth + 1)));
+  if (values.length === 0) return 1;
+  return 1 + Math.max(...values.map(calculateDepth));
 }
 
 // 按层级展开 JSON

@@ -1,12 +1,22 @@
 import React, { useState } from 'react';
 import { Card, Tabs } from 'antd';
+import { useTranslation } from 'react-i18next';
 import { useAppContext } from '../../../hooks/useAppContext';
-import { categoryItems, baseEncoders, utfEncoders, otherEncoders } from '../utils/constants';
+import { baseEncoders, utfEncoders, otherEncoders } from '../utils/constants';
 import { EncodingTab, RadixTab, ImageTab } from './tabs';
 
 const EncoderDecoder: React.FC = () => {
+  const { t } = useTranslation();
   const { dispatch, state } = useAppContext();
   const [activeCategory, setActiveCategory] = useState<string>('base');
+
+  const categoryItems = [
+    { key: 'base', label: t('modules.encoder.categories.base') },
+    { key: 'utf', label: t('modules.encoder.categories.utf') },
+    { key: 'other', label: t('modules.encoder.categories.other') },
+    { key: 'radix', label: t('modules.encoder.categories.radix') },
+    { key: 'image', label: t('modules.encoder.categories.image') },
+  ];
 
   const handleCategoryChange = (category: string) => {
     setActiveCategory(category);
@@ -36,7 +46,7 @@ const EncoderDecoder: React.FC = () => {
   };
 
   return (
-    <Card title="编码/解码工具" bordered={false}>
+    <Card title={t('modules.encoder.title')} variant="borderless">
       <Tabs
         activeKey={activeCategory}
         onChange={handleCategoryChange}

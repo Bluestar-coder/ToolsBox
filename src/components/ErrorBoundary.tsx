@@ -64,7 +64,7 @@ export class ErrorBoundaryClass extends Component<ErrorBoundaryProps, ErrorBound
                 <Title level={4} style={{ margin: 0 }}>应用发生错误</Title>
               </Space>
             } 
-            bordered={false}
+            variant="borderless"
             style={{ width: '90%', maxWidth: 600 }}
             actions={[
               <Button 

@@ -51,7 +51,7 @@ const ECDHTab: React.FC = () => {
   };
 
   return (
-    <Space direction="vertical" style={{ width: '100%' }} size="middle">
+    <Space orientation="vertical" style={{ width: '100%' }} size="middle">
       <Card title="ECDH 密钥设置" size="small">
         <Space wrap>
           <Text>曲线:</Text>
@@ -68,7 +68,7 @@ const ECDHTab: React.FC = () => {
       </Card>
 
       <Card title="我的密钥对" size="small">
-        <Space direction="vertical" style={{ width: '100%' }}>
+        <Space orientation="vertical" style={{ width: '100%' }}>
           <div>
             <Text type="secondary">公钥 (Hex 压缩格式):</Text>
             <TextArea rows={2} value={myPublicKey} readOnly placeholder="生成后显示公钥" />
@@ -81,7 +81,7 @@ const ECDHTab: React.FC = () => {
       </Card>
 
       <Card title="密钥交换" size="small">
-        <Space direction="vertical" style={{ width: '100%' }}>
+        <Space orientation="vertical" style={{ width: '100%' }}>
           <div>
             <Text type="secondary">对方公钥 (Hex):</Text>
             <TextArea

@@ -118,9 +118,9 @@ const KDFTab: React.FC = () => {
       key: 'pbkdf2',
       label: 'PBKDF2',
       children: (
-        <Space direction="vertical" style={{ width: '100%' }} size="middle">
+        <Space orientation="vertical" style={{ width: '100%' }} size="middle">
           <Card size="small" title="PBKDF2 参数">
-            <Space direction="vertical" style={{ width: '100%' }}>
+            <Space orientation="vertical" style={{ width: '100%' }}>
               <Input
                 addonBefore="密码"
                 value={password}
@@ -164,9 +164,9 @@ const KDFTab: React.FC = () => {
       key: 'hmac',
       label: 'HMAC',
       children: (
-        <Space direction="vertical" style={{ width: '100%' }} size="middle">
+        <Space orientation="vertical" style={{ width: '100%' }} size="middle">
           <Card size="small" title="HMAC 参数">
-            <Space direction="vertical" style={{ width: '100%' }}>
+            <Space orientation="vertical" style={{ width: '100%' }}>
               <TextArea
                 rows={2}
                 value={hmacMessage}
@@ -193,7 +193,7 @@ const KDFTab: React.FC = () => {
           </Space>
           <TextArea rows={2} value={hmacResult} readOnly placeholder="HMAC 结果 (Hex)" />
           <Card size="small" title="HMAC 验证">
-            <Space direction="vertical" style={{ width: '100%' }}>
+            <Space orientation="vertical" style={{ width: '100%' }}>
               <Input
                 value={hmacVerifyInput}
                 onChange={(e) => setHmacVerifyInput(e.target.value)}
@@ -210,9 +210,9 @@ const KDFTab: React.FC = () => {
       key: 'hkdf',
       label: 'HKDF',
       children: (
-        <Space direction="vertical" style={{ width: '100%' }} size="middle">
+        <Space orientation="vertical" style={{ width: '100%' }} size="middle">
           <Card size="small" title="HKDF 参数">
-            <Space direction="vertical" style={{ width: '100%' }}>
+            <Space orientation="vertical" style={{ width: '100%' }}>
               <Input
                 addonBefore="IKM"
                 value={hkdfIkm}

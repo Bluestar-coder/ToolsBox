@@ -120,7 +120,7 @@ X-Request-Id: abc123
   }, []);
 
   return (
-    <Space direction="vertical" style={{ width: '100%' }} size="middle">
+    <Space orientation="vertical" style={{ width: '100%' }} size="middle">
       {/* 示例按钮 */}
       <Space>
         <span>加载示例:</span>
@@ -183,7 +183,7 @@ Accept: application/json`}
       {validation && (
         <div>
           {validation.valid && validation.warnings.length === 0 ? (
-            <Alert message="HTTP 报文验证通过" type="success" icon={<CheckCircleOutlined />} showIcon />
+            <Alert title="HTTP 报文验证通过" type="success" icon={<CheckCircleOutlined />} showIcon />
           ) : (
             <>
               {validation.errors.length > 0 && (

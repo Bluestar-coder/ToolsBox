@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { Input, Checkbox, Space, Alert, Typography, Divider, Empty, Select, Button, message } from 'antd';
+import { Input, Checkbox, Space, Alert, Typography, Divider, Empty, Select, Button, App } from 'antd';
 import { CopyOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import { regexFlags, regexTemplates } from '../../utils/constants';
 import { testRegex, highlightMatches } from '../../utils/regex-utils';
 import '../../styles/regex.css';
@@ -9,6 +10,8 @@ const { TextArea } = Input;
 const { Text } = Typography;
 
 const TestTab: React.FC = () => {
+  const { t } = useTranslation();
+  const { message } = App.useApp();
   const [pattern, setPattern] = useState('');
   const [flags, setFlags] = useState<string[]>(['g']);
   const [testString, setTestString] = useState('');
@@ -21,57 +24,68 @@ const TestTab: React.FC = () => {
   );
 
   const handleTemplateSelect = (value: string) => {
-    const template = regexTemplates.find((t) => t.name === value);
-    if (template) {
-      setPattern(template.pattern);
+    const tpl = regexTemplates.find((item) => item.name === value);
+    if (tpl) {
+      setPattern(tpl.pattern);
     }
   };
 
   const copyPattern = () => {
     navigator.clipboard.writeText(pattern);
-    message.success('已复制正则表达式');
+    message.success(t('common.copied'));
+  };
+
+  const getFlagLabel = (key: string) => {
+    const map: Record<string, string> = {
+      g: 'global',
+      i: 'ignoreCase',
+      m: 'multiline',
+      s: 'dotAll',
+      u: 'unicode',
+    };
+    return t(`modules.regex.flagOptions.${map[key] || key}`);
   };
 
   return (
-    <Space direction="vertical" style={{ width: '100%' }} size="middle">
+    <Space orientation="vertical" style={{ width: '100%' }} size="middle">
       <div>
-        <Text strong>常用模板：</Text>
+        <Text strong>{t('modules.regex.template')}：</Text>
         <Select
-          placeholder="选择常用正则模板"
+          placeholder={t('modules.regex.selectTemplate')}
           style={{ width: '100%', marginTop: 8 }}
           onChange={handleTemplateSelect}
-          options={regexTemplates.map((t) => ({
-            value: t.name,
-            label: `${t.name} - ${t.description}`,
+          options={regexTemplates.map((tpl) => ({
+            value: tpl.name,
+            label: `${tpl.name} - ${tpl.description}`,
           }))}
           allowClear
         />
       </div>
 
       <div>
-        <Text strong>正则表达式：</Text>
-        <Input.Group compact style={{ marginTop: 8 }}>
+        <Text strong>{t('modules.regex.pattern')}：</Text>
+        <Space.Compact style={{ marginTop: 8, width: '100%' }}>
+          <Input style={{ width: 30, textAlign: 'center' }} value="/" disabled />
           <Input
-            style={{ width: 'calc(100% - 40px)' }}
+            style={{ flex: 1 }}
             value={pattern}
             onChange={(e) => setPattern(e.target.value)}
-            placeholder="输入正则表达式，如: \d+"
+            placeholder={t('modules.regex.patternPlaceholder')}
             status={pattern && !result.isValid ? 'error' : undefined}
-            addonBefore="/"
-            addonAfter={`/${flagString}`}
           />
+          <Input style={{ width: 50, textAlign: 'center' }} value={`/${flagString}`} disabled />
           <Button icon={<CopyOutlined />} onClick={copyPattern} />
-        </Input.Group>
+        </Space.Compact>
       </div>
 
       <div>
-        <Text strong>标志选项：</Text>
+        <Text strong>{t('modules.regex.flags')}：</Text>
         <div style={{ marginTop: 8 }}>
           <Checkbox.Group value={flags} onChange={(v) => setFlags(v as string[])}>
             <Space wrap>
               {regexFlags.map((f) => (
                 <Checkbox key={f.key} value={f.key}>
-                  {f.label}
+                  {getFlagLabel(f.key)}
                 </Checkbox>
               ))}
             </Space>
@@ -80,57 +94,53 @@ const TestTab: React.FC = () => {
       </div>
 
       <div>
-        <Text strong>测试文本：</Text>
+        <Text strong>{t('modules.regex.testText')}：</Text>
         <TextArea
           rows={4}
           value={testString}
           onChange={(e) => setTestString(e.target.value)}
-          placeholder="输入要测试的文本"
+          placeholder={t('modules.regex.testTextPlaceholder')}
           style={{ marginTop: 8 }}
         />
       </div>
 
       <Divider />
 
-      {result.error && <Alert type="error" message={result.error} showIcon />}
+      {result.error && <Alert type="error" title={result.error === '请输入正则表达式' ? t('modules.regex.invalidPattern') : result.error} showIcon />}
 
       {result.isValid && (
         <>
           <Alert
             type={result.matchCount > 0 ? 'success' : 'info'}
-            message={
-              result.truncated 
-                ? `找到 ${result.matchCount} 个匹配 (结果已截断，仅显示前1000个)`
-                : `找到 ${result.matchCount} 个匹配`
-            }
+            message={t('modules.regex.matchCount', { count: result.matchCount })}
             showIcon
           />
 
           <div>
-            <Text strong>匹配结果高亮：</Text>
+            <Text strong>{t('modules.regex.matchResult')}：</Text>
             <div
               className="regex-result-container"
               style={{ marginTop: 8 }}
-              dangerouslySetInnerHTML={{ __html: highlightedHtml || '<span style="color:#999">无内容</span>' }}
+              dangerouslySetInnerHTML={{ __html: highlightedHtml || `<span style="color:#999">${t('modules.regex.noContent')}</span>` }}
             />
           </div>
 
           {result.matches.length > 0 && (
             <div>
-              <Text strong>匹配详情：</Text>
+              <Text strong>{t('modules.regex.matchDetails')}：</Text>
               <div style={{ marginTop: 8, maxHeight: 200, overflowY: 'auto' }}>
                 {result.matches.map((m, i) => (
                   <div key={i} className="match-item">
-                    <span className="match-index">#{i + 1} 位置: {m.index}</span>
+                    <span className="match-index">#{i + 1} {t('modules.regex.position')}: {m.index}</span>
                     <div className="match-text">"{m.match}"</div>
                     {m.groups.length > 0 && (
                       <div className="match-groups">
-                        捕获组: {m.groups.map((g, j) => `$${j + 1}="${g}"`).join(', ')}
+                        {t('modules.regex.captureGroups')}: {m.groups.map((g, j) => `${j + 1}="${g}"`).join(', ')}
                       </div>
                     )}
                     {m.namedGroups && Object.keys(m.namedGroups).length > 0 && (
                       <div className="match-groups">
-                        命名组: {Object.entries(m.namedGroups).map(([k, v]) => `${k}="${v}"`).join(', ')}
+                        {t('modules.regex.namedGroups')}: {Object.entries(m.namedGroups).map(([k, v]) => `${k}="${v}"`).join(', ')}
                       </div>
                     )}
                   </div>
@@ -139,7 +149,7 @@ const TestTab: React.FC = () => {
             </div>
           )}
 
-          {result.matchCount === 0 && testString && <Empty description="没有找到匹配" />}
+          {result.matchCount === 0 && testString && <Empty description={t('modules.regex.noMatch')} />}
         </>
       )}
     </Space>

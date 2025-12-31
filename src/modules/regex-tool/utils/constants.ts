@@ -22,9 +22,9 @@ export const regexTemplates = [
 
 // 正则标志选项
 export const regexFlags = [
-  { key: 'g', label: 'global (g)', description: '全局匹配' },
-  { key: 'i', label: 'ignoreCase (i)', description: '忽略大小写' },
-  { key: 'm', label: 'multiline (m)', description: '多行模式' },
-  { key: 's', label: 'dotAll (s)', description: '点号匹配换行' },
-  { key: 'u', label: 'unicode (u)', description: 'Unicode模式' },
+  { key: 'g', label: '全局匹配 (g)', description: '全局匹配' },
+  { key: 'i', label: '忽略大小写 (i)', description: '忽略大小写' },
+  { key: 'm', label: '多行模式 (m)', description: '多行模式' },
+  { key: 's', label: '点匹配换行 (s)', description: '点号匹配换行' },
+  { key: 'u', label: 'Unicode (u)', description: 'Unicode模式' },
 ];

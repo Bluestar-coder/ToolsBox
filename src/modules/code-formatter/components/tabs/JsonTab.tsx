@@ -203,7 +203,7 @@ const JsonTab: React.FC = () => {
   }, []);
 
   return (
-    <Space direction="vertical" style={{ width: '100%' }} size="middle">
+    <Space orientation="vertical" style={{ width: '100%' }} size="middle">
       {/* 输入区域 - 带语法高亮 */}
       <div>
         <div style={{ marginBottom: 8, fontWeight: 500 }}>输入 JSON</div>
@@ -276,7 +276,7 @@ const JsonTab: React.FC = () => {
             key: 'compare',
             label: 'JSON 比较',
             children: (
-              <Space direction="vertical" style={{ width: '100%' }}>
+              <Space orientation="vertical" style={{ width: '100%' }}>
                 <CodeEditor
                   value={compareInput}
                   onChange={setCompareInput}
@@ -316,7 +316,7 @@ const JsonTab: React.FC = () => {
       {syntaxResult && (
         <div>
           {syntaxResult.valid ? (
-            <Alert message="JSON 语法检查通过" type="success" icon={<CheckCircleOutlined />} showIcon />
+            <Alert title="JSON 语法检查通过" type="success" icon={<CheckCircleOutlined />} showIcon />
           ) : (
             <Alert
               message="JSON 语法错误"

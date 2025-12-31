@@ -179,9 +179,9 @@ const ClassicalTab: React.FC<ClassicalTabProps> = ({ activeTab }) => {
   };
 
   return (
-    <Space direction="vertical" style={{ width: '100%' }} size="middle">
+    <Space orientation="vertical" style={{ width: '100%' }} size="middle">
       <Card size="small" title="密码选择">
-        <Space direction="vertical" style={{ width: '100%' }}>
+        <Space orientation="vertical" style={{ width: '100%' }}>
           <Space wrap>
             <span>密码类型:</span>
             <Select

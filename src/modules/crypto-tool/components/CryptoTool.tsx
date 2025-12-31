@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card, Tabs } from 'antd';
+import { useTranslation } from 'react-i18next';
 import {
-  categoryItems,
   symmetricTabItems,
   asymmetricTabItems,
   hashTabItems,
@@ -29,8 +29,17 @@ import {
 } from './tabs';
 
 const CryptoTool: React.FC = () => {
+  const { t } = useTranslation();
   const [activeCategory, setActiveCategory] = useState('symmetric');
   const [activeSubTab, setActiveSubTab] = useState('aes');
+
+  const categoryItems = [
+    { key: 'symmetric', label: t('modules.crypto.tabs.symmetric') },
+    { key: 'asymmetric', label: t('modules.crypto.tabs.asymmetric') },
+    { key: 'hash', label: t('modules.crypto.tabs.hash') },
+    { key: 'classical', label: t('modules.crypto.tabs.classical') },
+    { key: 'gm', label: t('modules.crypto.tabs.gm') },
+  ];
 
   const getSubTabItems = () => {
     switch (activeCategory) {
@@ -115,7 +124,7 @@ const CryptoTool: React.FC = () => {
   };
 
   return (
-    <Card title="加密/解密工具" variant="borderless">
+    <Card title={t('modules.crypto.title')} variant="borderless">
       <Tabs
         activeKey={activeCategory}
         onChange={handleCategoryChange}

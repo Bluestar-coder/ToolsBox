@@ -24,22 +24,19 @@ const EncodingTab: React.FC<EncodingTabProps> = ({ activeCategory }) => {
     return otherEncoders;
   };
 
-  const processInput = useCallback(() => {
+  const processInput = useCallback((input: string, type: EncoderType, operation: OperationType) => {
     setError('');
 
     try {
-      const { currentInput, currentType, currentOperation } = state;
-      
-      if (!currentInput.trim()) {
-        dispatch({ type: 'SET_CURRENT_OUTPUT', payload: '' });
-        return;
+      if (!input.trim()) {
+        return '';
       }
       
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let validators: ((input: string) => any)[] = [];
       
-      if (currentOperation === 'decode') {
-        switch (currentType) {
+      if (operation === 'decode') {
+        switch (type) {
           case 'base64':
             validators.push(validateBase64);
             break;
@@ -63,32 +60,32 @@ const EncodingTab: React.FC<EncodingTabProps> = ({ activeCategory }) => {
       
       if (validators.length > 0) {
         for (const validator of validators) {
-          const validationResult = validator(currentInput);
+          const validationResult = validator(input);
           if (!validationResult.valid) {
             setError(validationResult.error || '输入验证失败');
-            dispatch({ type: 'SET_CURRENT_OUTPUT', payload: '' });
-            return;
+            return '';
           }
         }
       }
       
-      const result = executeEncodeDecode(currentInput, currentType, currentOperation);
+      const result = executeEncodeDecode(input, type, operation);
 
       if (result.success) {
-        dispatch({ type: 'SET_CURRENT_OUTPUT', payload: result.result });
+        return result.result;
       } else {
         setError(result.error || '发生未知错误');
-        dispatch({ type: 'SET_CURRENT_OUTPUT', payload: '' });
+        return '';
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : '发生意外错误');
-      dispatch({ type: 'SET_CURRENT_OUTPUT', payload: '' });
+      return '';
     }
-  }, [state, dispatch]);
+  }, []);
 
   useEffect(() => {
     if (state.currentInput.trim() && !isImageMode) {
-      processInput();
+      const output = processInput(state.currentInput, state.currentType, state.currentOperation);
+      dispatch({ type: 'SET_CURRENT_OUTPUT', payload: output });
     } else if (!state.currentInput.trim()) {
       dispatch({ type: 'SET_CURRENT_OUTPUT', payload: '' });
       setError('');

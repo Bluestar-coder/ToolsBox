@@ -15,13 +15,6 @@ const ImageTab: React.FC = () => {
   const [imageInfo, setImageInfo] = useState<{ name: string; size: string; type: string } | null>(null);
 
   const handleImageToBase64 = (file: File) => {
-    // 限制文件大小为 10MB
-    const MAX_SIZE = 10 * 1024 * 1024;
-    if (file.size > MAX_SIZE) {
-      message.error('文件过大，最大支持 10MB');
-      return false;
-    }
-    
     const reader = new FileReader();
     reader.onload = (e) => {
       const base64 = e.target?.result as string;

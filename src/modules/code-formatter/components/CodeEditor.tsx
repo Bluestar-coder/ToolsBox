@@ -119,13 +119,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
   }, []);
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    // 限制最大文本长度为 500KB
-    const MAX_LENGTH = 500 * 1024;
-    const newValue = e.target.value;
-    if (newValue.length > MAX_LENGTH) {
-      return; // 超过限制时不更新
-    }
-    onChange?.(newValue);
+    onChange?.(e.target.value);
   }, [onChange]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {

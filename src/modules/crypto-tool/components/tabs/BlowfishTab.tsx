@@ -52,9 +52,9 @@ const BlowfishTab: React.FC = () => {
   };
 
   return (
-    <Space direction="vertical" style={{ width: '100%' }} size="middle">
+    <Space orientation="vertical" style={{ width: '100%' }} size="middle">
       <Card size="small" title="Blowfish 设置">
-        <Space direction="vertical" style={{ width: '100%' }} size="small">
+        <Space orientation="vertical" style={{ width: '100%' }} size="small">
           <Space wrap>
             <Text>密钥 (Hex):</Text>
             <Input value={key} onChange={(e) => setKey(e.target.value)} placeholder="8-112个Hex字符" style={{ width: 300 }} />

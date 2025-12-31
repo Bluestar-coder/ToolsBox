@@ -84,9 +84,9 @@ const RCTab: React.FC = () => {
   };
 
   return (
-    <Space direction="vertical" style={{ width: '100%' }} size="middle">
+    <Space orientation="vertical" style={{ width: '100%' }} size="middle">
       <Card size="small" title="RC 算法设置">
-        <Space direction="vertical" style={{ width: '100%' }} size="small">
+        <Space orientation="vertical" style={{ width: '100%' }} size="small">
           <Space wrap>
             <Text>算法:</Text>
             <Select value={algorithm} onChange={setAlgorithm} options={algorithmOptions} style={{ width: 180 }} />

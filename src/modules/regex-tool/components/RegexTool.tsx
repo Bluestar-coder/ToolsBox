@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
 import { Card, Tabs } from 'antd';
+import { useTranslation } from 'react-i18next';
 import { TestTab, ReplaceTab, SplitTab } from './tabs';
-
-const tabItems = [
-  { key: 'test', label: '正则测试', children: <TestTab /> },
-  { key: 'replace', label: '替换', children: <ReplaceTab /> },
-  { key: 'split', label: '分割', children: <SplitTab /> },
-];
 
 const RegexTool: React.FC = () => {
   const [activeTab, setActiveTab] = useState('test');
+  const { t } = useTranslation();
+
+  const tabItems = [
+    { key: 'test', label: t('modules.regex.tabs.test'), children: <TestTab /> },
+    { key: 'replace', label: t('modules.regex.tabs.replace'), children: <ReplaceTab /> },
+    { key: 'split', label: t('modules.regex.tabs.split'), children: <SplitTab /> },
+  ];
 
   return (
-    <Card title="正则表达式工具" bordered={false}>
+    <Card title={t('modules.regex.title')} variant="borderless">
       <Tabs
         activeKey={activeTab}
         onChange={setActiveTab}

@@ -99,7 +99,7 @@ const GeneralTab: React.FC<GeneralTabProps> = ({ defaultLanguage = 'javascript' 
   };
 
   return (
-    <Space direction="vertical" style={{ width: '100%' }} size="middle">
+    <Space orientation="vertical" style={{ width: '100%' }} size="middle">
       {/* 选项区域 */}
       <Row gutter={16} align="middle">
         <Col>
@@ -160,7 +160,7 @@ const GeneralTab: React.FC<GeneralTabProps> = ({ defaultLanguage = 'javascript' 
       {syntaxResult && (
         <div>
           {syntaxResult.valid && syntaxResult.warnings.length === 0 ? (
-            <Alert message="语法检查通过" type="success" icon={<CheckCircleOutlined />} showIcon />
+            <Alert title="语法检查通过" type="success" icon={<CheckCircleOutlined />} showIcon />
           ) : (
             <>
               {syntaxResult.errors.length > 0 && (

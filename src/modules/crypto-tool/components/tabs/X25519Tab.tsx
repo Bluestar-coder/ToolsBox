@@ -44,9 +44,9 @@ const X25519Tab: React.FC = () => {
   };
 
   return (
-    <Space direction="vertical" style={{ width: '100%' }} size="middle">
+    <Space orientation="vertical" style={{ width: '100%' }} size="middle">
       <Card title="我的密钥对" size="small">
-        <Space direction="vertical" style={{ width: '100%' }}>
+        <Space orientation="vertical" style={{ width: '100%' }}>
           <Button type="primary" onClick={handleGenerateKeyPair}>
             生成密钥对
           </Button>
@@ -62,7 +62,7 @@ const X25519Tab: React.FC = () => {
       </Card>
 
       <Card title="密钥交换" size="small">
-        <Space direction="vertical" style={{ width: '100%' }}>
+        <Space orientation="vertical" style={{ width: '100%' }}>
           <div>
             <Text type="secondary">对方公钥 (Hex):</Text>
             <TextArea

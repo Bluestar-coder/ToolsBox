@@ -64,3 +64,7 @@ moduleManager.registerModule(CodeFormatterModule);
 // 导入并注册正则表达式工具模块
 import RegexToolModule from './regex-tool';
 moduleManager.registerModule(RegexToolModule);
+
+// 导入并注册二维码工具模块
+import QRCodeToolModule from './qrcode-tool';
+moduleManager.registerModule(QRCodeToolModule);

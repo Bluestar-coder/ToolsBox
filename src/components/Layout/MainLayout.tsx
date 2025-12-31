@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { Layout, theme, Button } from 'antd';
+import { Layout, theme, Button, Space } from 'antd';
 import { SunOutlined, MoonOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 import SideMenu from './SideMenu';
+import LanguageSwitcher from '../LanguageSwitcher';
 import { moduleManager } from '../../modules';
 import { useTheme } from '../../hooks/useTheme';
 
@@ -15,6 +17,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ initialModuleId = 'encoder-deco
   const { token: { colorBgContainer, borderRadiusLG } } = theme.useToken();
   const [currentModuleId, setCurrentModuleId] = useState<string>(initialModuleId);
   const { isDark, toggleTheme } = useTheme();
+  const { t } = useTranslation();
 
   // 获取当前选中的模块
   const currentModule = moduleManager.getModuleById(currentModuleId);
@@ -31,9 +34,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ initialModuleId = 'encoder-deco
       <Header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px', background: colorBgContainer, boxShadow: isDark ? '0 2px 8px rgba(0, 0, 0, 0.45)' : '0 2px 8px rgba(0, 0, 0, 0.1)' }}>
         <div style={{ width: 100 }} />
         <h1 style={{ margin: 0, color: '#1890ff', fontSize: '24px', fontWeight: 600 }}>
-          🔧 效率工具箱
+          {t('app.title')}
         </h1>
-        <Button type="text" icon={isDark ? <SunOutlined /> : <MoonOutlined />} size="large" onClick={toggleTheme} title={isDark ? '切换到浅色模式' : '切换到深色模式'} />
+        <Space>
+          <LanguageSwitcher />
+          <Button type="text" icon={isDark ? <SunOutlined /> : <MoonOutlined />} size="large" onClick={toggleTheme} title={isDark ? t('app.switchToLight') : t('app.switchToDark')} />
+        </Space>
       </Header>
 
       <Layout style={{ background: isDark ? '#141414' : '#f0f2f5' }}>
@@ -44,7 +50,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ initialModuleId = 'encoder-deco
 
         {/* 主内容区 */}
         <Content style={{ margin: '24px 16px', padding: 24, background: colorBgContainer, borderRadius: borderRadiusLG, overflow: 'auto' }}>
-          {ModuleComponent ? <ModuleComponent /> : <div>模块未找到</div>}
+          {ModuleComponent ? <ModuleComponent /> : <div>{t('errors.unknownError')}</div>}
         </Content>
       </Layout>
     </Layout>
