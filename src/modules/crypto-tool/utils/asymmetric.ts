@@ -49,13 +49,20 @@ export interface ECDSAKeyPair {
   publicKeyUncompressed: string;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const getCurve = (curve: ECDSACurve): any => {
+type CurveInstance = {
+  keygen: () => { secretKey: Uint8Array; publicKey: Uint8Array };
+  getPublicKey: (secretKey: Uint8Array, compressed: boolean) => Uint8Array;
+  sign: (message: Uint8Array, secretKey: Uint8Array) => { toCompactRawBytes: () => Uint8Array };
+  verify: (signature: Uint8Array, message: Uint8Array, publicKey: Uint8Array) => boolean;
+  getSharedSecret: (privateKey: Uint8Array, publicKey: Uint8Array) => Uint8Array;
+};
+
+const getCurve = (curve: ECDSACurve): CurveInstance => {
   switch (curve) {
-    case 'secp256k1': return secp256k1;
-    case 'p256': return p256;
-    case 'p384': return p384;
-    default: return secp256k1;
+    case 'secp256k1': return secp256k1 as unknown as CurveInstance;
+    case 'p256': return p256 as unknown as CurveInstance;
+    case 'p384': return p384 as unknown as CurveInstance;
+    default: return secp256k1 as unknown as CurveInstance;
   }
 };
 

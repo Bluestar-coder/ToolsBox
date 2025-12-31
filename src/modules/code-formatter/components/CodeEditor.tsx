@@ -1,19 +1,45 @@
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, useEffect, useState } from 'react';
 import Prism from 'prismjs';
-
-// 导入语言支持
-import 'prismjs/components/prism-markup';
-import 'prismjs/components/prism-css';
-import 'prismjs/components/prism-clike';
-import 'prismjs/components/prism-javascript';
-import 'prismjs/components/prism-json';
-import 'prismjs/components/prism-typescript';
-import 'prismjs/components/prism-sql';
-import 'prismjs/components/prism-yaml';
-import 'prismjs/components/prism-python';
-import 'prismjs/components/prism-java';
+import DOMPurify from 'dompurify';
+import { logger } from '../../../utils/logger';
 
 import '../styles/prism-theme.css';
+
+// 动态导入Prism语言包的hook
+const usePrismLanguage = (language: string) => {
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    const loadLanguage = async () => {
+      const languageImports: Record<string, () => Promise<unknown>> = {
+        javascript: () => import('prismjs/components/prism-javascript'),
+        typescript: () => import('prismjs/components/prism-typescript'),
+        json: () => import('prismjs/components/prism-json'),
+        sql: () => import('prismjs/components/prism-sql'),
+        yaml: () => import('prismjs/components/prism-yaml'),
+        python: () => import('prismjs/components/prism-python'),
+        java: () => import('prismjs/components/prism-java'),
+        markup: () => import('prismjs/components/prism-markup'),
+        css: () => import('prismjs/components/prism-css'),
+        clike: () => import('prismjs/components/prism-clike'),
+      };
+
+      const loader = languageImports[language];
+      if (loader) {
+        try {
+          await loader();
+        } catch {
+          logger.warn(`Failed to load Prism language: ${language}`);
+        }
+      }
+      setLoaded(true);
+    };
+
+    loadLanguage();
+  }, [language]);
+
+  return loaded;
+};
 
 // 语言映射
 const languageMap: Record<string, string> = {
@@ -90,6 +116,9 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
 
   const prismLanguage = languageMap[language] || 'plaintext';
+
+  // 动态加载语言包
+  usePrismLanguage(prismLanguage);
 
   // 获取高亮后的 HTML
   const getHighlightedCode = useCallback((code: string) => {
@@ -180,7 +209,9 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
           backgroundColor: 'transparent',
         }}
         dangerouslySetInnerHTML={{
-          __html: getHighlightedCode(value) + (value.endsWith('\n') ? ' ' : ''),
+          __html: DOMPurify.sanitize(
+            getHighlightedCode(value) + (value.endsWith('\n') ? ' ' : '')
+          ),
         }}
       />
       
@@ -218,4 +249,14 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
   );
 };
 
-export default CodeEditor;
+// 使用React.memo优化性能，只在props变化时重新渲染
+export default React.memo(CodeEditor, (prevProps, nextProps) => {
+  return (
+    prevProps.value === nextProps.value &&
+    prevProps.readOnly === nextProps.readOnly &&
+    prevProps.language === nextProps.language &&
+    prevProps.placeholder === nextProps.placeholder &&
+    prevProps.rows === nextProps.rows &&
+    prevProps.onChange === nextProps.onChange
+  );
+});

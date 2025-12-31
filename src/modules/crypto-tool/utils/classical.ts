@@ -1,6 +1,45 @@
-// 古典密码实现
+/**
+ * 古典密码工具集
+ *
+ * @remarks
+ * 提供多种古典密码算法的加密解密功能，包括：
+ * - 凯撒密码 (Caesar)
+ * - ROT13 / ROT47
+ * - Atbash密码
+ * - 仿射密码 (Affine)
+ * - 维吉尼亚密码 (Vigenère)
+ * - 栅栏密码 (Rail Fence)
+ * - 培根密码 (Bacon)
+ * - 摩尔斯电码 (Morse)
+ * - Polybius方格
+ * - 猪圈密码 (Pigpen)
+ * - 键盘密码
+ * - T9九宫格
+ * - Playfair密码
+ * - 列换位密码 (Columnar Transposition)
+ *
+ * @packageDocumentation
+ */
 
 // ============ 凯撒密码 ============
+
+/**
+ * 凯撒密码加密
+ *
+ * @param text - 要加密的文本
+ * @param shift - 偏移量，正数向右偏移，负数向左偏移
+ * @returns 加密后的文本
+ *
+ * @example
+ * ```typescript
+ * caesarEncrypt('HELLO', 3);  // 'KHOOR'
+ * caesarEncrypt('Hello', -1); // 'Gdkkn'
+ * ```
+ *
+ * @remarks
+ * 凯撒密码是最简单的替换密码之一，通过将字母表中的每个字母
+ * 向右（或向左）移动固定位数来实现加密。保留大小写和非字母字符。
+ */
 export const caesarEncrypt = (text: string, shift: number): string => {
   return text.replace(/[a-zA-Z]/g, (char) => {
     const base = char <= 'Z' ? 65 : 97;
@@ -266,7 +305,8 @@ export const playfairEncrypt = (text: string, key: string): string => {
   const clean = text.toUpperCase().replace(/J/g, 'I').replace(/[^A-Z]/g, '');
   const pairs: string[] = [];
   for (let i = 0; i < clean.length; i += 2) {
-    let a = clean[i], b = clean[i + 1] || 'X';
+    const a = clean[i];
+    let b = clean[i + 1] || 'X';
     if (a === b) { b = 'X'; i--; }
     pairs.push(a + b);
   }

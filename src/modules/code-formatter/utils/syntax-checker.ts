@@ -452,10 +452,11 @@ export function checkSyntax(input: string, language: string): SyntaxCheckResult 
       return checkYamlSyntax(input);
     case 'python':
       return checkPythonSyntax(input);
-    default:
+    default: {
       // 对于其他语言，只做基本的括号检查
       const errors: SyntaxError[] = [];
       checkBracketMatching(input, errors);
       return { valid: errors.length === 0, errors, warnings: [] };
+    }
   }
 }

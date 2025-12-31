@@ -1,0 +1,72 @@
+.inputWrapper {
+  margin-bottom: var(--spacing-md);
+  fontFamily: 'monospace';
+}
+
+.buttonGroup {
+  margin-bottom: var(--spacing-md);
+}
+
+.encryptButton {
+  background-color: #52c41a;
+}
+
+.copyButton {
+  background-color: #faad14;
+  border-color: #faad14;
+  color: #fff;
+}
+
+.outputCard {
+  margin-bottom: var(--spacing-md);
+}
+
+.outputCardError {
+  background-color: #fff2f0;
+  border-color: #ffccc7;
+}
+
+.outputCardSuccess {
+  background-color: #f6ffed;
+  border-color: #b7eb8f;
+}
+
+.errorMessage {
+  color: #ff4d4f;
+}
+
+.outputWrapper {
+  margin-bottom: var(--spacing-sm);
+  fontFamily: 'monospace';
+}
+
+.optionsCard {
+  margin-bottom: var(--spacing-md);
+}
+
+.optionsGrid {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 12px 16px;
+  align-items: center;
+}
+
+.selectWidth {
+  width: 160px;
+}
+
+.selectMedium {
+  width: 180px;
+}
+
+.selectSmall {
+  width: 80px;
+}
+
+.selectLarge {
+  width: 240px;
+}
+
+.selectExtraLarge {
+  width: 130px;
+}

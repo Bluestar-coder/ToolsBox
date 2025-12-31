@@ -1,0 +1,64 @@
+/* MainLayout styles - CSS Module */
+.mainLayout {
+  min-height: 100vh;
+}
+
+.mainLayoutLight {
+  background: #f0f2f5;
+}
+
+.mainLayoutDark {
+  background: #141414;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+}
+
+.headerShadowLight {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.headerShadowDark {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+}
+
+.headerSpacer {
+  width: 100px;
+}
+
+.headerTitle {
+  margin: 0;
+  color: #1890ff;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.contentLayout {
+  background: #f0f2f5;
+}
+
+.contentLayoutDark {
+  background: #141414;
+}
+
+.sider {
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.06);
+}
+
+.mainContent {
+  margin: 24px 16px;
+  padding: 24px;
+  overflow: auto;
+}
+
+/* Loading fallback */
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}

@@ -2,6 +2,14 @@ import React, { useState } from 'react';
 import { Card, Input, Select, Button, Space, message } from 'antd';
 import CryptoJS from 'crypto-js';
 import { parseValue, getCryptoMode, getCryptoPadding } from '../../utils/helpers';
+import styles from './SymmetricTab.module.css';
+
+// Local interface for cipher options to avoid using 'any'
+interface CipherOptions {
+  mode: unknown;
+  padding: unknown;
+  iv?: CryptoJS.lib.WordArray;
+}
 import {
   aesModeOptions,
   desModeOptions,
@@ -74,8 +82,7 @@ const SymmetricTab: React.FC<SymmetricTabProps> = ({ activeTab }) => {
       const keyWordArray = parseValue(key, keyEncoding);
       if (!validateKeyLength(keyWordArray.sigBytes)) return;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const options: any = {
+      const options: CipherOptions = {
         mode: getCryptoMode(mode),
         padding: getCryptoPadding(padding),
       };
@@ -130,8 +137,7 @@ const SymmetricTab: React.FC<SymmetricTabProps> = ({ activeTab }) => {
       const keyWordArray = parseValue(key, keyEncoding);
       if (!validateKeyLength(keyWordArray.sigBytes)) return;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const options: any = {
+      const options: CipherOptions = {
         mode: getCryptoMode(mode),
         padding: getCryptoPadding(padding),
       };
@@ -281,17 +287,17 @@ const SymmetricTab: React.FC<SymmetricTabProps> = ({ activeTab }) => {
         onChange={(e) => setInputText(e.target.value)}
         placeholder="请在这里填写原文/密文"
         rows={8}
-        style={{ marginBottom: 16, fontFamily: 'monospace' }}
+        className={styles.inputWrapper}
       />
 
-      <Space style={{ marginBottom: 16 }}>
-        <Button type="primary" style={{ backgroundColor: '#52c41a' }} onClick={handleEncrypt}>
+      <Space className={styles.buttonGroup}>
+        <Button type="primary" className={styles.encryptButton} onClick={handleEncrypt}>
           加密
         </Button>
         <Button type="primary" onClick={handleDecrypt}>
           解密
         </Button>
-        <Button style={{ backgroundColor: '#faad14', borderColor: '#faad14', color: '#fff' }} onClick={handleCopy}>
+        <Button className={styles.copyButton} onClick={handleCopy}>
           复制
         </Button>
         <Button danger onClick={handleClear}>
@@ -300,25 +306,20 @@ const SymmetricTab: React.FC<SymmetricTabProps> = ({ activeTab }) => {
       </Space>
 
       {(outputText || outputError) && (
-        <Card 
-          size="small" 
-          style={{ 
-            marginBottom: 16,
-            backgroundColor: outputError ? '#fff2f0' : '#f6ffed',
-            borderColor: outputError ? '#ffccc7' : '#b7eb8f'
-          }}
+        <Card
+          size="small"
+          className={outputError ? styles.outputCardError : styles.outputCardSuccess}
         >
           {outputError ? (
-            <div style={{ color: '#ff4d4f' }}>{outputError}</div>
+            <div className={styles.errorMessage}>{outputError}</div>
           ) : (
             <>
               <TextArea
                 value={outputText}
                 readOnly
                 rows={6}
-                style={{ 
-                  marginBottom: 8, 
-                  fontFamily: 'monospace',
+                className={styles.outputWrapper}
+                style={{
                   backgroundColor: 'transparent',
                   border: 'none'
                 }}
@@ -333,14 +334,14 @@ const SymmetricTab: React.FC<SymmetricTabProps> = ({ activeTab }) => {
         </Card>
       )}
 
-      <Card size="small" title="选项设置" style={{ marginBottom: 16 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '12px 16px', alignItems: 'center' }}>
+      <Card size="small" title="选项设置" className={styles.optionsCard}>
+        <div className={styles.optionsGrid}>
           <span>加密模式:</span>
           <Select
             value={mode}
             onChange={setMode}
             options={getModeOptions()}
-            style={{ width: 160 }}
+            className={styles.selectWidth}
           />
 
           <span>填充方式:</span>
@@ -348,28 +349,28 @@ const SymmetricTab: React.FC<SymmetricTabProps> = ({ activeTab }) => {
             value={padding}
             onChange={setPadding}
             options={paddingOptions}
-            style={{ width: 180 }}
+            className={styles.selectMedium}
           />
 
-          <span>密　钥:</span>
+          <span>密钥:</span>
           <Space>
             <Input
               value={key}
               onChange={(e) => setKey(e.target.value)}
               placeholder={activeTab === 'aes' ? '16/24/32字节' : activeTab === 'des' ? '8字节' : '24字节'}
-              style={{ width: 240 }}
+              className={styles.selectLarge}
             />
             <Select
               value={keyEncoding}
               onChange={setKeyEncoding}
               options={encodingOptions}
-              style={{ width: 80 }}
+              className={styles.selectSmall}
             />
             <Select
               placeholder="随机生成"
               onChange={(value) => generateRandomKey(value)}
               options={getKeyLengthOptions()}
-              style={{ width: 130 }}
+              className={styles.selectExtraLarge}
               allowClear
             />
             <Button onClick={generateKeyAndIv}>一键生成</Button>
@@ -381,14 +382,14 @@ const SymmetricTab: React.FC<SymmetricTabProps> = ({ activeTab }) => {
               value={iv}
               onChange={(e) => setIv(e.target.value)}
               placeholder={activeTab === 'aes' ? '16字节' : '8字节'}
-              style={{ width: 240 }}
+              className={styles.selectLarge}
               disabled={mode === 'ECB'}
             />
             <Select
               value={ivEncoding}
               onChange={setIvEncoding}
               options={encodingOptions}
-              style={{ width: 80 }}
+              className={styles.selectSmall}
               disabled={mode === 'ECB'}
             />
             <Button onClick={() => generateRandomIv(activeTab === 'aes' ? 16 : 8)} disabled={mode === 'ECB'}>
@@ -401,7 +402,7 @@ const SymmetricTab: React.FC<SymmetricTabProps> = ({ activeTab }) => {
             <Select
               value={ciphertextEncoding}
               onChange={setCiphertextEncoding}
-              style={{ width: 160 }}
+              className={styles.selectWidth}
               options={[
                 { value: 'Hex', label: 'Hex (解密用)' },
                 { value: 'Base64', label: 'Base64 (解密用)' },

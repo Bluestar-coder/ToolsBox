@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Input, Checkbox, Space, Alert, Typography, Divider, Empty, Select, Button, App } from 'antd';
 import { CopyOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
+import DOMPurify from 'dompurify';
 import { regexFlags, regexTemplates } from '../../utils/constants';
 import { testRegex, highlightMatches } from '../../utils/regex-utils';
 import '../../styles/regex.css';
@@ -121,7 +122,11 @@ const TestTab: React.FC = () => {
             <div
               className="regex-result-container"
               style={{ marginTop: 8 }}
-              dangerouslySetInnerHTML={{ __html: highlightedHtml || `<span style="color:#999">${t('modules.regex.noContent')}</span>` }}
+              dangerouslySetInnerHTML={{
+                __html: DOMPurify.sanitize(
+                  highlightedHtml || `<span style="color:#999">${t('modules.regex.noContent')}</span>`
+                )
+              }}
             />
           </div>
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Input, Button, Space, message, Select, Card, InputNumber } from 'antd';
 import * as classical from '../../utils/classical';
 
@@ -36,30 +36,30 @@ const encodeCiphers = [
   { value: 't9', label: '手机九宫格' },
 ];
 
+const getDefaultCipher = (tab: string): CipherType => {
+  switch (tab) {
+    case 'substitute': return 'caesar';
+    case 'transpose': return 'railfence';
+    case 'encode': return 'morse';
+    default: return 'caesar';
+  }
+};
+
 interface ClassicalTabProps {
   activeTab: string;
 }
 
 const ClassicalTab: React.FC<ClassicalTabProps> = ({ activeTab }) => {
-  const getCipherOptions = () => {
+  const getCipherOptions = useCallback(() => {
     switch (activeTab) {
       case 'substitute': return substituteCiphers;
       case 'transpose': return transposeCiphers;
       case 'encode': return encodeCiphers;
       default: return substituteCiphers;
     }
-  };
+  }, [activeTab]);
 
-  const getDefaultCipher = (): CipherType => {
-    switch (activeTab) {
-      case 'substitute': return 'caesar';
-      case 'transpose': return 'railfence';
-      case 'encode': return 'morse';
-      default: return 'caesar';
-    }
-  };
-
-  const [cipher, setCipher] = useState<CipherType>(getDefaultCipher());
+  const [cipher, setCipher] = useState<CipherType>(() => getDefaultCipher(activeTab));
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
   const [shift, setShift] = useState(3);
@@ -68,9 +68,16 @@ const ClassicalTab: React.FC<ClassicalTabProps> = ({ activeTab }) => {
   const [key, setKey] = useState('KEY');
   const [rails, setRails] = useState(3);
 
+  // 当 activeTab 变化时重置 cipher 到默认值
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    setCipher(getDefaultCipher());
-  }, [activeTab]);
+    const currentOptions = getCipherOptions();
+    const isValidCipher = currentOptions.some(opt => opt.value === cipher);
+    if (!isValidCipher && currentOptions.length > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setCipher(getDefaultCipher(activeTab));
+    }
+  }, [activeTab, getCipherOptions]);
 
   const handleEncrypt = () => {
     if (!input) { message.warning('请输入文本'); return; }

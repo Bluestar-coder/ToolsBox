@@ -1,3 +1,5 @@
+import { logger } from './logger';
+
 // 输入验证工具函数
 
 // 验证结果类型
@@ -72,7 +74,8 @@ export const validateUrl = (input: string): ValidationResult => {
   try {
     new URL(input);
     return { valid: true };
-  } catch {
+  } catch (error) {
+    logger.error('URL validation failed:', error);
     return { valid: false, error: '无效的URL格式' };
   }
 };
@@ -86,7 +89,8 @@ export const validateJson = (input: string): ValidationResult => {
   try {
     JSON.parse(input);
     return { valid: true };
-  } catch {
+  } catch (error) {
+    logger.error('JSON validation failed:', error);
     return { valid: false, error: '无效的JSON格式' };
   }
 };

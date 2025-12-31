@@ -1,9 +1,15 @@
 
-import MainLayout from './components/Layout/MainLayout';
+import AppRouter from './router';
+import AppCleanup from './components/AppCleanup';
 import './App.css';
 
 function App() {
-  return <MainLayout />;
+  return (
+    <>
+      <AppCleanup />
+      <AppRouter />
+    </>
+  );
 }
 
 export default App;

@@ -1,0 +1,141 @@
+/* ErrorBoundary styles - CSS Module */
+
+.errorBoundaryContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f0f2f5;
+}
+
+.errorCard {
+  width: 90%;
+  max-width: 600px;
+}
+
+.errorIcon {
+  color: #ff4d4f;
+}
+
+.errorTitle {
+  margin: 0;
+}
+
+.errorInfo {
+  margin-bottom: 16px;
+}
+
+.errorMessage {
+  display: block;
+  margin-top: 4px;
+}
+
+.componentStack {
+  background-color: #f5f5f5;
+  padding: 12px;
+  border-radius: 4px;
+  overflow-x: auto;
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+.errorHint {
+  margin-top: 16px;
+  padding: 12px;
+  background-color: #fff2f0;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+/* ErrorDisplay styles */
+.errorDisplayCard {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  width: 400px;
+  border-left: 4px solid #ff4d4f;
+}
+
+.errorTypeTag {
+  margin-bottom: 8px;
+}
+
+.errorStack {
+  background-color: #f5f5f5;
+  padding: 8px;
+  border-radius: 4px;
+  overflow-x: auto;
+  font-size: 11px;
+  margin-top: 8px;
+}
+
+/* Loading fallback */
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+/* MainLayout styles */
+.mainLayout {
+  min-height: 100vh;
+}
+
+.mainLayoutLight {
+  background: #f0f2f5;
+}
+
+.mainLayoutDark {
+  background: #141414;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+}
+
+.headerShadowLight {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.headerShadowDark {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+}
+
+.headerSpacer {
+  width: 100px;
+}
+
+.headerTitle {
+  margin: 0;
+  color: #1890ff;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.contentLayout {
+  background: #f0f2f5;
+}
+
+.contentLayoutDark {
+  background: #141414;
+}
+
+.sider {
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.06);
+}
+
+.mainContent {
+  margin: 24px 16px;
+  padding: 24px;
+  overflow: auto;
+}
+
+.menu {
+  height: 100%;
+  borderRight: 0;
+}

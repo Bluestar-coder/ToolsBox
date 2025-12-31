@@ -1,6 +1,25 @@
+/**
+ * 代码格式化工具集
+ *
+ * @remarks
+ * 提供多种编程语言的代码格式化和压缩功能
+ *
+ * @packageDocumentation
+ */
+
 // 代码格式化工具函数
 
-export type SupportedLanguage = 
+/**
+ * 支持的编程语言列表
+ *
+ * @remarks
+ * 以下语言支持格式化和压缩操作：
+ * - Web: json, javascript, typescript, html, css, scss, less, xml
+ * - Data: yaml, markdown, graphql
+ * - Backend: java, python, csharp, go, php
+ * - Database: sql
+ */
+export type SupportedLanguage =
   | 'json' 
   | 'javascript' 
   | 'typescript'
@@ -356,7 +375,8 @@ export function minifyYAML(input: string): string {
 }
 
 // Markdown 格式化
-export function formatMarkdown(input: string, _options: FormatOptions = defaultOptions): string {
+export function formatMarkdown(input: string, _options?: FormatOptions): string {
+  void _options; // 标记参数为已使用，保留以便未来扩展
   let formatted = input;
   
   // 标题前后添加空行

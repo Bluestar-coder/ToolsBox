@@ -1,39 +1,62 @@
-import React, { useState } from 'react';
-import { Layout, theme, Button, Space } from 'antd';
+import React, { Suspense, useMemo } from 'react';
+import { Outlet, useLocation } from 'react-router-dom';
+import { Layout, theme, Button, Space, Spin } from 'antd';
 import { SunOutlined, MoonOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import SideMenu from './SideMenu';
 import LanguageSwitcher from '../LanguageSwitcher';
-import { moduleManager } from '../../modules';
+import { pathToModuleId } from '../../router';
 import { useTheme } from '../../hooks/useTheme';
+import styles from '../styles/MainLayout.module.css';
 
 const { Header, Content, Sider } = Layout;
 
-interface MainLayoutProps {
-  initialModuleId?: string;
-}
+// 懒加载组件的加载状态
+const LoadingFallback: React.FC = React.memo(() => (
+  <div className={styles.loadingContainer}>
+    <Spin size="large" tip="加载中..." />
+  </div>
+));
 
-const MainLayout: React.FC<MainLayoutProps> = ({ initialModuleId = 'encoder-decoder' }) => {
+LoadingFallback.displayName = 'LoadingFallback';
+
+const MainLayout: React.FC = React.memo(() => {
   const { token: { colorBgContainer, borderRadiusLG } } = theme.useToken();
-  const [currentModuleId, setCurrentModuleId] = useState<string>(initialModuleId);
   const { isDark, toggleTheme } = useTheme();
   const { t } = useTranslation();
+  const location = useLocation();
 
-  // 获取当前选中的模块
-  const currentModule = moduleManager.getModuleById(currentModuleId);
-  const ModuleComponent = currentModule?.component;
+  // 根据当前路径确定当前模块ID
+  const currentModuleId = useMemo(() => {
+    // 尝试完整路径匹配
+    if (pathToModuleId[location.pathname]) {
+      return pathToModuleId[location.pathname];
+    }
 
-  // 处理模块切换
-  const handleModuleChange = (moduleId: string) => {
-    setCurrentModuleId(moduleId);
-  };
+    // 尝试路径前缀匹配
+    const pathSegments = location.pathname.split('/');
+    if (pathSegments.length > 1) {
+      const basePath = `/${pathSegments[1]}`;
+      if (pathToModuleId[basePath]) {
+        return pathToModuleId[basePath];
+      }
+    }
+
+    // 默认返回编码工具
+    return 'encoder-decoder';
+  }, [location.pathname]);
+
+  // 动态类名
+  const layoutClass = `${styles.mainLayout} ${isDark ? styles.mainLayoutDark : styles.mainLayoutLight}`;
+  const headerClass = `${styles.header} ${isDark ? styles.headerShadowDark : styles.headerShadowLight}`;
+  const contentLayoutClass = isDark ? styles.contentLayoutDark : styles.contentLayout;
 
   return (
-    <Layout style={{ minHeight: '100vh', background: isDark ? '#141414' : '#f0f2f5' }}>
+    <Layout className={layoutClass}>
       {/* 顶部导航栏 */}
-      <Header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px', background: colorBgContainer, boxShadow: isDark ? '0 2px 8px rgba(0, 0, 0, 0.45)' : '0 2px 8px rgba(0, 0, 0, 0.1)' }}>
-        <div style={{ width: 100 }} />
-        <h1 style={{ margin: 0, color: '#1890ff', fontSize: '24px', fontWeight: 600 }}>
+      <Header className={headerClass} style={{ background: colorBgContainer }}>
+        <div className={styles.headerSpacer} />
+        <h1 className={styles.headerTitle}>
           {t('app.title')}
         </h1>
         <Space>
@@ -42,19 +65,23 @@ const MainLayout: React.FC<MainLayoutProps> = ({ initialModuleId = 'encoder-deco
         </Space>
       </Header>
 
-      <Layout style={{ background: isDark ? '#141414' : '#f0f2f5' }}>
+      <Layout className={contentLayoutClass}>
         {/* 左侧导航菜单 */}
-        <Sider width={200} style={{ background: colorBgContainer, boxShadow: '2px 0 8px rgba(0, 0, 0, 0.06)' }}>
-          <SideMenu currentModuleId={currentModuleId} onModuleChange={handleModuleChange} />
+        <Sider width={200} className={styles.sider} style={{ background: colorBgContainer }}>
+          <SideMenu currentModuleId={currentModuleId} />
         </Sider>
 
-        {/* 主内容区 */}
-        <Content style={{ margin: '24px 16px', padding: 24, background: colorBgContainer, borderRadius: borderRadiusLG, overflow: 'auto' }}>
-          {ModuleComponent ? <ModuleComponent /> : <div>{t('errors.unknownError')}</div>}
+        {/* 主内容区 - 使用Outlet渲染子路由 */}
+        <Content className={styles.mainContent} style={{ background: colorBgContainer, borderRadius: borderRadiusLG }}>
+          <Suspense fallback={<LoadingFallback />}>
+            <Outlet />
+          </Suspense>
         </Content>
       </Layout>
     </Layout>
   );
-};
+});
+
+MainLayout.displayName = 'MainLayout';
 
 export default MainLayout;

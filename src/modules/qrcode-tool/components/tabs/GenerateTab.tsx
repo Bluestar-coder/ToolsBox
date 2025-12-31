@@ -8,6 +8,7 @@ import {
   errorCorrectionLevels,
   type QRCodeOptions,
 } from '../../utils/qrcode';
+import { logger } from '../../../../utils/logger';
 
 const { TextArea } = Input;
 
@@ -37,7 +38,7 @@ const GenerateTab: React.FC = () => {
       setQrCodeDataURL(dataURL);
     } catch (error) {
       message.error(t('modules.qrcode.generateFailed'));
-      console.error(error);
+      logger.error(error);
     } finally {
       setLoading(false);
     }

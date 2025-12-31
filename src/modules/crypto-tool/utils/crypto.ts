@@ -229,7 +229,8 @@ export const decrypt = (ciphertext: string, key: string, options: DecryptOptions
  */
 export const generateRandomKey = (length: number): string => {
   const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?';
-  return Array.from({ length }, () => charset[Math.floor(Math.random() * charset.length)]).join('');
+  const randomBytes = crypto.getRandomValues(new Uint8Array(length));
+  return Array.from(randomBytes, (b) => charset[b % charset.length]).join('');
 };
 
 /**

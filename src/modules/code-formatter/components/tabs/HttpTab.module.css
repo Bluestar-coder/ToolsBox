@@ -1,0 +1,26 @@
+.container {
+  width: 100%;
+}
+
+.label {
+  margin-bottom: var(--spacing-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.errorList {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.errorItem {
+  color: #ff4d4f;
+}
+
+.warningList {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.warningAlert {
+  margin-top: var(--spacing-sm);
+}

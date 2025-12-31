@@ -1,0 +1,50 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": [
+    "src/modules/crypto-tool",
+    "src/modules/code-formatter",
+    "src/modules/encoder-decoder",
+    "src/modules/regex-tool"
+  ],
+  "out": "docs/api",
+  "exclude": [
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/node_modules/**"
+  ],
+  "excludePrivate": false,
+  "excludeProtected": false,
+  "excludeInternal": false,
+  "categorizeByGroup": true,
+  "defaultCategory": "Other",
+  "categoryOrder": [
+    "Hash",
+    "Classical Ciphers",
+    "Code Formatters",
+    "Encoders/Decoders",
+    "Regex Utilities",
+    "*"
+  ],
+  "kindSortOrder": [
+    "Reference",
+    "Project",
+    "Module",
+    "Namespace",
+    "Enum",
+    "EnumMember",
+    "Class",
+    "Interface",
+    "TypeAlias",
+    "Constructor",
+    "Property",
+    "Method",
+    "Function",
+    "Variable"
+  ],
+  "readme": "none",
+  "hideGenerator": true,
+  "gitRevision": "main",
+  "includeVersion": true,
+  "searchInComments": true,
+  "searchInDocuments": true
+}

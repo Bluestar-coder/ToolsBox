@@ -2,7 +2,22 @@ import React, { createContext, useReducer, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import type { EncoderType, OperationType } from '../modules/encoder-decoder/utils/encoders';
 import { pluginManager } from '../plugins/PluginManager';
-import type { PluginConfig } from '../plugins/types';
+import type { PluginConfig, PluginMetadata, PluginEvent, PluginLoadResult } from '../plugins/types';
+import { logger } from '../utils/logger';
+
+/**
+ * @deprecated 请使用专用的Context：useEncodingContext, useThemeContext, useErrorContext, usePluginContext
+ *
+ * 此文件将在v2.0.0版本移除
+ *
+ * 迁移指南：
+ * - useAppContext() → useEncodingContext() (大部分编码/解码相关操作)
+ * - useAppContext() → useThemeContext() (主题相关操作)
+ * - useAppContext() → useErrorContext() (错误处理相关操作)
+ * - useAppContext() → usePluginContext() (插件管理相关操作)
+ *
+ * 或者使用兼容层：import { useAppContext } from '../hooks/useAppContext'
+ */
 
 // 错误信息类型
 interface ErrorInfo {
@@ -20,7 +35,7 @@ interface AppState {
   error: ErrorInfo | null;
   plugins: {
     loaded: boolean;
-    list: Array<any>;
+    list: PluginMetadata[];
   };
 }
 
@@ -33,7 +48,7 @@ type AppAction =
   | { type: 'SET_ERROR'; payload: ErrorInfo }
   | { type: 'CLEAR_ERROR' }
   | { type: 'SET_PLUGINS_LOADED'; payload: boolean }
-  | { type: 'UPDATE_PLUGINS_LIST'; payload: Array<any> };
+  | { type: 'UPDATE_PLUGINS_LIST'; payload: PluginMetadata[] };
 
 // 初始状态
 const initialState: AppState = {
@@ -55,13 +70,13 @@ const AppContext = createContext<{
   setError: (message: string, type: string, stack?: string) => void;
   clearError: () => void;
   // 插件管理相关功能
-  loadPlugin: (pluginConfig: PluginConfig) => Promise<any>;
+  loadPlugin: (pluginConfig: PluginConfig) => Promise<PluginLoadResult>;
   enablePlugin: (pluginId: string) => Promise<boolean>;
   disablePlugin: (pluginId: string) => Promise<boolean>;
   unloadPlugin: (pluginId: string) => Promise<boolean>;
   pluginManager: typeof pluginManager;
-}>({ 
-  state: initialState, 
+}>({
+  state: initialState,
   dispatch: () => {},
   setError: () => {},
   clearError: () => {},
@@ -114,25 +129,19 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   // 初始化插件管理器
   useEffect(() => {
     // 监听插件事件
-    const handlePluginEvent = (event: any) => {
-      console.log('Plugin Event:', event);
+    const handlePluginEvent = (event: PluginEvent) => {
+      logger.log('Plugin Event:', event);
       // 根据事件类型更新状态
       switch (event.type) {
         case 'PLUGIN_LOADED':
         case 'PLUGIN_ENABLED':
         case 'PLUGIN_DISABLED':
         case 'PLUGIN_ERROR':
-          // 更新插件列表
-          dispatch({ 
-            type: 'UPDATE_PLUGINS_LIST', 
-            payload: pluginManager.getPlugins() 
-          });
-          break;
         case 'PLUGIN_UNLOADED':
           // 更新插件列表
-          dispatch({ 
-            type: 'UPDATE_PLUGINS_LIST', 
-            payload: pluginManager.getPlugins() 
+          dispatch({
+            type: 'UPDATE_PLUGINS_LIST',
+            payload: pluginManager.getPlugins()
           });
           break;
         default:

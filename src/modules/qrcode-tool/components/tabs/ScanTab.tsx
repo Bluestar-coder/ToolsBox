@@ -3,6 +3,7 @@ import { Button, Space, Row, Col, Card, message, Upload, Input, Alert } from 'an
 import { CameraOutlined, UploadOutlined, CopyOutlined, StopOutlined, SnippetsOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { Html5Qrcode } from 'html5-qrcode';
+import { logger } from '../../../../utils/logger';
 
 const { TextArea } = Input;
 
@@ -46,7 +47,7 @@ const ScanTab: React.FC = () => {
       }
       message.warning(t('modules.qrcode.noImageInClipboard'));
     } catch (error) {
-      console.error('Paste error:', error);
+      logger.error('Paste error:', error);
       message.error(t('modules.qrcode.pasteFailed'));
     } finally {
       setPasteLoading(false);
@@ -111,7 +112,7 @@ const ScanTab: React.FC = () => {
       );
       setScanning(true);
     } catch (error) {
-      console.error('Camera error:', error);
+      logger.error('Camera error:', error);
       setCameraError(t('modules.qrcode.cameraError'));
       setScanning(false);
     }

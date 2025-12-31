@@ -7,8 +7,11 @@ import {
 import {
   parseHttpMessage, formatHttpRequest, formatHttpResponse, minifyHttpMessage,
   fromCurl, validateHttpMessage, type HttpValidationResult,
+  type HttpRequest, type HttpResponse,
 } from '../../utils/http-utils';
 import CodeEditor from '../CodeEditor';
+import { logger } from '../../../../utils/logger';
+import styles from './HttpTab.module.css';
 
 const HttpTab: React.FC = () => {
   const [input, setInput] = useState('');
@@ -23,8 +26,8 @@ const HttpTab: React.FC = () => {
     try {
       const { type, message: httpMessage } = parseHttpMessage(input);
       const formatted = type === 'request'
-        ? formatHttpRequest(httpMessage as any)
-        : formatHttpResponse(httpMessage as any);
+        ? formatHttpRequest(httpMessage as HttpRequest)
+        : formatHttpResponse(httpMessage as HttpResponse);
       setOutput(formatted);
       setValidation(validateHttpMessage(input));
       message.success('格式化成功');
@@ -86,7 +89,8 @@ const HttpTab: React.FC = () => {
     try {
       await navigator.clipboard.writeText(output);
       message.success('已复制到剪贴板');
-    } catch {
+    } catch (error) {
+      logger.error('Copy to clipboard failed:', error);
       message.error('复制失败');
     }
   }, [output]);
@@ -120,7 +124,7 @@ X-Request-Id: abc123
   }, []);
 
   return (
-    <Space orientation="vertical" style={{ width: '100%' }} size="middle">
+    <Space orientation="vertical" className={styles.container} size="middle">
       {/* 示例按钮 */}
       <Space>
         <span>加载示例:</span>
@@ -130,7 +134,7 @@ X-Request-Id: abc123
 
       {/* 输入区域 */}
       <div>
-        <div style={{ marginBottom: 8, fontWeight: 500 }}>输入 HTTP 报文 / cURL 命令</div>
+        <div className={styles.label}>输入 HTTP 报文 / cURL 命令</div>
         <CodeEditor
           value={input}
           onChange={setInput}
@@ -170,7 +174,7 @@ Accept: application/json`}
 
       {/* 输出区域 */}
       <div>
-        <div style={{ marginBottom: 8, fontWeight: 500 }}>格式化结果</div>
+        <div className={styles.label}>格式化结果</div>
         <CodeEditor
           value={output}
           language="http"
@@ -190,9 +194,9 @@ Accept: application/json`}
                 <Alert
                   message="验证错误"
                   description={
-                    <ul style={{ margin: 0, paddingLeft: 20 }}>
+                    <ul className={styles.errorList}>
                       {validation.errors.map((err, i) => (
-                        <li key={i} style={{ color: '#ff4d4f' }}>{err}</li>
+                        <li key={i} className={styles.errorItem}>{err}</li>
                       ))}
                     </ul>
                   }
@@ -204,7 +208,7 @@ Accept: application/json`}
                 <Alert
                   message="建议"
                   description={
-                    <ul style={{ margin: 0, paddingLeft: 20 }}>
+                    <ul className={styles.warningList}>
                       {validation.warnings.map((warn, i) => (
                         <li key={i}>{warn}</li>
                       ))}
@@ -213,6 +217,7 @@ Accept: application/json`}
                   type="warning"
                   showIcon
                   style={{ marginTop: validation.errors.length > 0 ? 8 : 0 }}
+                  className={validation.errors.length > 0 ? styles.warningAlert : ''}
                 />
               )}
             </>
