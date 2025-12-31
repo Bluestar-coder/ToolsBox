@@ -97,32 +97,35 @@ async function registerLazyModule(
   });
 }
 
-// 导入并注册编码/解码模块（懒加载）
+// 按顺序导入并注册模块（懒加载）
+// 顺序：编码/解码、加密/解密、时间工具、正则工具、代码格式化、二维码工具
+
+// 1. 编码/解码模块
 // @ts-expect-error - Type incompatibility is expected due to ToolModule structure
 const EncoderDecoderModule = React.lazy(() => import('./encoder-decoder'));
 void registerLazyModule(import('./encoder-decoder'), EncoderDecoderModule);
 
-// 导入并注册时间处理工具模块（懒加载）
-// @ts-expect-error - Type incompatibility is expected due to ToolModule structure
-const TimeToolModule = React.lazy(() => import('./time-tool'));
-void registerLazyModule(import('./time-tool'), TimeToolModule);
-
-// 导入并注册加密/解密工具模块（懒加载）
+// 2. 加密/解密工具模块
 // @ts-expect-error - Type incompatibility is expected due to ToolModule structure
 const CryptoToolModule = React.lazy(() => import('./crypto-tool'));
 void registerLazyModule(import('./crypto-tool'), CryptoToolModule);
 
-// 导入并注册代码格式化模块（懒加载）
+// 3. 时间处理工具模块
 // @ts-expect-error - Type incompatibility is expected due to ToolModule structure
-const CodeFormatterModule = React.lazy(() => import('./code-formatter'));
-void registerLazyModule(import('./code-formatter'), CodeFormatterModule);
+const TimeToolModule = React.lazy(() => import('./time-tool'));
+void registerLazyModule(import('./time-tool'), TimeToolModule);
 
-// 导入并注册正则表达式工具模块（懒加载）
+// 4. 正则表达式工具模块
 // @ts-expect-error - Type incompatibility is expected due to ToolModule structure
 const RegexToolModule = React.lazy(() => import('./regex-tool'));
 void registerLazyModule(import('./regex-tool'), RegexToolModule);
 
-// 导入并注册二维码工具模块（懒加载）
+// 5. 代码格式化模块
+// @ts-expect-error - Type incompatibility is expected due to ToolModule structure
+const CodeFormatterModule = React.lazy(() => import('./code-formatter'));
+void registerLazyModule(import('./code-formatter'), CodeFormatterModule);
+
+// 6. 二维码工具模块
 // @ts-expect-error - Type incompatibility is expected due to ToolModule structure
 const QRCodeToolModule = React.lazy(() => import('./qrcode-tool'));
 void registerLazyModule(import('./qrcode-tool'), QRCodeToolModule);

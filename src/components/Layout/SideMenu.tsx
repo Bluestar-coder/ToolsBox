@@ -21,14 +21,33 @@ const moduleI18nKeys: Record<string, string> = {
   'qrcode-tool': 'modules.qrcode',
 };
 
+// 定义菜单顺序：编码/解码、加密/解密、时间工具、正则工具、代码格式化、二维码工具
+const moduleOrder = [
+  'encoder-decoder',
+  'crypto-tool',
+  'time-tool',
+  'regex-tool',
+  'code-formatter',
+  'qrcode-tool',
+];
+
 const SideMenu: React.FC<SideMenuProps> = React.memo(({ currentModuleId }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const modules = moduleManager.getLazyModules();
 
+  // 按照定义的顺序排序模块
+  const sortedModules = useMemo(() => {
+    return [...modules].sort((a, b) => {
+      const indexA = moduleOrder.indexOf(a.id);
+      const indexB = moduleOrder.indexOf(b.id);
+      return indexA - indexB;
+    });
+  }, [modules]);
+
   // 菜单项配置 - 使用useMemo优化
   const menuItems: MenuProps['items'] = useMemo(() =>
-    modules.map(module => {
+    sortedModules.map(module => {
       const i18nKey = moduleI18nKeys[module.id];
       const path = moduleIdToPath[module.id];
       return {
@@ -41,7 +60,7 @@ const SideMenu: React.FC<SideMenuProps> = React.memo(({ currentModuleId }) => {
           navigate(path);
         },
       };
-    }), [modules, t, navigate]
+    }), [sortedModules, t, navigate]
   );
 
   return (
