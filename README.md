@@ -1,6 +1,6 @@
-# 效率工具箱
+# 效率工具箱 (ToolsBox)
 
-一个功能强大的在线工具集，提供编码/解码、时间处理和加密/解密等实用工具。基于 React + TypeScript + Ant Design 构建。
+一个功能强大的在线工具集，提供编码/解码、时间处理、加密/解密、代码格式化、正则表达式和二维码等实用工具。基于 React + TypeScript + Ant Design 构建，支持多语言切换。
 
 ## 功能特性
 
@@ -63,15 +63,48 @@
 | SM4 | 分组密码算法 |
 | ZUC | 祖冲之序列密码 |
 
+### 💻 代码格式化工具
+- **JSON**：格式化、压缩、语法校验
+- **SQL**：SQL 语句美化
+- **HTTP**：HTTP 请求/响应格式化
+- **通用语言**：JavaScript、TypeScript、HTML、CSS、XML、YAML 等
+
+### 🔍 正则表达式工具
+- **正则测试**：实时匹配高亮、捕获组显示
+- **替换功能**：支持 $1、$2 等捕获组引用
+- **分割功能**：按正则分割文本
+- **常用模板**：邮箱、手机号、URL、IP 等常用正则
+
+### 📱 二维码工具
+- **生成二维码**：
+  - 自定义尺寸、边距
+  - 可调容错级别 (L/M/Q/H)
+  - 自定义前景色和背景色
+  - 支持下载和复制图片
+- **识别二维码**：
+  - 摄像头实时扫描
+  - 上传图片识别
+  - 剪贴板粘贴识别 (Ctrl+V)
+
+## 🌍 多语言支持
+
+- 🇨🇳 简体中文
+- 🇺🇸 English
+- 🇰🇷 한국어
+- 🇯🇵 日本語
+
 ## 技术栈
 
 - **React 19** + **TypeScript 5.9**
 - **Ant Design 6** - UI 组件库
 - **Vite 7** - 构建工具
+- **i18next** - 国际化
 - **crypto-js** - 对称加密
 - **@noble/curves** - 椭圆曲线密码
 - **@noble/ciphers** - AEAD 加密
 - **sm-crypto** - 国密算法
+- **qrcode** - 二维码生成
+- **html5-qrcode** - 二维码识别
 
 ## 快速开始
 
@@ -84,9 +117,6 @@ npm run dev
 
 # 构建生产版本
 npm run build
-
-# 运行测试
-npm run test
 ```
 
 ## 项目结构
@@ -95,22 +125,19 @@ npm run test
 src/
 ├── components/          # 通用组件
 │   ├── ErrorBoundary.tsx
+│   ├── LanguageSwitcher.tsx
 │   └── Layout/
 ├── context/             # React Context
 ├── hooks/               # 自定义 Hooks
+├── i18n/                # 国际化配置
+│   └── locales/         # 语言包
 ├── modules/             # 功能模块
 │   ├── crypto-tool/     # 加密/解密
-│   │   ├── components/
-│   │   │   └── tabs/    # 各算法 Tab 组件
-│   │   └── utils/       # 加密算法实现
 │   ├── encoder-decoder/ # 编码/解码
-│   │   ├── components/
-│   │   │   └── tabs/
-│   │   └── utils/
-│   └── time-tool/       # 时间工具
-│       ├── components/
-│       │   └── tabs/
-│       └── utils/
+│   ├── time-tool/       # 时间工具
+│   ├── code-formatter/  # 代码格式化
+│   ├── regex-tool/      # 正则工具
+│   └── qrcode-tool/     # 二维码工具
 ├── plugins/             # 插件系统
 ├── utils/               # 公共工具
 └── types/               # 类型定义
@@ -121,20 +148,17 @@ src/
 - [x] 编码/解码工具模块
 - [x] 时间处理工具模块
 - [x] 加密/解密工具模块
-  - [x] 对称加密 (AES/DES/3DES/AEAD/RC/Blowfish)
-  - [x] 非对称加密 (RSA/ECDSA/Ed25519/X25519/ECDH)
-  - [x] 哈希算法 (MD5/SHA/KDF/HMAC)
-  - [x] 古典密码 (15 种 CTF 常用密码)
-  - [x] 国密算法 (SM2/SM3/SM4/ZUC)
-- [x] 项目结构优化 (模块化拆分)
-- [x] 二级导航系统
-- [ ] 主题切换
+- [x] 代码格式化工具模块
+- [x] 正则表达式工具模块
+- [x] 二维码工具模块
+- [x] 多语言国际化支持
+- [x] 深色/浅色主题切换
 - [ ] 数据导入/导出
 - [ ] 使用历史记录
 
 ## 安全说明
 
-- 所有加密操作在客户端本地执行，数据不会上传服务器
+- 所有操作在客户端本地执行，数据不会上传服务器
 - ECB 模式安全性较低，推荐使用 CBC/GCM/CTR 模式
 - RC4 等古典算法仅供学习，不建议用于生产环境
 - 请妥善保管密钥，丢失将无法恢复数据
