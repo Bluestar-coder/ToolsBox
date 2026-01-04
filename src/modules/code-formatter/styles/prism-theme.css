@@ -1,33 +1,37 @@
-/* Prism.js Monokai Pro 主题 */
+/* Prism.js Modern Developer Theme */
+/* Based on Monokai Pro with enhanced readability */
 
 code[class*="language-"],
 pre[class*="language-"] {
-  color: #fcfcfa;
-  font-family: "Fira Code", "Fira Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace;
+  color: #F1F5F9;
+  font-family: var(--font-mono, "JetBrains Mono", "Fira Code", Menlo, Consolas, monospace);
   direction: ltr;
   text-align: left;
   white-space: pre;
   word-spacing: normal;
   word-break: normal;
-  line-height: 1.5;
+  line-height: 1.6;
   tab-size: 2;
   hyphens: none;
+  font-size: 13px;
 }
 
-/* 代码块背景 - Monokai Pro 深色背景 */
+/* 代码块背景 - 深色背景 */
 pre[class*="language-"] {
-  padding: 1em;
+  padding: var(--spacing-md, 16px);
   margin: 0;
   overflow: auto;
-  border-radius: 6px;
-  background: #2d2a2e;
+  border-radius: var(--radius-md, 10px);
+  background: #1E293B;
+  border: 1px solid #334155;
 }
 
 /* 内联代码 */
 :not(pre) > code[class*="language-"] {
-  padding: 0.2em 0.4em;
-  border-radius: 3px;
-  background: #2d2a2e;
+  padding: 0.2em 0.5em;
+  border-radius: var(--radius-sm, 6px);
+  background: #1E293B;
+  border: 1px solid #334155;
 }
 
 /* 注释 - 灰色 */
@@ -35,13 +39,13 @@ pre[class*="language-"] {
 .token.prolog,
 .token.doctype,
 .token.cdata {
-  color: #727072;
+  color: #64748B;
   font-style: italic;
 }
 
 /* 标点符号 */
 .token.punctuation {
-  color: #939293;
+  color: #94A3B8;
 }
 
 /* 命名空间 */
@@ -56,12 +60,12 @@ pre[class*="language-"] {
 .token.constant,
 .token.symbol,
 .token.deleted {
-  color: #ab9df2;
+  color: #A78BFA;
 }
 
 /* 属性名 - 绿色 */
 .token.property {
-  color: #a9dc76;
+  color: #34D399;
 }
 
 /* 选择器、字符串、字符、内置、插入 - 黄色 */
@@ -71,40 +75,40 @@ pre[class*="language-"] {
 .token.char,
 .token.builtin,
 .token.inserted {
-  color: #ffd866;
+  color: #FBBF24;
 }
 
-/* 操作符、实体、URL - 红色/粉色 */
+/* 操作符、实体、URL - 粉色 */
 .token.operator,
 .token.entity,
 .token.url,
 .language-css .token.string,
 .style .token.string {
-  color: #ff6188;
+  color: #F472B6;
 }
 
-/* at 规则、属性值、关键字 - 红色/粉色 */
+/* at 规则、属性值、关键字 - 粉色 */
 .token.atrule,
 .token.attr-value,
 .token.keyword {
-  color: #ff6188;
+  color: #F472B6;
 }
 
 /* 函数 - 绿色 */
 .token.function {
-  color: #a9dc76;
+  color: #34D399;
 }
 
 /* 类名 - 青色 */
 .token.class-name {
-  color: #78dce8;
+  color: #22D3EE;
 }
 
 /* 正则表达式、重要、变量 - 橙色 */
 .token.regex,
 .token.important,
 .token.variable {
-  color: #fc9867;
+  color: #FB923C;
 }
 
 /* 重要、粗体 */
@@ -143,7 +147,7 @@ pre[class*="language-"].line-numbers > code {
   left: -3.8em;
   width: 3em;
   letter-spacing: -1px;
-  border-right: 1px solid #5b595c;
+  border-right: 1px solid #334155;
   user-select: none;
 }
 
@@ -154,7 +158,7 @@ pre[class*="language-"].line-numbers > code {
 
 .line-numbers-rows > span:before {
   content: counter(linenumber);
-  color: #5b595c;
+  color: #475569;
   display: block;
   padding-right: 0.8em;
   text-align: right;
@@ -165,5 +169,79 @@ pre[class*="language-"]::selection,
 pre[class*="language-"] ::selection,
 code[class*="language-"]::selection,
 code[class*="language-"] ::selection {
-  background: #49483e;
+  background: rgba(59, 130, 246, 0.3);
+}
+
+/* 浅色模式代码块 */
+[data-theme='light'] pre[class*="language-"] {
+  background: #F8FAFC;
+  border-color: #E2E8F0;
+}
+
+[data-theme='light'] code[class*="language-"],
+[data-theme='light'] pre[class*="language-"] {
+  color: #0F172A;
+}
+
+[data-theme='light'] .token.comment,
+[data-theme='light'] .token.prolog,
+[data-theme='light'] .token.doctype,
+[data-theme='light'] .token.cdata {
+  color: #64748B;
+}
+
+[data-theme='light'] .token.punctuation {
+  color: #475569;
+}
+
+[data-theme='light'] .token.tag,
+[data-theme='light'] .token.boolean,
+[data-theme='light'] .token.number,
+[data-theme='light'] .token.constant,
+[data-theme='light'] .token.symbol,
+[data-theme='light'] .token.deleted {
+  color: #7C3AED;
+}
+
+[data-theme='light'] .token.property,
+[data-theme='light'] .token.function {
+  color: #059669;
+}
+
+[data-theme='light'] .token.selector,
+[data-theme='light'] .token.attr-name,
+[data-theme='light'] .token.string,
+[data-theme='light'] .token.char,
+[data-theme='light'] .token.builtin,
+[data-theme='light'] .token.inserted {
+  color: #B45309;
+}
+
+[data-theme='light'] .token.operator,
+[data-theme='light'] .token.entity,
+[data-theme='light'] .token.url,
+[data-theme='light'] .language-css .token.string,
+[data-theme='light'] .style .token.string,
+[data-theme='light'] .token.atrule,
+[data-theme='light'] .token.attr-value,
+[data-theme='light'] .token.keyword {
+  color: #DB2777;
+}
+
+[data-theme='light'] .token.class-name {
+  color: #0891B2;
+}
+
+[data-theme='light'] .token.regex,
+[data-theme='light'] .token.important,
+[data-theme='light'] .token.variable {
+  color: #EA580C;
+}
+
+[data-theme='light'] .line-numbers .line-numbers-rows {
+  border-right-color: #E2E8F0;
+}
+
+[data-theme='light'] .line-numbers-rows > span:before {
+  color: #94A3B8;
 }

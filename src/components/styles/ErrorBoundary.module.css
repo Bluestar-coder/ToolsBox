@@ -1,50 +1,61 @@
 /* ErrorBoundary styles - CSS Module */
+/* Modern Developer Tool Design */
 
 .errorBoundaryContainer {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: #f0f2f5;
+  background-color: var(--bg-color, #F8FAFC);
+  padding: var(--spacing-lg, 24px);
 }
 
 .errorCard {
   width: 90%;
   max-width: 600px;
+  border-radius: var(--radius-lg, 16px);
+  box-shadow: 0 4px 12px var(--shadow-color, rgba(15, 23, 42, 0.08));
 }
 
 .errorIcon {
-  color: #ff4d4f;
+  color: var(--error-color, #EF4444);
 }
 
 .errorTitle {
   margin: 0;
+  font-family: var(--font-heading, 'Space Grotesk', sans-serif);
+  font-weight: 600;
 }
 
 .errorInfo {
-  margin-bottom: 16px;
+  margin-bottom: var(--spacing-md, 16px);
 }
 
 .errorMessage {
   display: block;
   margin-top: 4px;
+  color: var(--text-secondary, #475569);
 }
 
 .componentStack {
-  background-color: #f5f5f5;
-  padding: 12px;
-  border-radius: 4px;
+  background-color: var(--bg-secondary, #F1F5F9);
+  padding: var(--spacing-md, 16px);
+  border-radius: var(--radius-md, 10px);
   overflow-x: auto;
   font-size: 12px;
-  margin-top: 8px;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  margin-top: var(--spacing-sm, 8px);
+  border: 1px solid var(--border-color, #E2E8F0);
 }
 
 .errorHint {
-  margin-top: 16px;
-  padding: 12px;
-  background-color: #fff2f0;
-  border-radius: 4px;
-  font-size: 12px;
+  margin-top: var(--spacing-md, 16px);
+  padding: var(--spacing-md, 16px);
+  background-color: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--radius-md, 10px);
+  font-size: 13px;
+  color: var(--text-secondary, #475569);
 }
 
 /* ErrorDisplay styles */
@@ -54,88 +65,49 @@
   right: 20px;
   z-index: 1000;
   width: 400px;
-  border-left: 4px solid #ff4d4f;
+  border-left: 4px solid var(--error-color, #EF4444);
+  border-radius: var(--radius-md, 10px);
+  box-shadow: 0 6px 16px var(--shadow-color, rgba(15, 23, 42, 0.12));
 }
 
 .errorTypeTag {
-  margin-bottom: 8px;
+  margin-bottom: var(--spacing-sm, 8px);
 }
 
 .errorStack {
-  background-color: #f5f5f5;
-  padding: 8px;
-  border-radius: 4px;
+  background-color: var(--bg-secondary, #F1F5F9);
+  padding: var(--spacing-sm, 8px);
+  border-radius: var(--radius-sm, 6px);
   overflow-x: auto;
   font-size: 11px;
-  margin-top: 8px;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  margin-top: var(--spacing-sm, 8px);
+  border: 1px solid var(--border-color, #E2E8F0);
 }
 
 /* Loading fallback */
 .loadingContainer {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   height: 100%;
+  min-height: 300px;
+  gap: var(--spacing-md, 16px);
 }
 
-/* MainLayout styles */
-.mainLayout {
-  min-height: 100vh;
+/* Dark mode adjustments */
+[data-theme='dark'] .errorBoundaryContainer {
+  background-color: var(--bg-color, #0F172A);
 }
 
-.mainLayoutLight {
-  background: #f0f2f5;
+[data-theme='dark'] .componentStack,
+[data-theme='dark'] .errorStack {
+  background-color: var(--bg-secondary, #1E293B);
+  border-color: var(--border-color, #334155);
 }
 
-.mainLayoutDark {
-  background: #141414;
-}
-
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 24px;
-}
-
-.headerShadowLight {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.headerShadowDark {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
-}
-
-.headerSpacer {
-  width: 100px;
-}
-
-.headerTitle {
-  margin: 0;
-  color: #1890ff;
-  font-size: 24px;
-  font-weight: 600;
-}
-
-.contentLayout {
-  background: #f0f2f5;
-}
-
-.contentLayoutDark {
-  background: #141414;
-}
-
-.sider {
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.06);
-}
-
-.mainContent {
-  margin: 24px 16px;
-  padding: 24px;
-  overflow: auto;
-}
-
-.menu {
-  height: 100%;
-  borderRight: 0;
+[data-theme='dark'] .errorHint {
+  background-color: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.3);
 }

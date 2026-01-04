@@ -3,14 +3,15 @@ import { Card, Tabs } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useAppContext } from '../../../hooks/useAppContext';
 import { baseEncoders, utfEncoders, otherEncoders } from '../utils/constants';
-import { EncodingTab, RadixTab, ImageTab } from './tabs';
+import { EncodingTab, RadixTab, ImageTab, SmartDecodeTab } from './tabs';
 
 const EncoderDecoder: React.FC = () => {
   const { t } = useTranslation();
   const { dispatch, state } = useAppContext();
-  const [activeCategory, setActiveCategory] = useState<string>('base');
+  const [activeCategory, setActiveCategory] = useState<string>('smart');
 
   const categoryItems = [
+    { key: 'smart', label: t('modules.encoder.categories.smart') },
     { key: 'base', label: t('modules.encoder.categories.base') },
     { key: 'utf', label: t('modules.encoder.categories.utf') },
     { key: 'other', label: t('modules.encoder.categories.other') },
@@ -30,6 +31,8 @@ const EncoderDecoder: React.FC = () => {
 
   const renderContent = () => {
     switch (activeCategory) {
+      case 'smart':
+        return <SmartDecodeTab />;
       case 'base':
         return <EncodingTab activeCategory="base" />;
       case 'utf':
@@ -41,7 +44,7 @@ const EncoderDecoder: React.FC = () => {
       case 'image':
         return <ImageTab />;
       default:
-        return <EncodingTab activeCategory="base" />;
+        return <SmartDecodeTab />;
     }
   };
 

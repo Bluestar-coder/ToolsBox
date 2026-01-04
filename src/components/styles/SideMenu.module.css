@@ -1,5 +1,71 @@
 /* SideMenu styles - CSS Module */
+/* Modern Navigation Menu */
+
 .menu {
   height: 100%;
-  border-right: 0;
+  border-right: 0 !important;
+  padding: var(--spacing-sm) 0;
+  background: transparent !important;
+}
+
+.menu :global(.ant-menu-item) {
+  height: 44px;
+  line-height: 44px;
+  margin: 4px 8px !important;
+  padding: 0 var(--spacing-md) !important;
+  border-radius: var(--radius-md) !important;
+  font-weight: 500;
+  transition: all var(--transition-fast);
+}
+
+.menu :global(.ant-menu-item:hover) {
+  background: var(--primary-light) !important;
+  color: var(--primary-color);
+}
+
+.menu :global(.ant-menu-item-selected) {
+  background: var(--primary-light) !important;
+  color: var(--primary-color) !important;
+  font-weight: 600;
+}
+
+.menu :global(.ant-menu-item-selected::after) {
+  display: none;
+}
+
+.menu :global(.ant-menu-item .anticon) {
+  font-size: 18px;
+  margin-right: var(--spacing-sm);
+}
+
+/* Icon animation on hover */
+.menu :global(.ant-menu-item:hover .anticon) {
+  transform: scale(1.1);
+  transition: transform var(--transition-fast);
+}
+
+/* Active indicator */
+.menu :global(.ant-menu-item-selected)::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 24px;
+  background: var(--primary-color);
+  border-radius: 0 3px 3px 0;
+}
+
+/* Dark mode adjustments */
+[data-theme='dark'] .menu :global(.ant-menu-item) {
+  color: var(--text-color);
+}
+
+[data-theme='dark'] .menu :global(.ant-menu-item:hover) {
+  background: rgba(59, 130, 246, 0.15) !important;
+}
+
+[data-theme='dark'] .menu :global(.ant-menu-item-selected) {
+  background: rgba(59, 130, 246, 0.2) !important;
 }

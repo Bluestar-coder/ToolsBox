@@ -115,6 +115,48 @@ export const jsonDecode = (input: string): EncodeDecodeResult => {
 };
 
 /**
+ * ASCII 编码 (字符转十进制码值，空格分隔)
+ * @param input 输入字符串
+ * @returns 编码结果
+ */
+export const asciiEncode = (input: string): EncodeDecodeResult => {
+  try {
+    const result = input.split('').map(char => {
+      const code = char.charCodeAt(0);
+      if (code > 127) {
+        throw new Error(`字符 "${char}" 不是有效的 ASCII 字符`);
+      }
+      return code.toString();
+    }).join(' ');
+    return createSuccessResult(result);
+  } catch (error) {
+    return createErrorResult(error instanceof Error ? error.message : 'ASCII编码错误');
+  }
+};
+
+/**
+ * ASCII 解码 (十进制码值转字符，支持空格/逗号分隔)
+ * @param input 输入字符串
+ * @returns 解码结果
+ */
+export const asciiDecode = (input: string): EncodeDecodeResult => {
+  try {
+    // 支持空格、逗号、分号等分隔符
+    const codes = input.trim().split(/[\s,;]+/).filter(s => s.length > 0);
+    const result = codes.map(code => {
+      const num = parseInt(code, 10);
+      if (isNaN(num) || num < 0 || num > 127) {
+        throw new Error(`"${code}" 不是有效的 ASCII 码值 (0-127)`);
+      }
+      return String.fromCharCode(num);
+    }).join('');
+    return createSuccessResult(result);
+  } catch (error) {
+    return createErrorResult(error instanceof Error ? error.message : 'ASCII解码错误');
+  }
+};
+
+/**
  * Unicode 编码 (\\uXXXX 格式)
  * @param input 输入字符串
  * @returns 编码结果
@@ -203,6 +245,8 @@ export const executeEncodeDecode = (input: string, type: EncoderType, operation:
       return operation === 'encode' ? jsonEncode(input) : jsonDecode(input);
     case 'unicode':
       return operation === 'encode' ? unicodeEncode(input) : unicodeDecode(input);
+    case 'ascii':
+      return operation === 'encode' ? asciiEncode(input) : asciiDecode(input);
     default:
       return createErrorResult('不支持的编码类型');
   }
@@ -234,7 +278,8 @@ export const getEncoderDisplayName = (type: EncoderType): string => {
     url: 'URL',
     html: 'HTML实体',
     json: 'JSON',
-    unicode: 'Unicode'
+    unicode: 'Unicode',
+    ascii: 'ASCII'
   };
   return displayNames[type] || type;
 };

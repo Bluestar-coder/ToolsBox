@@ -1,56 +1,99 @@
+/* SymmetricTab Styles - Modern Developer Tool Design */
+
 .inputWrapper {
-  margin-bottom: var(--spacing-md);
-  fontFamily: 'monospace';
+  margin-bottom: var(--spacing-md, 16px);
+  font-family: var(--font-mono, 'JetBrains Mono', monospace) !important;
+  font-size: 13px;
+  line-height: 1.6;
+  border-radius: var(--radius-md, 10px) !important;
 }
 
 .buttonGroup {
-  margin-bottom: var(--spacing-md);
+  margin-bottom: var(--spacing-md, 16px);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm, 8px);
 }
 
 .encryptButton {
-  background-color: #52c41a;
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%) !important;
+  border-color: #10B981 !important;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+}
+
+.encryptButton:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+  border-color: #059669 !important;
+  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.4);
+  transform: translateY(-1px);
 }
 
 .copyButton {
-  background-color: #faad14;
-  border-color: #faad14;
-  color: #fff;
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%) !important;
+  border-color: #F59E0B !important;
+  color: #fff !important;
+  box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
+}
+
+.copyButton:hover {
+  background: linear-gradient(135deg, #D97706 0%, #B45309 100%) !important;
+  border-color: #D97706 !important;
+  box-shadow: 0 4px 8px rgba(245, 158, 11, 0.4);
+  transform: translateY(-1px);
 }
 
 .outputCard {
-  margin-bottom: var(--spacing-md);
+  margin-bottom: var(--spacing-md, 16px);
+  border-radius: var(--radius-md, 10px);
 }
 
 .outputCardError {
-  background-color: #fff2f0;
-  border-color: #ffccc7;
+  background: rgba(239, 68, 68, 0.08) !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+  border-radius: var(--radius-md, 10px);
 }
 
 .outputCardSuccess {
-  background-color: #f6ffed;
-  border-color: #b7eb8f;
+  background: rgba(16, 185, 129, 0.08) !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+  border-radius: var(--radius-md, 10px);
 }
 
 .errorMessage {
-  color: #ff4d4f;
+  color: var(--error-color, #EF4444);
+  font-weight: 500;
+  padding: var(--spacing-sm, 8px);
 }
 
 .outputWrapper {
-  margin-bottom: var(--spacing-sm);
-  fontFamily: 'monospace';
+  margin-bottom: var(--spacing-sm, 8px);
+  font-family: var(--font-mono, 'JetBrains Mono', monospace) !important;
+  font-size: 13px;
+  line-height: 1.6;
 }
 
+/* Options Card */
 .optionsCard {
-  margin-bottom: var(--spacing-md);
+  margin-bottom: var(--spacing-md, 16px);
+  background: var(--bg-secondary, #F1F5F9);
+  border-radius: var(--radius-md, 10px);
+  border: 1px solid var(--border-color, #E2E8F0);
 }
 
 .optionsGrid {
   display: grid;
-  grid-template-columns: 80px 1fr;
+  grid-template-columns: 100px 1fr;
   gap: 12px 16px;
   align-items: center;
 }
 
+.optionsGrid > span {
+  font-weight: 500;
+  color: var(--text-secondary, #475569);
+  font-size: 13px;
+}
+
+/* Select Widths */
 .selectWidth {
   width: 160px;
 }
@@ -69,4 +112,44 @@
 
 .selectExtraLarge {
   width: 130px;
+}
+
+/* Dark mode adjustments */
+[data-theme='dark'] .optionsCard {
+  background: var(--bg-secondary, #1E293B);
+  border-color: var(--border-color, #334155);
+}
+
+[data-theme='dark'] .outputCardError {
+  background: rgba(239, 68, 68, 0.12) !important;
+  border-color: rgba(239, 68, 68, 0.4) !important;
+}
+
+[data-theme='dark'] .outputCardSuccess {
+  background: rgba(16, 185, 129, 0.12) !important;
+  border-color: rgba(16, 185, 129, 0.4) !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .optionsGrid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  
+  .selectWidth,
+  .selectMedium,
+  .selectSmall,
+  .selectLarge,
+  .selectExtraLarge {
+    width: 100%;
+  }
+  
+  .buttonGroup {
+    flex-direction: column;
+  }
+  
+  .buttonGroup > * {
+    width: 100%;
+  }
 }

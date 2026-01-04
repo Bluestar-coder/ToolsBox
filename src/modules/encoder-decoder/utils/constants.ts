@@ -12,7 +12,7 @@ export const utfEncoders: EncoderType[] = [
 ];
 
 // 其他编码类型
-export const otherEncoders: EncoderType[] = ['url', 'html', 'json', 'unicode'];
+export const otherEncoders: EncoderType[] = ['url', 'html', 'json', 'unicode', 'ascii'];
 
 // 一级分类
 export const categoryItems = [

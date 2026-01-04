@@ -3,7 +3,7 @@
  */
 
 // 编码/解码类型定义
-export type EncoderType = 'base64' | 'base16' | 'base32' | 'base32hex' | 'base36' | 'base64url' | 'base58' | 'base62' | 'base85' | 'base91' | 'url' | 'html' | 'json' | 'unicode' | 'utf7' | 'utf8' | 'utf16be' | 'utf16le' | 'utf32be' | 'utf32le';
+export type EncoderType = 'base64' | 'base16' | 'base32' | 'base32hex' | 'base36' | 'base64url' | 'base58' | 'base62' | 'base85' | 'base91' | 'url' | 'html' | 'json' | 'unicode' | 'ascii' | 'utf7' | 'utf8' | 'utf16be' | 'utf16le' | 'utf32be' | 'utf32le';
 
 // Base64家族编码类型
 export type BaseFamilyType = 'base16' | 'base32' | 'base32hex' | 'base36' | 'base64' | 'base64url' | 'base58' | 'base62' | 'base85' | 'base91';
