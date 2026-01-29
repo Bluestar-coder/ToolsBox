@@ -286,7 +286,7 @@ const SymmetricTab: React.FC<SymmetricTabProps> = ({ activeTab }) => {
         value={inputText}
         onChange={(e) => setInputText(e.target.value)}
         placeholder="请在这里填写原文/密文"
-        rows={8}
+        autoSize={{ minRows: 8, maxRows: 20 }}
         className={styles.inputWrapper}
       />
 
@@ -317,7 +317,7 @@ const SymmetricTab: React.FC<SymmetricTabProps> = ({ activeTab }) => {
               <TextArea
                 value={outputText}
                 readOnly
-                rows={6}
+                autoSize={{ minRows: 6, maxRows: 20 }}
                 className={styles.outputWrapper}
                 style={{
                   backgroundColor: 'transparent',

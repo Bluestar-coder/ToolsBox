@@ -137,7 +137,7 @@ const RSATab: React.FC = () => {
         value={inputText}
         onChange={(e) => setInputText(e.target.value)}
         placeholder={mode === 'encrypt' ? '请输入要加密/解密的内容' : '请输入要签名/验签的内容'}
-        rows={6}
+        autoSize={{ minRows: 6, maxRows: 20 }}
         style={{ marginBottom: 16, fontFamily: 'monospace' }}
       />
 
@@ -172,7 +172,7 @@ const RSATab: React.FC = () => {
             <div style={{ color: '#ff4d4f' }}>{outputError}</div>
           ) : (
             <>
-              <TextArea value={outputText} readOnly rows={4} style={{ fontFamily: 'monospace', fontSize: 12, marginBottom: 8 }} />
+              <TextArea value={outputText} readOnly autoSize={{ minRows: 4, maxRows: 20 }} style={{ fontFamily: 'monospace', fontSize: 12, marginBottom: 8 }} />
               <Button size="small" onClick={handleCopyOutput}>复制</Button>
             </>
           )}
@@ -186,7 +186,7 @@ const RSATab: React.FC = () => {
             value={publicKey}
             onChange={(e) => setPublicKey(e.target.value)}
             placeholder="PEM 格式公钥 (用于加密和验签)"
-            rows={4}
+            autoSize={{ minRows: 4, maxRows: 20 }}
             style={{ fontFamily: 'monospace', fontSize: 10 }}
           />
 
@@ -195,7 +195,7 @@ const RSATab: React.FC = () => {
             value={privateKey}
             onChange={(e) => setPrivateKey(e.target.value)}
             placeholder="PEM 格式私钥 (用于解密和签名)"
-            rows={4}
+            autoSize={{ minRows: 4, maxRows: 20 }}
             style={{ fontFamily: 'monospace', fontSize: 10 }}
           />
 

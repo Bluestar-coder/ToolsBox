@@ -75,7 +75,7 @@ const ECDSATab: React.FC = () => {
         value={inputText}
         onChange={(e) => setInputText(e.target.value)}
         placeholder="请输入要签名/验签的内容"
-        rows={6}
+        autoSize={{ minRows: 6, maxRows: 20 }}
         style={{ marginBottom: 16, fontFamily: 'monospace' }}
       />
 
@@ -97,7 +97,7 @@ const ECDSATab: React.FC = () => {
             <div style={{ color: '#ff4d4f' }}>{outputError}</div>
           ) : (
             <>
-              <TextArea value={outputText} readOnly rows={3} style={{ fontFamily: 'monospace', fontSize: 12, marginBottom: 8 }} />
+              <TextArea value={outputText} readOnly autoSize={{ minRows: 3, maxRows: 20 }} style={{ fontFamily: 'monospace', fontSize: 12, marginBottom: 8 }} />
               <Button size="small" onClick={handleCopyOutput}>复制</Button>
             </>
           )}

@@ -100,32 +100,50 @@ async function registerLazyModule(
 // 按顺序导入并注册模块（懒加载）
 // 顺序：编码/解码、加密/解密、时间工具、正则工具、代码格式化、二维码工具
 
+const shouldRegisterModules = !(
+  import.meta.vitest ||
+  import.meta.env.MODE === 'test' ||
+  (typeof process !== 'undefined' && process.env.NODE_ENV === 'test')
+);
+
 // 1. 编码/解码模块
 // @ts-expect-error - Type incompatibility is expected due to ToolModule structure
 const EncoderDecoderModule = React.lazy(() => import('./encoder-decoder'));
-void registerLazyModule(import('./encoder-decoder'), EncoderDecoderModule);
+if (shouldRegisterModules) {
+  void registerLazyModule(import('./encoder-decoder'), EncoderDecoderModule);
+}
 
 // 2. 加密/解密工具模块
 // @ts-expect-error - Type incompatibility is expected due to ToolModule structure
 const CryptoToolModule = React.lazy(() => import('./crypto-tool'));
-void registerLazyModule(import('./crypto-tool'), CryptoToolModule);
+if (shouldRegisterModules) {
+  void registerLazyModule(import('./crypto-tool'), CryptoToolModule);
+}
 
 // 3. 时间处理工具模块
 // @ts-expect-error - Type incompatibility is expected due to ToolModule structure
 const TimeToolModule = React.lazy(() => import('./time-tool'));
-void registerLazyModule(import('./time-tool'), TimeToolModule);
+if (shouldRegisterModules) {
+  void registerLazyModule(import('./time-tool'), TimeToolModule);
+}
 
 // 4. 正则表达式工具模块
 // @ts-expect-error - Type incompatibility is expected due to ToolModule structure
 const RegexToolModule = React.lazy(() => import('./regex-tool'));
-void registerLazyModule(import('./regex-tool'), RegexToolModule);
+if (shouldRegisterModules) {
+  void registerLazyModule(import('./regex-tool'), RegexToolModule);
+}
 
 // 5. 代码格式化模块
 // @ts-expect-error - Type incompatibility is expected due to ToolModule structure
 const CodeFormatterModule = React.lazy(() => import('./code-formatter'));
-void registerLazyModule(import('./code-formatter'), CodeFormatterModule);
+if (shouldRegisterModules) {
+  void registerLazyModule(import('./code-formatter'), CodeFormatterModule);
+}
 
 // 6. 二维码工具模块
 // @ts-expect-error - Type incompatibility is expected due to ToolModule structure
 const QRCodeToolModule = React.lazy(() => import('./qrcode-tool'));
-void registerLazyModule(import('./qrcode-tool'), QRCodeToolModule);
+if (shouldRegisterModules) {
+  void registerLazyModule(import('./qrcode-tool'), QRCodeToolModule);
+}

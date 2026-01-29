@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Input, Button, Space, message, Select, Card, InputNumber } from 'antd';
 import * as classical from '../../utils/classical';
 
@@ -50,7 +50,7 @@ interface ClassicalTabProps {
 }
 
 const ClassicalTab: React.FC<ClassicalTabProps> = ({ activeTab }) => {
-  const getCipherOptions = useCallback(() => {
+  const cipherOptions = useMemo(() => {
     switch (activeTab) {
       case 'substitute': return substituteCiphers;
       case 'transpose': return transposeCiphers;
@@ -68,22 +68,16 @@ const ClassicalTab: React.FC<ClassicalTabProps> = ({ activeTab }) => {
   const [key, setKey] = useState('KEY');
   const [rails, setRails] = useState(3);
 
-  // 当 activeTab 变化时重置 cipher 到默认值
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    const currentOptions = getCipherOptions();
-    const isValidCipher = currentOptions.some(opt => opt.value === cipher);
-    if (!isValidCipher && currentOptions.length > 0) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setCipher(getDefaultCipher(activeTab));
-    }
-  }, [activeTab, getCipherOptions]);
+  const effectiveCipher = useMemo(() => {
+    const isValidCipher = cipherOptions.some(opt => opt.value === cipher);
+    return isValidCipher ? cipher : getDefaultCipher(activeTab);
+  }, [activeTab, cipher, cipherOptions]);
 
   const handleEncrypt = () => {
     if (!input) { message.warning('请输入文本'); return; }
     try {
       let result = '';
-      switch (cipher) {
+      switch (effectiveCipher) {
         case 'caesar': result = classical.caesarEncrypt(input, shift); break;
         case 'rot13': result = classical.rot13(input); break;
         case 'rot47': result = classical.rot47(input); break;
@@ -111,7 +105,7 @@ const ClassicalTab: React.FC<ClassicalTabProps> = ({ activeTab }) => {
     if (!input) { message.warning('请输入文本'); return; }
     try {
       let result = '';
-      switch (cipher) {
+      switch (effectiveCipher) {
         case 'caesar': result = classical.caesarDecrypt(input, shift); break;
         case 'rot13': result = classical.rot13(input); break;
         case 'rot47': result = classical.rot47(input); break;
@@ -145,7 +139,7 @@ const ClassicalTab: React.FC<ClassicalTabProps> = ({ activeTab }) => {
   };
 
   const renderParams = () => {
-    switch (cipher) {
+    switch (effectiveCipher) {
       case 'caesar':
         return (
           <Space>
@@ -192,9 +186,9 @@ const ClassicalTab: React.FC<ClassicalTabProps> = ({ activeTab }) => {
           <Space wrap>
             <span>密码类型:</span>
             <Select
-              value={cipher}
+              value={effectiveCipher}
               onChange={(v) => setCipher(v as CipherType)}
-              options={getCipherOptions()}
+              options={cipherOptions}
               style={{ width: 160 }}
             />
           </Space>
@@ -203,7 +197,7 @@ const ClassicalTab: React.FC<ClassicalTabProps> = ({ activeTab }) => {
       </Card>
 
       <TextArea
-        rows={4}
+        autoSize={{ minRows: 4, maxRows: 20 }}
         value={input}
         onChange={(e) => setInput(e.target.value)}
         placeholder="输入明文或密文"
@@ -215,7 +209,7 @@ const ClassicalTab: React.FC<ClassicalTabProps> = ({ activeTab }) => {
         <Button onClick={() => { setInput(''); setOutput(''); }}>清空</Button>
       </Space>
 
-      <TextArea rows={6} value={output} readOnly placeholder="输出结果" />
+      <TextArea autoSize={{ minRows: 6, maxRows: 20 }} value={output} readOnly placeholder="输出结果" />
     </Space>
   );
 };

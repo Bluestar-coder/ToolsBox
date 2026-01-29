@@ -1,10 +1,7 @@
 /**
  * 模块元数据类型定义
  */
-
-import React from 'react';
 import type { ComponentType } from 'react';
-import type { RouteObject } from 'react-router-dom';
 
 /**
  * 模块元数据接口
@@ -34,25 +31,3 @@ export interface ModuleMetadata {
  * 模块注册表类型
  */
 export type ModuleRegistry = Record<string, ModuleMetadata>;
-
-/**
- * 从模块元数据生成路由对象
- */
-export function createRouteFromModule(metadata: ModuleMetadata): RouteObject {
-  return {
-    path: metadata.routePath,
-    element: React.createElement(ModuleLoader, { metadata }),
-  };
-}
-
-/**
- * 模块加载器组件
- */
-function ModuleLoader({ metadata }: { metadata: ModuleMetadata }) {
-  const Component = React.lazy(metadata.component);
-  return (
-    <React.Suspense fallback={<div>Loading...</div>}>
-      <Component />
-    </React.Suspense>
-  );
-}

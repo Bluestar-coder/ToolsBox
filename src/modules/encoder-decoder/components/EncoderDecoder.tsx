@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { Card, Tabs } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { useAppContext } from '../../../hooks/useAppContext';
+import { useEncodingContext } from '../../../hooks/useEncodingContext';
 import { baseEncoders, utfEncoders, otherEncoders } from '../utils/constants';
 import { EncodingTab, RadixTab, ImageTab, SmartDecodeTab } from './tabs';
 
 const EncoderDecoder: React.FC = () => {
   const { t } = useTranslation();
-  const { dispatch, state } = useAppContext();
+  const { dispatch, state } = useEncodingContext();
   const [activeCategory, setActiveCategory] = useState<string>('smart');
 
   const categoryItems = [

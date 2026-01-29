@@ -25,14 +25,14 @@ const GeneralTab: React.FC<GeneralTabProps> = ({ defaultLanguage = 'javascript' 
 
   const currentLanguage = generalLanguages.find(l => l.value === language);
 
-  const handleFormat = useCallback(() => {
+  const handleFormat = useCallback(async () => {
     if (!input.trim()) {
       message.warning('请输入代码');
       return;
     }
     try {
       const options: FormatOptions = { indentSize, useTabs };
-      const result = formatCode(input, language, options);
+      const result = await formatCode(input, language, options);
       setOutput(result);
       message.success('格式化成功');
     } catch (error) {

@@ -85,7 +85,7 @@ const RadixTab: React.FC = () => {
         value={radixInput}
         onChange={(e) => setRadixInput(e.target.value)}
         placeholder="请输入要转换的数值"
-        rows={4}
+        autoSize={{ minRows: 4, maxRows: 20 }}
         style={{ marginBottom: 16, fontFamily: 'monospace' }}
       />
       <Space style={{ marginBottom: 16 }}>

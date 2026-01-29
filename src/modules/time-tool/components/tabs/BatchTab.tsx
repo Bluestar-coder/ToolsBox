@@ -26,7 +26,7 @@ const BatchTab: React.FC = () => {
             value={batchInput}
             onChange={(e) => setBatchInput(e.target.value)}
             placeholder={`输入多个时间值，每行一个：\n1699999999\n2024-01-15 10:30:45\nnow\ntoday\n2024/01/15`}
-            rows={10}
+            autoSize={{ minRows: 10, maxRows: 20 }}
             style={{ marginBottom: 8 }}
           />
           <Space>
@@ -37,7 +37,7 @@ const BatchTab: React.FC = () => {
       </Col>
       <Col span={12}>
         <Card size="small" title="📋 转换结果">
-          <TextArea value={batchResult} readOnly rows={12} placeholder="转换结果将显示在这里" />
+          <TextArea value={batchResult} readOnly autoSize={{ minRows: 12, maxRows: 20 }} placeholder="转换结果将显示在这里" />
         </Card>
       </Col>
     </Row>

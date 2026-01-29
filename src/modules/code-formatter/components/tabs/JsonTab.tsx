@@ -58,7 +58,7 @@ const JsonTab: React.FC = () => {
     }
   }, [output]);
 
-  const handleFormat = useCallback(() => {
+  const handleFormat = useCallback(async () => {
     if (!input.trim()) {
       message.warning('请输入 JSON');
       return;
@@ -73,7 +73,7 @@ const JsonTab: React.FC = () => {
     }
     
     try {
-      const result = formatJSON(input, { indentSize, useTabs: false });
+      const result = await formatJSON(input, { indentSize, useTabs: false });
       setOutput(result);
       setStats(getJsonStats(input));
       message.success('格式化成功');
@@ -286,7 +286,7 @@ const JsonTab: React.FC = () => {
                 />
                 <Button icon={<SwapOutlined />} onClick={handleCompare}>比较差异</Button>
                 {compareResult && (
-                  <TextArea value={compareResult} readOnly rows={5} style={{ fontFamily: 'monospace', backgroundColor: '#f5f5f5' }} />
+                  <TextArea value={compareResult} readOnly autoSize={{ minRows: 5, maxRows: 20 }} style={{ fontFamily: 'monospace', backgroundColor: '#f5f5f5' }} />
                 )}
               </Space>
             ),
@@ -309,7 +309,7 @@ const JsonTab: React.FC = () => {
         </Col>
       </Row>
       {pathResult && (
-        <TextArea value={pathResult} readOnly rows={3} style={{ fontFamily: 'monospace', backgroundColor: '#f5f5f5' }} />
+        <TextArea value={pathResult} readOnly autoSize={{ minRows: 3, maxRows: 20 }} style={{ fontFamily: 'monospace', backgroundColor: '#f5f5f5' }} />
       )}
 
       {/* 语法检查结果 */}

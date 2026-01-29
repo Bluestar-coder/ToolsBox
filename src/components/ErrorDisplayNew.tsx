@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import { Card, Button, Typography, Space, Tag } from 'antd';
 import { CloseCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
-import { useErrorContext } from '../context/ErrorContext';
+import { useErrorContext } from '../hooks/useErrorContext';
 import styles from './styles/ErrorBoundary.module.css';
 
 const { Text } = Typography;

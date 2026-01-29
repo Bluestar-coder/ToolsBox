@@ -21,6 +21,8 @@
   "dependencies": {
     "@noble/ciphers": "^2.1.1",
     "@noble/curves": "^2.0.1",
+    "@prettier/plugin-php": "^0.24.0",
+    "@prettier/plugin-xml": "^3.4.2",
     "@sentry/react": "^10.32.1",
     "@sentry/tracing": "^7.120.4",
     "@types/dompurify": "^3.0.5",
@@ -33,13 +35,16 @@
     "html5-qrcode": "^2.3.8",
     "i18next": "^25.7.3",
     "i18next-browser-languagedetector": "^8.2.0",
+    "jose": "^6.1.3",
+    "prettier": "^3.8.1",
     "prismjs": "^1.30.0",
     "qrcode": "^1.5.4",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-i18next": "^16.5.0",
     "react-router-dom": "^7.11.0",
-    "sm-crypto": "^0.3.13"
+    "sm-crypto": "^0.3.13",
+    "sql-formatter": "^15.7.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

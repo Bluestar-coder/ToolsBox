@@ -236,7 +236,7 @@ const AEADTab: React.FC<AEADTabProps> = ({ activeTab }) => {
         value={inputText}
         onChange={(e) => setInputText(e.target.value)}
         placeholder="请在这里填写原文/密文"
-        rows={6}
+        autoSize={{ minRows: 6, maxRows: 20 }}
         style={{ marginBottom: 16, fontFamily: 'monospace' }}
       />
 
@@ -263,7 +263,7 @@ const AEADTab: React.FC<AEADTabProps> = ({ activeTab }) => {
             <>
               <div style={{ marginBottom: 8 }}>
                 <div style={{ fontWeight: 500, marginBottom: 4 }}>密文:</div>
-                <TextArea value={outputText} readOnly rows={3} style={{ fontFamily: 'monospace', fontSize: 12 }} />
+                <TextArea value={outputText} readOnly autoSize={{ minRows: 3, maxRows: 20 }} style={{ fontFamily: 'monospace', fontSize: 12 }} />
               </div>
               {aeadTag && (
                 <div style={{ marginBottom: 8 }}>

@@ -5,6 +5,62 @@
 import type { EncodeDecodeResult } from './common';
 import { createSuccessResult, createErrorResult } from './common';
 
+const encodeBytesToBase = (bytes: Uint8Array, alphabet: string): string => {
+  if (bytes.length === 0) return '';
+  const base = BigInt(alphabet.length);
+  let value = BigInt(0);
+  for (const byte of bytes) {
+    value = (value << BigInt(8)) | BigInt(byte);
+  }
+
+  let result = '';
+  while (value > BigInt(0)) {
+    const remainder = value % base;
+    result = alphabet[Number(remainder)] + result;
+    value = value / base;
+  }
+
+  let leadingZeros = 0;
+  while (leadingZeros < bytes.length && bytes[leadingZeros] === 0) {
+    leadingZeros++;
+  }
+  if (leadingZeros > 0) {
+    result = alphabet[0].repeat(leadingZeros) + result;
+  }
+
+  return result;
+};
+
+const decodeBaseToBytes = (input: string, alphabet: string): Uint8Array => {
+  if (input.length === 0) return new Uint8Array(0);
+  const base = BigInt(alphabet.length);
+  let value = BigInt(0);
+
+  for (const char of input) {
+    const index = alphabet.indexOf(char);
+    if (index === -1) {
+      throw new Error(`Invalid character: ${char}`);
+    }
+    value = value * base + BigInt(index);
+  }
+
+  const bytes: number[] = [];
+  while (value > BigInt(0)) {
+    bytes.unshift(Number(value & BigInt(0xFF)));
+    value = value >> BigInt(8);
+  }
+
+  let leadingZeros = 0;
+  while (leadingZeros < input.length && input[leadingZeros] === alphabet[0]) {
+    leadingZeros++;
+  }
+  for (let i = 0; i < leadingZeros; i++) {
+    bytes.unshift(0);
+  }
+
+  return new Uint8Array(bytes);
+};
+
 /**
  * Base36 编码 - 高性能版
  * @param input 输入字符串
@@ -12,16 +68,9 @@ import { createSuccessResult, createErrorResult } from './common';
  */
 export const base36Encode = (input: string): EncodeDecodeResult => {
   try {
-    // 预分配结果数组，避免多次字符串拼接
-    const resultArray = new Array(input.length);
-
-    // 直接操作数组，避免字符串拼接
-    for (let i = 0; i < input.length; i++) {
-      const charCode = input.charCodeAt(i);
-      resultArray[i] = charCode.toString(36);
-    }
-
-    const result = resultArray.join('').toUpperCase();
+    const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const bytes = new TextEncoder().encode(input);
+    const result = encodeBytesToBase(bytes, alphabet);
     return createSuccessResult(result);
   } catch (error) {
     return createErrorResult(error instanceof Error ? error.message : 'Base36编码错误');
@@ -35,29 +84,9 @@ export const base36Encode = (input: string): EncodeDecodeResult => {
  */
 export const base36Decode = (input: string): EncodeDecodeResult => {
   try {
-    let result = '';
-    let temp = '';
-
-    // 直接遍历字符串，避免不必要的异常处理
-    for (let i = 0; i < input.length; i++) {
-      temp += input[i];
-      const charCode = parseInt(temp, 36);
-
-      if (isNaN(charCode)) {
-        throw new Error('Invalid Base36 character');
-      }
-
-      if (charCode <= 255) {
-        result += String.fromCharCode(charCode);
-        temp = '';
-      }
-    }
-
-    // 如果还有剩余的字符，说明输入无效
-    if (temp.length > 0) {
-      throw new Error('Invalid Base36 input');
-    }
-
+    const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const bytes = decodeBaseToBytes(input.toUpperCase(), alphabet);
+    const result = new TextDecoder().decode(bytes);
     return createSuccessResult(result);
   } catch (error) {
     return createErrorResult(error instanceof Error ? error.message : 'Base36解码错误');
@@ -141,20 +170,8 @@ export const base58Decode = (input: string): EncodeDecodeResult => {
 export const base62Encode = (input: string): EncodeDecodeResult => {
   try {
     const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-    let value = BigInt(0);
-    for (let i = 0; i < input.length; i++) {
-      value = (value << BigInt(8)) | BigInt(input.charCodeAt(i));
-    }
-    if (value === BigInt(0)) return createSuccessResult(alphabet[0]);
-    let result = '';
-    while (value > BigInt(0)) {
-      result = alphabet[Number(value % BigInt(62))] + result;
-      value = value / BigInt(62);
-    }
-    // 处理前导零
-    for (let i = 0; i < input.length && input[i] === '\x00'; i++) {
-      result = alphabet[0] + result;
-    }
+    const bytes = new TextEncoder().encode(input);
+    const result = encodeBytesToBase(bytes, alphabet);
     return createSuccessResult(result);
   } catch (error) {
     return createErrorResult(error instanceof Error ? error.message : 'Base62编码错误');
@@ -167,21 +184,8 @@ export const base62Encode = (input: string): EncodeDecodeResult => {
 export const base62Decode = (input: string): EncodeDecodeResult => {
   try {
     const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-    let value = BigInt(0);
-    for (let i = 0; i < input.length; i++) {
-      const index = alphabet.indexOf(input[i]);
-      if (index === -1) throw new Error(`Invalid Base62 character: ${input[i]}`);
-      value = value * BigInt(62) + BigInt(index);
-    }
-    let result = '';
-    while (value > BigInt(0)) {
-      result = String.fromCharCode(Number(value & BigInt(0xff))) + result;
-      value = value >> BigInt(8);
-    }
-    // 处理前导零
-    for (let i = 0; i < input.length && input[i] === alphabet[0]; i++) {
-      result = '\x00' + result;
-    }
+    const bytes = decodeBaseToBytes(input, alphabet);
+    const result = new TextDecoder().decode(bytes);
     return createSuccessResult(result);
   } catch (error) {
     return createErrorResult(error instanceof Error ? error.message : 'Base62解码错误');

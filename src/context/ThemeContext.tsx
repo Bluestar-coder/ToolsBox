@@ -1,45 +1,24 @@
-import React, { createContext, useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import type { ReactNode } from 'react';
-import { storage } from '../utils/storage';
-import { STORAGE_KEYS } from '../utils/storage';
-
-export type ThemeMode = 'light' | 'dark' | 'system';
-
-interface ThemeContextType {
-  theme: ThemeMode;
-  isDark: boolean;
-  setTheme: (theme: ThemeMode) => void;
-  toggleTheme: () => void;
-}
-
-const ThemeContext = createContext<ThemeContextType>({
-  theme: 'light',
-  isDark: false,
-  setTheme: () => {},
-  toggleTheme: () => {},
-});
-
-// 计算实际是否为暗色模式
-const computeIsDark = (mode: ThemeMode): boolean => {
-  if (mode === 'system') {
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
-  }
-  return mode === 'dark';
-};
-
-// 应用主题到 DOM
-const applyThemeToDOM = (dark: boolean): void => {
-  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
-};
+import { storage, STORAGE_KEYS } from '../utils/storage';
+import {
+  type ThemeMode,
+  type ResolvedTheme,
+  isValidTheme,
+  computeIsDark,
+  applyThemeToDOM
+} from '../utils/theme-utils';
+import { ThemeContext } from './definitions';
 
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [theme, setThemeState] = useState<ThemeMode>(() => {
-    const saved = storage.get<ThemeMode>(STORAGE_KEYS.THEME);
-    return saved || 'light';
+    const saved = storage.get<string>(STORAGE_KEYS.THEME);
+    return saved && isValidTheme(saved) ? saved : 'light';
   });
 
   // 计算 isDark 基于当前 theme
   const isDark = useMemo(() => computeIsDark(theme), [theme]);
+  const resolvedTheme = useMemo<ResolvedTheme>(() => (isDark ? 'dark' : 'light'), [isDark]);
 
   // 初始化时应用主题
   useEffect(() => {
@@ -60,6 +39,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   }, [theme]);
 
   const setTheme = useCallback((newTheme: ThemeMode) => {
+    if (!isValidTheme(newTheme)) return;
     setThemeState(newTheme);
   }, []);
 
@@ -71,24 +51,16 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     });
   }, []);
 
-  const value = useMemo(() => ({ theme, isDark, setTheme, toggleTheme }), [theme, isDark, setTheme, toggleTheme]);
+  const value = useMemo(
+    () => ({ theme, resolvedTheme, isDark, setTheme, toggleTheme }),
+    [theme, resolvedTheme, isDark, setTheme, toggleTheme]
+  );
 
   return (
     <ThemeContext.Provider value={value}>
       {children}
     </ThemeContext.Provider>
   );
-};
-
-export { ThemeContext };
-
-// 导出 useTheme hook 方便在组件中使用
-export const useTheme = (): ThemeContextType => {
-  const context = React.useContext(ThemeContext);
-  if (!context) {
-    throw new Error('useTheme must be used within a ThemeProvider');
-  }
-  return context;
 };
 
 export default ThemeProvider;

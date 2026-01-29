@@ -76,7 +76,7 @@ const SplitTab: React.FC = () => {
       <div>
         <Text strong>{t('modules.regex.originalText')}：</Text>
         <TextArea
-          rows={4}
+          autoSize={{ minRows: 4, maxRows: 20 }}
           value={testString}
           onChange={(e) => setTestString(e.target.value)}
           placeholder={t('modules.regex.splitTextPlaceholder')}

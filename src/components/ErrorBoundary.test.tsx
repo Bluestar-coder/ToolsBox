@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen } from '@/test/utils';
 import { ErrorBoundaryClass } from './ErrorBoundary';
 
@@ -11,6 +11,16 @@ const ThrowError = ({ shouldThrow }: { shouldThrow: boolean }) => {
 };
 
 describe('ErrorBoundaryClass', () => {
+  let consoleSpy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    consoleSpy.mockRestore();
+  });
+
   it('should render children when there is no error', () => {
     render(
       <ErrorBoundaryClass>
@@ -21,8 +31,6 @@ describe('ErrorBoundaryClass', () => {
   });
 
   it('should catch and display errors', () => {
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-
     render(
       <ErrorBoundaryClass>
         <ThrowError shouldThrow={true} />
@@ -30,12 +38,9 @@ describe('ErrorBoundaryClass', () => {
     );
 
     expect(screen.getByText(/应用发生错误/i)).toBeInTheDocument();
-    consoleSpy.mockRestore();
   });
 
   it('should display error message', () => {
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-
     render(
       <ErrorBoundaryClass>
         <ThrowError shouldThrow={true} />
@@ -43,12 +48,9 @@ describe('ErrorBoundaryClass', () => {
     );
 
     expect(screen.getByText(/Test error/)).toBeInTheDocument();
-    consoleSpy.mockRestore();
   });
 
   it('should have a retry button', () => {
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-
     render(
       <ErrorBoundaryClass>
         <ThrowError shouldThrow={true} />
@@ -57,12 +59,9 @@ describe('ErrorBoundaryClass', () => {
 
     const retryButton = screen.getByRole('button', { name: /重试/i });
     expect(retryButton).toBeInTheDocument();
-    consoleSpy.mockRestore();
   });
 
   it('should display component stack when available', () => {
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-
     render(
       <ErrorBoundaryClass>
         <ThrowError shouldThrow={true} />
@@ -71,12 +70,9 @@ describe('ErrorBoundaryClass', () => {
 
     // 检查是否有组件栈相关的文本
     expect(screen.getByText(/组件栈/i)).toBeInTheDocument();
-    consoleSpy.mockRestore();
   });
 
   it('should reset error state when retry button is clicked', () => {
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-
     render(
       <ErrorBoundaryClass>
         <ThrowError shouldThrow={true} />
@@ -87,6 +83,5 @@ describe('ErrorBoundaryClass', () => {
     retryButton.click();
 
     // 点击重置后，错误信息应该消失（虽然组件会重新渲染并再次抛出错误）
-    consoleSpy.mockRestore();
   });
 });

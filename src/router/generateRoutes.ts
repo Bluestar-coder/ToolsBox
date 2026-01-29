@@ -4,10 +4,12 @@
  * 用于从模块元数据自动生成路由配置
  */
 
-import React, { lazy, Suspense } from 'react';
+import React, { lazy } from 'react';
 import type { RouteObject } from 'react-router-dom';
 import { Navigate } from 'react-router-dom';
 import type { ModuleMetadata } from '../modules/types';
+import ModuleLoader from '../components/ModuleLoader';
+import { createModuleElement, getLazyComponent } from './utils';
 
 /**
  * 从模块元数据列表生成路由配置
@@ -33,35 +35,19 @@ export function generateRoutes(modules: ModuleMetadata[]): RouteObject[] {
     // 主路由
     routes.push({
       path: meta.routePath,
-      element: createLazyElement(meta.component),
+      element: createModuleElement(meta.component),
     });
 
     // 带子类型的路由
     if (meta.subTypes && meta.subTypes.length > 0) {
       routes.push({
         path: `${meta.routePath}/:type`,
-        element: createLazyElement(meta.component),
+        element: createModuleElement(meta.component),
       });
     }
 
     return routes;
   });
-}
-
-/**
- * 创建懒加载元素
- */
-function createLazyElement(
-  componentLoader: () => Promise<{ default: React.ComponentType }>
-): React.ReactElement {
-  const Component = lazy(componentLoader);
-  const LoadingFallback = () => React.createElement('div', null, 'Loading...');
-
-  return React.createElement(
-    Suspense,
-    { fallback: React.createElement(LoadingFallback) },
-    React.createElement(Component)
-  );
 }
 
 /**
@@ -101,17 +87,18 @@ export function createManualRoute(
   componentLoader: () => Promise<{ default: React.ComponentType }>,
   withParam = false
 ): RouteObject[] {
+  const Component = getLazyComponent(componentLoader);
   const routes: RouteObject[] = [
     {
       path,
-      element: createLazyElement(componentLoader),
+      element: React.createElement(ModuleLoader, { Component }),
     },
   ];
 
   if (withParam) {
     routes.push({
       path: `${path}/:type`,
-      element: createLazyElement(componentLoader),
+      element: React.createElement(ModuleLoader, { Component }),
     });
   }
 

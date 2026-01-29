@@ -56,6 +56,7 @@ export const categoryItems = [
   { key: 'symmetric', label: '🔐 对称加密' },
   { key: 'asymmetric', label: '🔑 非对称加密' },
   { key: 'hash', label: '#️⃣ 哈希算法' },
+  { key: 'jwt', label: '🎫 JWT' },
   { key: 'classical', label: '📜 古典密码' },
   { key: 'gm', label: '🇨🇳 国密算法' },
 ];

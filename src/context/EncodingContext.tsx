@@ -1,31 +1,13 @@
-import React, { createContext, useReducer, useCallback, useMemo } from 'react';
+import React, { useReducer, useCallback, useMemo } from 'react';
 import type { ReactNode } from 'react';
 import type { EncoderType, OperationType } from '../modules/encoder-decoder/utils/encoders';
 import { storage, STORAGE_KEYS } from '../utils/storage';
 import { useMultiKeyPersistedState } from '../hooks/usePersistedState';
-
-// 编码输入输出状态类型
-interface EncodingState {
-  currentInput: string;
-  currentOutput: string;
-  currentType: EncoderType;
-  currentOperation: OperationType;
-}
-
-// Action类型
-type EncodingAction =
-  | { type: 'SET_CURRENT_INPUT'; payload: string }
-  | { type: 'SET_CURRENT_OUTPUT'; payload: string }
-  | { type: 'SET_CURRENT_TYPE'; payload: EncoderType }
-  | { type: 'SET_CURRENT_OPERATION'; payload: OperationType };
-
-// 初始状态
-const initialState: EncodingState = {
-  currentInput: '',
-  currentOutput: '',
-  currentType: 'base64',
-  currentOperation: 'encode',
-};
+import {
+  type EncodingState,
+  type EncodingAction
+} from './types';
+import { EncodingContext } from './definitions';
 
 // 从localStorage加载初始状态
 const loadInitialState = (): EncodingState => {
@@ -41,23 +23,6 @@ const loadInitialState = (): EncodingState => {
     currentOperation: savedOperation ?? 'encode',
   };
 };
-
-// 创建上下文
-const EncodingContext = createContext<{
-  state: EncodingState;
-  dispatch: React.Dispatch<EncodingAction>;
-  setInput: (input: string) => void;
-  setOutput: (output: string) => void;
-  setType: (type: EncoderType) => void;
-  setOperation: (operation: OperationType) => void;
-}>({
-  state: initialState,
-  dispatch: () => {},
-  setInput: () => {},
-  setOutput: () => {},
-  setType: () => {},
-  setOperation: () => {},
-});
 
 // Reducer函数
 const encodingReducer = (state: EncodingState, action: EncodingAction): EncodingState => {
@@ -126,14 +91,4 @@ export const EncodingProvider: React.FC<EncodingProviderProps> = ({ children }) 
   return <EncodingContext.Provider value={value}>{children}</EncodingContext.Provider>;
 };
 
-// 导出hook
-export const useEncodingContext = () => {
-  const context = React.useContext(EncodingContext);
-  if (!context) {
-    throw new Error('useEncodingContext must be used within EncodingProvider');
-  }
-  return context;
-};
-
-export { EncodingContext };
 export default EncodingProvider;

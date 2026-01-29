@@ -4,7 +4,7 @@ import type { MenuProps } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { moduleManager } from '../../modules';
-import { moduleIdToPath } from '../../router';
+import { moduleIdToPath } from '../../router/constants';
 import styles from '../styles/SideMenu.module.css';
 
 interface SideMenuProps {
@@ -38,7 +38,16 @@ const SideMenu: React.FC<SideMenuProps> = React.memo(({ currentModuleId }) => {
 
   // 按照定义的顺序排序模块
   const sortedModules = useMemo(() => {
-    return [...modules].sort((a, b) => {
+    const baseModules = modules.length > 0
+      ? modules.map(({ id, name, icon, description }) => ({ id, name, icon, description }))
+      : moduleOrder.map(id => ({
+        id,
+        name: id,
+        icon: null,
+        description: '',
+      }));
+
+    return [...baseModules].sort((a, b) => {
       const indexA = moduleOrder.indexOf(a.id);
       const indexB = moduleOrder.indexOf(b.id);
       return indexA - indexB;

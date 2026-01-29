@@ -49,7 +49,7 @@ const CodeGenTab: React.FC = () => {
           <TextArea
             value={generatedCode}
             readOnly
-            rows={8}
+            autoSize={{ minRows: 8, maxRows: 20 }}
             style={{ fontFamily: 'monospace', cursor: 'pointer' }}
             onClick={handleCopy}
           />

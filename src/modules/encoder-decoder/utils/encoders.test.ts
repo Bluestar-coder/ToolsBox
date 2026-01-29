@@ -4,6 +4,12 @@ import {
   base64Decode,
   base16Encode,
   base16Decode,
+  base32HexEncode,
+  base32HexDecode,
+  base36Encode,
+  base36Decode,
+  base62Encode,
+  base62Decode,
   urlEncode,
   urlDecode,
   htmlEncode,
@@ -130,6 +136,35 @@ describe('编码/解码工具测试', () => {
       const result = unicodeDecode(input);
       expect(result.success).toBe(true);
       expect(result.result).toBe('你好，世界');
+    });
+  });
+
+  // Base32Hex/Base36/Base62 编码/解码测试（Unicode）
+  describe('扩展Base编码测试', () => {
+    const input = 'Hello，世界 👋';
+
+    it('Base32Hex 应该正确编码并解码Unicode字符', () => {
+      const encoded = base32HexEncode(input);
+      expect(encoded.success).toBe(true);
+      const decoded = base32HexDecode(encoded.result);
+      expect(decoded.success).toBe(true);
+      expect(decoded.result).toBe(input);
+    });
+
+    it('Base36 应该正确编码并解码Unicode字符', () => {
+      const encoded = base36Encode(input);
+      expect(encoded.success).toBe(true);
+      const decoded = base36Decode(encoded.result);
+      expect(decoded.success).toBe(true);
+      expect(decoded.result).toBe(input);
+    });
+
+    it('Base62 应该正确编码并解码Unicode字符', () => {
+      const encoded = base62Encode(input);
+      expect(encoded.success).toBe(true);
+      const decoded = base62Decode(encoded.result);
+      expect(decoded.success).toBe(true);
+      expect(decoded.result).toBe(input);
     });
   });
 

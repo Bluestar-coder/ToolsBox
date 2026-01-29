@@ -15,3 +15,4 @@ export { default as SM3Tab } from './SM3Tab';
 export { default as KDFTab } from './KDFTab';
 export { default as ClassicalTab } from './ClassicalTab';
 export { default as GMInfoTab } from './GMInfoTab';
+export { default as JWTTab } from './JWTTab';

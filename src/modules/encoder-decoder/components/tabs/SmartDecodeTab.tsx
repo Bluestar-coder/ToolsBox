@@ -91,7 +91,7 @@ const SmartDecodeTab: React.FC = () => {
           </Card>
 
           <TextArea
-            rows={12}
+            autoSize={{ minRows: 12, maxRows: 20 }}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={t('modules.encoder.smart.inputPlaceholder')}
@@ -129,7 +129,7 @@ const SmartDecodeTab: React.FC = () => {
             }
           >
             <TextArea
-              rows={8}
+              autoSize={{ minRows: 8, maxRows: 20 }}
               value={output}
               readOnly
               placeholder={t('modules.encoder.smart.resultPlaceholder')}

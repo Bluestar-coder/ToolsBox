@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import type { ReactNode } from 'react';
 import { Card, Button, Typography, Space, Tag } from 'antd';
 import { CloseCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
-import { useAppContext } from '../hooks/useAppContext';
+import { useErrorContext } from '../hooks/useErrorContext';
 import * as Sentry from '@sentry/react';
 import { logger } from '../utils/logger';
 import styles from './styles/ErrorBoundary.module.css';
@@ -112,7 +112,7 @@ export class ErrorBoundaryClass extends Component<ErrorBoundaryProps, ErrorBound
 
 // 错误显示组件（函数组件，用于显示上下文管理的错误）
 export const ErrorDisplay: React.FC = () => {
-  const { state, clearError } = useAppContext();
+  const { state, clearError } = useErrorContext();
 
   if (!state.error) return null;
 

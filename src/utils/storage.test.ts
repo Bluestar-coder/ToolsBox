@@ -63,8 +63,10 @@ describe('Storage Service', () => {
 
   describe('Error handling', () => {
     it('should handle JSON parse errors gracefully', () => {
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
       localStorage.setItem('invalid_json', 'invalid json{{{');
       expect(storage.get('invalid_json')).toBeNull();
+      consoleErrorSpy.mockRestore();
     });
 
     it('should handle localStorage quota errors', () => {
@@ -149,8 +151,10 @@ describe('Storage Service', () => {
     });
 
     it('should return false for invalid JSON', () => {
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
       const result = importData('invalid json{{{');
       expect(result).toBe(false);
+      consoleErrorSpy.mockRestore();
     });
 
     it('should handle empty import data', () => {

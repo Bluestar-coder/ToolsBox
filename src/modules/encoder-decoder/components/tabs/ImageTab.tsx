@@ -117,7 +117,7 @@ const ImageTab: React.FC = () => {
               <TextArea
                 value={imageBase64}
                 readOnly
-                rows={10}
+                autoSize={{ minRows: 10, maxRows: 20 }}
                 placeholder="Base64编码将显示在这里"
                 style={{ fontFamily: 'monospace', fontSize: 11 }}
               />
@@ -136,7 +136,7 @@ const ImageTab: React.FC = () => {
               <TextArea
                 value={imageBase64}
                 onChange={(e) => setImageBase64(e.target.value)}
-                rows={10}
+                autoSize={{ minRows: 10, maxRows: 20 }}
                 placeholder="粘贴Base64字符串（可带或不带data:前缀）"
                 style={{ fontFamily: 'monospace', fontSize: 11, marginBottom: 8 }}
               />

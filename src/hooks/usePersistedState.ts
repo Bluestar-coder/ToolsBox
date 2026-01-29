@@ -28,19 +28,21 @@ interface PersistConfig<T extends Record<string, unknown>> {
 export function usePersistedContext<T extends Record<string, unknown>>(
   config: PersistConfig<T>
 ): void {
+  const { key, state, fields } = config;
+
   useEffect(() => {
     const toPersist: Partial<T> = {};
-    config.fields.forEach(field => {
-      if (config.state[field] !== undefined) {
-        toPersist[field] = config.state[field];
+    fields.forEach(field => {
+      if (state[field] !== undefined) {
+        toPersist[field] = state[field];
       }
     });
 
     // 批量存储，减少localStorage操作次数
     if (Object.keys(toPersist).length > 0) {
-      storage.set(config.key, toPersist);
+      storage.set(key, toPersist);
     }
-  }, [config.key, config.state, ...config.fields.map(field => config.state[field])]);
+  }, [key, state, fields]);
 }
 
 /**
@@ -63,6 +65,7 @@ export function useMultiKeyPersistedState<
   T extends Record<string, unknown>,
   K extends Record<string, keyof T>
 >(config: { fields: K; state: T }): void {
+  const { fields, state } = config;
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const previousStateRef = useRef<Record<string, unknown>>({});
 
@@ -70,8 +73,8 @@ export function useMultiKeyPersistedState<
     // 检查哪些字段发生了变化
     const changedFields: Array<{ storageKey: string; stateKey: keyof T; value: T[keyof T] }> = [];
 
-    Object.entries(config.fields).forEach(([storageKey, stateKey]) => {
-      const currentValue = config.state[stateKey];
+    Object.entries(fields).forEach(([storageKey, stateKey]) => {
+      const currentValue = state[stateKey];
       const previousValue = previousStateRef.current[stateKey as string];
 
       // 只保存发生变化的字段
@@ -103,7 +106,7 @@ export function useMultiKeyPersistedState<
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [config.state, ...Object.values(config.fields).map(key => config.state[key])]);
+  }, [fields, state]);
 }
 
 /**

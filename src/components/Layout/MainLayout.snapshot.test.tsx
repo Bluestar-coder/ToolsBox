@@ -29,9 +29,9 @@ describe('MainLayout', () => {
     expect(screen.getByRole('main')).toBeInTheDocument();
   });
 
-  it('should render app title', () => {
+  it('should render app title', async () => {
     render(<MainLayout />, { wrapper: withRouter });
-    expect(screen.getByText(/工具箱/i)).toBeInTheDocument();
+    expect(await screen.findByText(/工具箱|Tool/i)).toBeInTheDocument();
   });
 
   it('should render SideMenu component', () => {
@@ -41,16 +41,14 @@ describe('MainLayout', () => {
 
   it('should render language switcher button', () => {
     render(<MainLayout />, { wrapper: withRouter });
-    // 检查是否有语言切换器
-    const languageSwitcher = document.querySelector('.language-switcher');
-    expect(languageSwitcher).toBeInTheDocument();
+    const languageButton = screen.getByRole('button', { name: /🇨🇳|🇺🇸|🇰🇷|🇯🇵/ });
+    expect(languageButton).toBeInTheDocument();
   });
 
   it('should render theme toggle button', () => {
     render(<MainLayout />, { wrapper: withRouter });
-    // 检查是否有主题切换按钮
-    const themeButtons = document.querySelectorAll('button[type="text"]');
-    expect(themeButtons.length).toBeGreaterThan(0);
+    const themeButton = screen.getByTitle(/Switch to|切换到/i);
+    expect(themeButton).toBeInTheDocument();
   });
 
   it('should match snapshot', () => {

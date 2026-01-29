@@ -155,7 +155,7 @@ const KDFTab: React.FC = () => {
             </Space>
           </Card>
           <Button type="primary" onClick={handlePbkdf2}>派生密钥</Button>
-          <TextArea rows={2} value={derivedKey} readOnly placeholder="派生的密钥 (Hex)" />
+          <TextArea autoSize={{ minRows: 2, maxRows: 20 }} value={derivedKey} readOnly placeholder="派生的密钥 (Hex)" />
           <Alert type="info" message="PBKDF2 通过多次迭代增加暴力破解难度，推荐迭代次数 >= 10000。" />
         </Space>
       ),
@@ -168,7 +168,7 @@ const KDFTab: React.FC = () => {
           <Card size="small" title="HMAC 参数">
             <Space orientation="vertical" style={{ width: '100%' }}>
               <TextArea
-                rows={2}
+                autoSize={{ minRows: 2, maxRows: 20 }}
                 value={hmacMessage}
                 onChange={(e) => setHmacMessage(e.target.value)}
                 placeholder="输入消息"
@@ -191,7 +191,7 @@ const KDFTab: React.FC = () => {
           <Space>
             <Button type="primary" onClick={handleHmacGenerate}>生成 HMAC</Button>
           </Space>
-          <TextArea rows={2} value={hmacResult} readOnly placeholder="HMAC 结果 (Hex)" />
+          <TextArea autoSize={{ minRows: 2, maxRows: 20 }} value={hmacResult} readOnly placeholder="HMAC 结果 (Hex)" />
           <Card size="small" title="HMAC 验证">
             <Space orientation="vertical" style={{ width: '100%' }}>
               <Input
@@ -242,7 +242,7 @@ const KDFTab: React.FC = () => {
             </Space>
           </Card>
           <Button type="primary" onClick={handleHkdf}>派生密钥</Button>
-          <TextArea rows={2} value={hkdfResult} readOnly placeholder="派生的密钥 (Hex)" />
+          <TextArea autoSize={{ minRows: 2, maxRows: 20 }} value={hkdfResult} readOnly placeholder="派生的密钥 (Hex)" />
           <Alert type="info" message="HKDF 是基于 HMAC 的密钥派生函数，用于从共享密钥派生多个密钥。" />
         </Space>
       ),

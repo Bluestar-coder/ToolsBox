@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useEncodingContext } from '../context/EncodingContext';
+import { useEncodingContext } from '../hooks/useEncodingContext';
 import { clearSensitiveData } from '../utils/storage';
 
 /**

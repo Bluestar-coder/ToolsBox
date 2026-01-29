@@ -71,11 +71,11 @@ const ECDHTab: React.FC = () => {
         <Space orientation="vertical" style={{ width: '100%' }}>
           <div>
             <Text type="secondary">公钥 (Hex 压缩格式):</Text>
-            <TextArea rows={2} value={myPublicKey} readOnly placeholder="生成后显示公钥" />
+            <TextArea autoSize={{ minRows: 2, maxRows: 20 }} value={myPublicKey} readOnly placeholder="生成后显示公钥" />
           </div>
           <div>
             <Text type="secondary">私钥 (Hex):</Text>
-            <TextArea rows={2} value={myPrivateKey} readOnly placeholder="生成后显示私钥" />
+            <TextArea autoSize={{ minRows: 2, maxRows: 20 }} value={myPrivateKey} readOnly placeholder="生成后显示私钥" />
           </div>
         </Space>
       </Card>
@@ -85,7 +85,7 @@ const ECDHTab: React.FC = () => {
           <div>
             <Text type="secondary">对方公钥 (Hex):</Text>
             <TextArea
-              rows={2}
+              autoSize={{ minRows: 2, maxRows: 20 }}
               value={peerPublicKey}
               onChange={(e) => setPeerPublicKey(e.target.value)}
               placeholder="输入对方的公钥 (压缩或非压缩格式)"
@@ -99,7 +99,7 @@ const ECDHTab: React.FC = () => {
           </Space>
           <div>
             <Text type="secondary">共享密钥 (Hex):</Text>
-            <TextArea rows={2} value={sharedSecret} readOnly placeholder="计算后显示共享密钥" />
+            <TextArea autoSize={{ minRows: 2, maxRows: 20 }} value={sharedSecret} readOnly placeholder="计算后显示共享密钥" />
           </div>
         </Space>
       </Card>

@@ -109,7 +109,7 @@ const SM2Tab: React.FC = () => {
         value={inputText}
         onChange={(e) => setInputText(e.target.value)}
         placeholder="请输入要加密/签名的内容"
-        rows={6}
+        autoSize={{ minRows: 6, maxRows: 20 }}
         style={{ marginBottom: 16, fontFamily: 'monospace' }}
       />
 
@@ -137,7 +137,7 @@ const SM2Tab: React.FC = () => {
             <div style={{ color: '#ff4d4f' }}>{outputError}</div>
           ) : (
             <>
-              <TextArea value={outputText} readOnly rows={4} style={{ fontFamily: 'monospace', fontSize: 12, marginBottom: 8 }} />
+              <TextArea value={outputText} readOnly autoSize={{ minRows: 4, maxRows: 20 }} style={{ fontFamily: 'monospace', fontSize: 12, marginBottom: 8 }} />
               <Button size="small" onClick={handleCopyOutput}>复制</Button>
             </>
           )}
@@ -152,7 +152,7 @@ const SM2Tab: React.FC = () => {
               value={sm2PublicKey}
               onChange={(e) => setSm2PublicKey(e.target.value)}
               placeholder="04开头的公钥 (用于加密和验签)"
-              rows={2}
+              autoSize={{ minRows: 2, maxRows: 20 }}
               style={{ fontFamily: 'monospace', fontSize: 11 }}
             />
           </Space>
@@ -163,7 +163,7 @@ const SM2Tab: React.FC = () => {
               value={sm2PrivateKey}
               onChange={(e) => setSm2PrivateKey(e.target.value)}
               placeholder="私钥 (用于解密和签名)"
-              rows={2}
+              autoSize={{ minRows: 2, maxRows: 20 }}
               style={{ fontFamily: 'monospace', fontSize: 11 }}
             />
           </Space>

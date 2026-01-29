@@ -1,7 +1,7 @@
 import React, { useCallback, useState, useRef, useEffect } from 'react';
 import { Card, Input, Button, Space, Tabs, message } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
-import { useAppContext } from '../../../../hooks/useAppContext';
+import { useEncodingContext } from '../../../../hooks/useEncodingContext';
 import { executeEncodeDecode, getEncoderDisplayName } from '../../utils/encoders';
 import type { EncoderType, OperationType } from '../../utils/encoders';
 import { validateBase64, validateBase64Url, validateBase32, validateBase16, validateJson } from '../../../../utils/validators';
@@ -20,7 +20,7 @@ interface EncodingTabProps {
 }
 
 const EncodingTab: React.FC<EncodingTabProps> = ({ activeCategory }) => {
-  const { state, dispatch } = useAppContext();
+  const { state, dispatch } = useEncodingContext();
   const [error, setError] = useState<string>('');
   const [isImageMode, setIsImageMode] = useState<boolean>(false);
   const lastProcessedRef = useRef<string>('');
@@ -176,7 +176,7 @@ const EncodingTab: React.FC<EncodingTabProps> = ({ activeCategory }) => {
         value={state.currentInput}
         onChange={handleInputChange}
         placeholder="请在这里填写原文/密文"
-        rows={8}
+        autoSize={{ minRows: 8, maxRows: 20 }}
         className={styles.inputWrapper}
       />
 
@@ -207,7 +207,7 @@ const EncodingTab: React.FC<EncodingTabProps> = ({ activeCategory }) => {
               <TextArea
                 value={state.currentOutput}
                 readOnly
-                rows={6}
+                autoSize={{ minRows: 6, maxRows: 20 }}
                 className={styles.outputWrapper}
                 style={{
                   backgroundColor: 'transparent',

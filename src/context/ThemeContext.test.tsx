@@ -1,6 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@/test/utils';
-import ThemeProvider, { useTheme } from './ThemeContext';
+import { render, screen, waitFor } from '@/test/utils';
+import userEvent from '@testing-library/user-event';
+import ThemeProvider from './ThemeContext';
+import { useTheme } from '../hooks/useTheme';
+import { STORAGE_KEYS } from '../utils/storage';
 
 // 测试组件，使用useTheme hook
 function TestComponent() {
@@ -20,6 +23,7 @@ describe('ThemeContext', () => {
   beforeEach(() => {
     // 清除localStorage mock
     vi.clearAllMocks();
+    window.localStorage.clear();
     // 重置document.documentElement属性
     document.documentElement.removeAttribute('data-theme');
   });
@@ -43,6 +47,7 @@ describe('ThemeContext', () => {
   });
 
   it('should change theme when setTheme is called', async () => {
+    const user = userEvent.setup();
     render(
       <ThemeProvider>
         <TestComponent />
@@ -50,13 +55,16 @@ describe('ThemeContext', () => {
     );
 
     const setDarkButton = screen.getByText('Set Dark');
-    setDarkButton.click();
+    await user.click(setDarkButton);
 
-    expect(screen.getByTestId('theme')).toHaveTextContent('dark');
-    expect(screen.getByTestId('is-dark')).toHaveTextContent('true');
+    await waitFor(() => {
+      expect(screen.getByTestId('theme')).toHaveTextContent('dark');
+      expect(screen.getByTestId('is-dark')).toHaveTextContent('true');
+    });
   });
 
   it('should toggle theme between light and dark', async () => {
+    const user = userEvent.setup();
     render(
       <ThemeProvider>
         <TestComponent />
@@ -64,16 +72,21 @@ describe('ThemeContext', () => {
     );
 
     const toggleButton = screen.getByText('Toggle');
-    toggleButton.click();
+    await user.click(toggleButton);
 
-    expect(screen.getByTestId('theme')).toHaveTextContent('dark');
+    await waitFor(() => {
+      expect(screen.getByTestId('theme')).toHaveTextContent('dark');
+    });
 
-    toggleButton.click();
+    await user.click(toggleButton);
 
-    expect(screen.getByTestId('theme')).toHaveTextContent('light');
+    await waitFor(() => {
+      expect(screen.getByTestId('theme')).toHaveTextContent('light');
+    });
   });
 
   it('should apply theme to DOM', async () => {
+    const user = userEvent.setup();
     render(
       <ThemeProvider>
         <TestComponent />
@@ -81,17 +94,22 @@ describe('ThemeContext', () => {
     );
 
     // 初始为light主题
-    expect(document.documentElement.getAttribute('data-theme')).toBe('light');
+    await waitFor(() => {
+      expect(document.documentElement.getAttribute('data-theme')).toBe('light');
+    });
 
     const setDarkButton = screen.getByText('Set Dark');
-    setDarkButton.click();
+    await user.click(setDarkButton);
 
     // 切换到dark主题
-    expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+    await waitFor(() => {
+      expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+    });
   });
 
   it('should save theme to localStorage', async () => {
-    const setItemSpy = vi.spyOn(Storage.prototype, 'setItem');
+    const user = userEvent.setup();
+    const setItemSpy = vi.spyOn(window.localStorage, 'setItem');
 
     render(
       <ThemeProvider>
@@ -99,18 +117,20 @@ describe('ThemeContext', () => {
       </ThemeProvider>
     );
 
-    expect(setItemSpy).toHaveBeenCalledWith('app-theme', 'light');
+    await waitFor(() => {
+      expect(setItemSpy).toHaveBeenCalledWith(STORAGE_KEYS.THEME, JSON.stringify('light'));
+    });
 
     const setDarkButton = screen.getByText('Set Dark');
-    setDarkButton.click();
+    await user.click(setDarkButton);
 
-    expect(setItemSpy).toHaveBeenCalledWith('app-theme', 'dark');
-
-    setItemSpy.mockRestore();
+    await waitFor(() => {
+      expect(setItemSpy).toHaveBeenCalledWith(STORAGE_KEYS.THEME, JSON.stringify('dark'));
+    });
   });
 
   it('should read theme from localStorage on initialization', () => {
-    const getItemSpy = vi.spyOn(Storage.prototype, 'getItem').mockReturnValue('dark');
+    window.localStorage.setItem(STORAGE_KEYS.THEME, JSON.stringify('dark'));
 
     render(
       <ThemeProvider>
@@ -118,9 +138,7 @@ describe('ThemeContext', () => {
       </ThemeProvider>
     );
 
-    expect(getItemSpy).toHaveBeenCalledWith('app-theme');
-
-    getItemSpy.mockRestore();
+    expect(screen.getByTestId('theme')).toHaveTextContent('dark');
   });
 
   it('should handle system theme correctly', () => {

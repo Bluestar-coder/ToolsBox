@@ -1,41 +1,12 @@
-import React, { createContext, useReducer, useCallback, useMemo, useEffect } from 'react';
+import React, { useReducer, useCallback, useMemo, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { contextEventBus, CONTEXT_EVENTS, type ErrorOccurredEvent, type EncodingErrorEvent, type CryptoErrorEvent, type PluginErrorEvent } from './ContextEventBus';
-
-// 错误信息类型
-interface ErrorInfo {
-  message: string;
-  type: string;
-  stack?: string;
-}
-
-// 错误状态类型
-interface ErrorState {
-  error: ErrorInfo | null;
-}
-
-// Action类型
-type ErrorAction =
-  | { type: 'SET_ERROR'; payload: ErrorInfo }
-  | { type: 'CLEAR_ERROR' };
-
-// 初始状态
-const initialState: ErrorState = {
-  error: null,
-};
-
-// 创建上下文
-const ErrorContext = createContext<{
-  state: ErrorState;
-  dispatch: React.Dispatch<ErrorAction>;
-  setError: (message: string, type: string, stack?: string) => void;
-  clearError: () => void;
-}>({
-  state: initialState,
-  dispatch: () => {},
-  setError: () => {},
-  clearError: () => {},
-});
+import {
+  type ErrorState,
+  type ErrorAction,
+  initialErrorState
+} from './types';
+import { ErrorContext } from './definitions';
 
 // Reducer函数
 const errorReducer = (state: ErrorState, action: ErrorAction): ErrorState => {
@@ -55,7 +26,7 @@ interface ErrorProviderProps {
 }
 
 export const ErrorProvider: React.FC<ErrorProviderProps> = ({ children }) => {
-  const [state, dispatch] = useReducer(errorReducer, initialState);
+  const [state, dispatch] = useReducer(errorReducer, initialErrorState);
 
   // 辅助函数
   const setError = useCallback((message: string, type: string, stack?: string) => {
@@ -136,14 +107,4 @@ export const ErrorProvider: React.FC<ErrorProviderProps> = ({ children }) => {
   return <ErrorContext.Provider value={value}>{children}</ErrorContext.Provider>;
 };
 
-// 导出hook
-export const useErrorContext = () => {
-  const context = React.useContext(ErrorContext);
-  if (!context) {
-    throw new Error('useErrorContext must be used within ErrorProvider');
-  }
-  return context;
-};
-
-export { ErrorContext };
 export default ErrorProvider;

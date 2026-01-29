@@ -78,7 +78,7 @@ const GenerateTab: React.FC = () => {
       <Col xs={24} lg={12}>
         <Space direction="vertical" style={{ width: '100%' }} size="middle">
           <TextArea
-            rows={6}
+            autoSize={{ minRows: 6, maxRows: 20 }}
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder={t('modules.qrcode.inputPlaceholder')}

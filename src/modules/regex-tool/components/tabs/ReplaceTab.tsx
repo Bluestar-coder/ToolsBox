@@ -90,7 +90,7 @@ const ReplaceTab: React.FC = () => {
       <div>
         <Text strong>{t('modules.regex.originalText')}：</Text>
         <TextArea
-          rows={4}
+          autoSize={{ minRows: 4, maxRows: 20 }}
           value={testString}
           onChange={(e) => setTestString(e.target.value)}
           placeholder={t('modules.regex.originalTextPlaceholder')}
@@ -113,7 +113,7 @@ const ReplaceTab: React.FC = () => {
           </Space>
         </div>
         <TextArea
-          rows={4}
+          autoSize={{ minRows: 4, maxRows: 20 }}
           value={result.result}
           readOnly
           style={{ marginTop: 8, background: '#fafafa' }}

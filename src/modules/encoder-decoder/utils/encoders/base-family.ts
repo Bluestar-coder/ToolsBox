@@ -5,6 +5,17 @@
 import type { EncodeDecodeResult } from './common';
 import { createSuccessResult, createErrorResult } from './common';
 
+const bytesToBinaryString = (bytes: Uint8Array): string => {
+  if (bytes.length === 0) return '';
+  const chunkSize = 0x8000;
+  let result = '';
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    const chunk = bytes.subarray(i, i + chunkSize);
+    result += String.fromCharCode(...chunk);
+  }
+  return result;
+};
+
 /**
  * Base64 编码 - 高性能版
  * @param input 输入字符串
@@ -16,8 +27,8 @@ export const base64Encode = (input: string): EncodeDecodeResult => {
     // 对于包含非ASCII字符的字符串，使用TextEncoder先转换为字节数组
     const encoder = new TextEncoder();
     const bytes = encoder.encode(input);
-    // 使用String.fromCharCode.apply优化大量字符的转换
-    const binaryString = String.fromCharCode.apply(null, bytes as unknown as number[]);
+    // 分块转换，避免大输入导致的参数过长错误
+    const binaryString = bytesToBinaryString(bytes);
     const result = btoa(binaryString);
     return createSuccessResult(result);
   } catch (error) {
@@ -191,12 +202,13 @@ export const base32Decode = (input: string): EncodeDecodeResult => {
 export const base32HexEncode = (input: string): EncodeDecodeResult => {
   try {
     const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUV';
+    const bytes = new TextEncoder().encode(input);
     let buffer = 0;
     let bitsLeft = 0;
     let result = '';
 
-    for (let i = 0; i < input.length; i++) {
-      buffer = (buffer << 8) | input.charCodeAt(i);
+    for (let i = 0; i < bytes.length; i++) {
+      buffer = (buffer << 8) | bytes[i];
       bitsLeft += 8;
       while (bitsLeft >= 5) {
         const index = (buffer >>> (bitsLeft - 5)) & 0x1f;
@@ -225,7 +237,7 @@ export const base32HexDecode = (input: string): EncodeDecodeResult => {
     const inputUpper = input.toUpperCase().replace(/=/g, '');
     let buffer = 0;
     let bitsLeft = 0;
-    let result = '';
+    const bytes: number[] = [];
 
     for (let i = 0; i < inputUpper.length; i++) {
       const index = alphabet.indexOf(inputUpper[i]);
@@ -233,10 +245,11 @@ export const base32HexDecode = (input: string): EncodeDecodeResult => {
       buffer = (buffer << 5) | index;
       bitsLeft += 5;
       while (bitsLeft >= 8) {
-        result += String.fromCharCode((buffer >>> (bitsLeft - 8)) & 0xff);
+        bytes.push((buffer >>> (bitsLeft - 8)) & 0xff);
         bitsLeft -= 8;
       }
     }
+    const result = new TextDecoder().decode(new Uint8Array(bytes));
     return createSuccessResult(result);
   } catch (error) {
     return createErrorResult(error instanceof Error ? error.message : 'Base32Hex解码错误');
@@ -253,7 +266,7 @@ export const base64UrlEncode = (input: string): EncodeDecodeResult => {
     // 使用更现代的实现方式，避免使用已弃用的unescape函数
     const encoder = new TextEncoder();
     const bytes = encoder.encode(input);
-    const binaryString = String.fromCharCode.apply(null, bytes as unknown as number[]);
+    const binaryString = bytesToBinaryString(bytes);
 
     // 先进行Base64编码，然后替换URL不安全的字符
     const base64Url = btoa(binaryString)

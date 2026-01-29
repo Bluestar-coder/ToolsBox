@@ -26,6 +26,7 @@ import {
   KDFTab,
   ClassicalTab,
   GMInfoTab,
+  JWTTab,
 } from './tabs';
 
 const CryptoTool: React.FC = () => {
@@ -37,6 +38,7 @@ const CryptoTool: React.FC = () => {
     { key: 'symmetric', label: t('modules.crypto.tabs.symmetric') },
     { key: 'asymmetric', label: t('modules.crypto.tabs.asymmetric') },
     { key: 'hash', label: t('modules.crypto.tabs.hash') },
+    { key: 'jwt', label: t('modules.crypto.tabs.jwt') },
     { key: 'classical', label: t('modules.crypto.tabs.classical') },
     { key: 'gm', label: t('modules.crypto.tabs.gm') },
   ];
@@ -53,6 +55,8 @@ const CryptoTool: React.FC = () => {
         return classicalTabItems;
       case 'gm':
         return gmTabItems;
+      case 'jwt':
+        return null; // JWT 没有子标签
       default:
         return symmetricTabItems;
     }
@@ -67,11 +71,16 @@ const CryptoTool: React.FC = () => {
       hash: 'hash',
       classical: 'substitute',
       gm: 'sm2',
+      jwt: 'jwt',
     };
     setActiveSubTab(defaultTabs[category] || 'aes');
   };
 
   const renderTabContent = () => {
+    // JWT
+    if (activeCategory === 'jwt') {
+      return <JWTTab />;
+    }
     // 对称加密
     if (['aes', 'des', '3des'].includes(activeSubTab)) {
       return <SymmetricTab activeTab={activeSubTab} />;
@@ -123,6 +132,8 @@ const CryptoTool: React.FC = () => {
     }
   };
 
+  const subTabItems = getSubTabItems();
+
   return (
     <Card title={t('modules.crypto.title')} variant="borderless">
       <Tabs
@@ -131,13 +142,15 @@ const CryptoTool: React.FC = () => {
         items={categoryItems}
         style={{ marginBottom: 8 }}
       />
-      <Tabs
-        activeKey={activeSubTab}
-        onChange={setActiveSubTab}
-        items={getSubTabItems()}
-        size="small"
-        style={{ marginBottom: 16 }}
-      />
+      {subTabItems && (
+        <Tabs
+          activeKey={activeSubTab}
+          onChange={setActiveSubTab}
+          items={subTabItems}
+          size="small"
+          style={{ marginBottom: 16 }}
+        />
+      )}
       {renderTabContent()}
     </Card>
   );

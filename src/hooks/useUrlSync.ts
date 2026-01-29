@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useSearchParams, useLocation, useNavigate } from 'react-router-dom';
 
 /**
@@ -92,6 +92,7 @@ export function useUrlSync<T extends string>(
 ): [T, (value: T) => void] {
   const { immediate = true, serialize, deserialize, validator } = options || {};
   const [searchParams, setSearchParams] = useSearchParams();
+  const paramValue = searchParams.get(paramName);
   const [internalValue, setInternalValue] = useState<T>(() => {
     const paramValue = searchParams.get(paramName);
     if (paramValue !== null) {
@@ -109,11 +110,27 @@ export function useUrlSync<T extends string>(
     }
     return defaultValue;
   });
+  const internalValueRef = useRef(internalValue);
+  const serializeRef = useRef(serialize);
+  const deserializeRef = useRef(deserialize);
+  const validatorRef = useRef(validator);
+
+  useEffect(() => {
+    internalValueRef.current = internalValue;
+  }, [internalValue]);
+
+  useEffect(() => {
+    serializeRef.current = serialize;
+    deserializeRef.current = deserialize;
+    validatorRef.current = validator;
+  }, [serialize, deserialize, validator]);
 
   // 更新URL参数
   const setValue = (newValue: T) => {
+    internalValueRef.current = newValue;
     setInternalValue(newValue);
-    const serializedValue = serialize ? serialize(newValue) : String(newValue);
+    const serializeFn = serializeRef.current;
+    const serializedValue = serializeFn ? serializeFn(newValue) : String(newValue);
     setSearchParams((prev) => {
       const newParams = new URLSearchParams(prev);
       newParams.set(paramName, serializedValue);
@@ -122,33 +139,42 @@ export function useUrlSync<T extends string>(
   };
 
   // 当URL参数变化时更新内部状态
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    const paramValue = searchParams.get(paramName);
     if (paramValue !== null) {
+      const validatorFn = validatorRef.current;
       // 验证参数值
-      if (validator && !validator(paramValue)) {
+      if (validatorFn && !validatorFn(paramValue)) {
         console.warn(`Invalid URL parameter value for ${paramName}: ${paramValue}`);
         return;
       }
       // 默认安全验证
-      if (!validator && !isValidString(paramValue)) {
+      if (!validatorFn && !isValidString(paramValue)) {
         console.warn(`Potentially unsafe URL parameter value for ${paramName}: ${paramValue}`);
         return;
       }
-      const deserializedValue = deserialize ? deserialize(paramValue) : (paramValue as T);
+      const deserializeFn = deserializeRef.current;
+      const deserializedValue = deserializeFn ? deserializeFn(paramValue) : (paramValue as T);
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setInternalValue(deserializedValue);
-    } else if (immediate && internalValue !== defaultValue) {
+    } else if (immediate && internalValueRef.current !== defaultValue) {
       // 如果URL中没有参数且有默认值，更新URL
-      const serializedValue = serialize ? serialize(defaultValue) : String(defaultValue);
+      const serializeFn = serializeRef.current;
+      const serializedValue = serializeFn
+        ? serializeFn(internalValueRef.current)
+        : String(internalValueRef.current);
       setSearchParams((prev) => {
         const newParams = new URLSearchParams(prev);
         newParams.set(paramName, serializedValue);
         return newParams;
       });
     }
-  }, [searchParams.get(paramName)]);
+  }, [
+    paramValue,
+    paramName,
+    immediate,
+    defaultValue,
+    setSearchParams,
+  ]);
 
   return [internalValue, setValue];
 }
@@ -181,6 +207,13 @@ export function useUrlState<T extends Record<string, unknown>>(
 ): [T, (updates: Partial<T>) => void] {
   const { serializers = {} as Partial<{ [K in keyof T]: (value: T[K]) => string }>, deserializers = {} as Partial<{ [K in keyof T]: (value: string) => T[K] }> } = options || {};
   const [searchParams, setSearchParams] = useSearchParams();
+  const serializersRef = useRef(serializers);
+  const deserializersRef = useRef(deserializers);
+
+  useEffect(() => {
+    serializersRef.current = serializers;
+    deserializersRef.current = deserializers;
+  }, [serializers, deserializers]);
 
   // 从URL读取初始状态
   const [state, setState] = useState<T>(() => {
@@ -202,7 +235,7 @@ export function useUrlState<T extends Record<string, unknown>>(
       setSearchParams((prevParams) => {
         const newParams = new URLSearchParams(prevParams);
         for (const key in updates) {
-          const serializer = serializers[key as keyof T];
+          const serializer = serializersRef.current[key as keyof T];
           const value = updates[key];
           if (value !== undefined && value !== null && value !== '') {
             newParams.set(key, serializer ? serializer(value as T[keyof T]) : String(value));
@@ -217,14 +250,13 @@ export function useUrlState<T extends Record<string, unknown>>(
   };
 
   // 当URL参数变化时更新状态
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const newState = { ...defaultState };
     let hasChanges = false;
     for (const key in defaultState) {
       const paramValue = searchParams.get(key);
       if (paramValue !== null) {
-        const deserializer = deserializers[key as keyof T];
+        const deserializer = deserializersRef.current[key as keyof T];
         (newState as Record<string, unknown>)[key] = deserializer ? deserializer(paramValue) : paramValue;
         hasChanges = true;
       }
@@ -233,7 +265,7 @@ export function useUrlState<T extends Record<string, unknown>>(
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setState(newState);
     }
-  }, [searchParams]);
+  }, [defaultState, searchParams]);
 
   return [state, updateState];
 }

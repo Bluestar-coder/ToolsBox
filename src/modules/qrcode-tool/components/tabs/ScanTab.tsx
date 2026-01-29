@@ -220,7 +220,7 @@ const ScanTab: React.FC = () => {
           }
         >
           <TextArea
-            rows={10}
+            autoSize={{ minRows: 10, maxRows: 20 }}
             value={result}
             onChange={(e) => setResult(e.target.value)}
             placeholder={t('modules.qrcode.resultPlaceholder')}

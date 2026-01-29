@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import EncoderDecoder from '../modules/encoder-decoder/components/EncoderDecoder';
-import { useEncodingContext } from '../context/EncodingContext';
+import { useEncodingContext } from '../hooks/useEncodingContext';
 import type { EncoderType, OperationType } from '../modules/encoder-decoder/utils/encoders';
 
 /**

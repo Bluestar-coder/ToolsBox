@@ -10,6 +10,69 @@ afterEach(() => {
   cleanup();
 });
 
+const ignoredConsoleMessages: RegExp[] = [
+  /An update to .* was not wrapped in act/,
+  /Could not parse CSS stylesheet/,
+  /Prettier format error/,
+  /Error reading from localStorage/,
+  /Error importing data/,
+  /Potentially unsafe URL parameter value/,
+  /Not implemented: navigation to another Document/,
+  /Cannot update a component .* while rendering a different component/,
+  /Unsupported language for formatting:/,
+  /Test error/,
+  /ErrorBoundary caught an error/,
+];
+
+const shouldIgnoreConsoleMessage = (args: unknown[]) => {
+  if (args.length === 0) {
+    return false;
+  }
+  const message = args
+    .map((arg) => (arg instanceof Error ? arg.message : String(arg)))
+    .join(' ');
+  return ignoredConsoleMessages.some((pattern) => pattern.test(message));
+};
+
+const originalConsoleError = console.error.bind(console);
+const originalConsoleWarn = console.warn.bind(console);
+
+vi.spyOn(console, 'error').mockImplementation((...args: unknown[]) => {
+  if (shouldIgnoreConsoleMessage(args)) {
+    return;
+  }
+  originalConsoleError(...args);
+});
+
+vi.spyOn(console, 'warn').mockImplementation((...args: unknown[]) => {
+  if (shouldIgnoreConsoleMessage(args)) {
+    return;
+  }
+  originalConsoleWarn(...args);
+});
+
+const ignoredStderrMessages: RegExp[] = [
+  /Could not parse CSS stylesheet/,
+  /Not implemented: navigation to another Document/,
+  /Error reading from localStorage/,
+  /Error importing data/,
+  /Prettier format error/,
+  /Potentially unsafe URL parameter value/,
+  /Test error/,
+];
+
+const originalStderrWrite = process.stderr.write.bind(process.stderr);
+process.stderr.write = ((chunk: unknown, encoding?: BufferEncoding, callback?: (err?: Error | null) => void) => {
+  const message = typeof chunk === 'string' ? chunk : Buffer.isBuffer(chunk) ? chunk.toString('utf8') : String(chunk);
+  if (ignoredStderrMessages.some((pattern) => pattern.test(message))) {
+    if (typeof callback === 'function') {
+      callback();
+    }
+    return true;
+  }
+  return originalStderrWrite(chunk as string, encoding as BufferEncoding, callback);
+}) as typeof process.stderr.write;
+
 // Mock Sentry
 vi.mock('@sentry/react', () => ({
   captureException: vi.fn(),

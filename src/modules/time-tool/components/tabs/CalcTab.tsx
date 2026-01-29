@@ -58,7 +58,7 @@ const CalcTab: React.FC = () => {
               />
             </div>
             <Button type="primary" block onClick={handleCalcDiff}>📊 计算时间差</Button>
-            <Input.TextArea value={calcDiffResult} readOnly rows={3} placeholder="计算结果" />
+            <Input.TextArea value={calcDiffResult} readOnly autoSize={{ minRows: 3, maxRows: 20 }} placeholder="计算结果" />
           </Space>
         </Card>
       </Col>

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook, waitFor, act } from '@testing-library/react';
 import React from 'react';
 import {
   useUrlSync,
@@ -62,7 +62,9 @@ describe('useUrlSync Hook', () => {
       );
 
       // Change the value
-      result.current[1]('newValue');
+      await act(async () => {
+        result.current[1]('newValue');
+      });
 
       await waitFor(() => {
         expect(result.current[0]).toBe('newValue');
@@ -269,7 +271,9 @@ describe('useUrlSync Hook', () => {
         { wrapper }
       );
 
-      result.current[1]({ key1: 'newValue1' });
+      await act(async () => {
+        result.current[1]({ key1: 'newValue1' });
+      });
 
       await waitFor(() => {
         expect(result.current[0]).toEqual({
@@ -322,7 +326,9 @@ describe('useUrlSync Hook', () => {
         { wrapper }
       );
 
-      result.current[1]({ count: 100 });
+      await act(async () => {
+        result.current[1]({ count: 100 });
+      });
 
       await waitFor(() => {
         expect(result.current[0]).toEqual({ count: 100 });
@@ -343,7 +349,9 @@ describe('useUrlSync Hook', () => {
         { wrapper }
       );
 
-      result.current[1]({ key1: '' });
+      await act(async () => {
+        result.current[1]({ key1: '' });
+      });
 
       // The hook should handle empty values
       expect(result.current[0]).toBeDefined();
@@ -361,7 +369,9 @@ describe('useUrlSync Hook', () => {
         { wrapper }
       );
 
-      result.current[1]({ key1: 'new1', key2: 'new2' });
+      await act(async () => {
+        result.current[1]({ key1: 'new1', key2: 'new2' });
+      });
       await waitFor(() => {
         expect(result.current[0]).toEqual({
           key1: 'new1',
@@ -370,7 +380,9 @@ describe('useUrlSync Hook', () => {
         });
       });
 
-      result.current[1]({ key3: 'new3' });
+      await act(async () => {
+        result.current[1]({ key3: 'new3' });
+      });
       await waitFor(() => {
         expect(result.current[0]).toEqual({
           key1: 'new1',
@@ -508,9 +520,11 @@ describe('useUrlSync Hook', () => {
       );
 
       // Make multiple rapid changes
-      for (let i = 0; i < 5; i++) {
-        result.current[1](`value${i}`);
-      }
+      await act(async () => {
+        for (let i = 0; i < 5; i++) {
+          result.current[1](`value${i}`);
+        }
+      });
 
       await waitFor(() => {
         expect(result.current[0]).toBe('value4');

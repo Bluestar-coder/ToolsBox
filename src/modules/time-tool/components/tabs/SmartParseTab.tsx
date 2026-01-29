@@ -76,7 +76,7 @@ const SmartParseTab: React.FC = () => {
               value={smartInput}
               onChange={(e) => setSmartInput(e.target.value)}
               placeholder={`试试输入：\n• 1749722690 (时间戳)\n• 2025-06-12 18:06:25\n• now / today / yesterday\n• 2025/06/12\n• Jun 12, 2025`}
-              rows={6}
+              autoSize={{ minRows: 6, maxRows: 20 }}
               style={{ marginBottom: 8 }}
             />
             <Space>
@@ -87,7 +87,7 @@ const SmartParseTab: React.FC = () => {
         </Col>
         <Col span={12}>
           <Card size="small" title="📊 解析结果">
-            <TextArea value={smartResult} readOnly rows={10} placeholder="解析结果将显示在这里" />
+            <TextArea value={smartResult} readOnly autoSize={{ minRows: 10, maxRows: 20 }} placeholder="解析结果将显示在这里" />
             {smartResult && (
               <Button size="small" icon={<CopyOutlined />} onClick={handleCopy} style={{ marginTop: 8 }}>
                 复制结果

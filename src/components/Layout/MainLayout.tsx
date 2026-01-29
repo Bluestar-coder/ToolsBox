@@ -5,7 +5,7 @@ import { SunOutlined, MoonOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import SideMenu from './SideMenu';
 import LanguageSwitcher from '../LanguageSwitcher';
-import { pathToModuleId } from '../../router';
+import { pathToModuleId } from '../../router/constants';
 import { useTheme } from '../../hooks/useTheme';
 import styles from '../styles/MainLayout.module.css';
 

@@ -112,7 +112,7 @@ const RCTab: React.FC = () => {
         </Space>
       </Card>
 
-      <TextArea rows={4} value={input} onChange={(e) => setInput(e.target.value)} placeholder="输入明文或密文" />
+      <TextArea autoSize={{ minRows: 4, maxRows: 20 }} value={input} onChange={(e) => setInput(e.target.value)} placeholder="输入明文或密文" />
 
       <Space>
         <Button type="primary" style={{ backgroundColor: '#52c41a' }} onClick={handleEncrypt}>加密</Button>
@@ -120,7 +120,7 @@ const RCTab: React.FC = () => {
         <Button onClick={() => { setInput(''); setOutput(''); }}>清空</Button>
       </Space>
 
-      <TextArea rows={4} value={output} readOnly placeholder="输出结果" />
+      <TextArea autoSize={{ minRows: 4, maxRows: 20 }} value={output} readOnly placeholder="输出结果" />
 
       <Alert type="warning" message={getAlgorithmInfo()} />
     </Space>

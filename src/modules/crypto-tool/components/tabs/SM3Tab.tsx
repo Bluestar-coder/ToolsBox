@@ -65,7 +65,7 @@ const SM3Tab: React.FC = () => {
         value={hashInput}
         onChange={(e) => setHashInput(e.target.value)}
         placeholder="请输入要计算 SM3 哈希的内容"
-        rows={6}
+        autoSize={{ minRows: 6, maxRows: 20 }}
         style={{ marginBottom: 16, fontFamily: 'monospace' }}
       />
       <Space style={{ marginBottom: 16 }} wrap>

@@ -1,45 +1,15 @@
-import React, { createContext, useReducer, useEffect, useCallback, useMemo } from 'react';
+import React, { useReducer, useEffect, useCallback, useMemo } from 'react';
 import type { ReactNode } from 'react';
 import { pluginManager } from '../plugins/PluginManager';
-import type { PluginConfig, PluginMetadata, PluginEvent, PluginLoadResult } from '../plugins/types';
+import type { PluginConfig, PluginEvent } from '../plugins/types';
 import { logger } from '../utils/logger';
 import { contextEventBus, CONTEXT_EVENTS, type PluginErrorEvent } from './ContextEventBus';
-
-// 插件状态类型
-interface PluginState {
-  loaded: boolean;
-  list: PluginMetadata[];
-}
-
-// Action类型
-type PluginAction =
-  | { type: 'SET_PLUGINS_LOADED'; payload: boolean }
-  | { type: 'UPDATE_PLUGINS_LIST'; payload: PluginMetadata[] };
-
-// 初始状态
-const initialState: PluginState = {
-  loaded: false,
-  list: [],
-};
-
-// 创建上下文
-const PluginContext = createContext<{
-  state: PluginState;
-  dispatch: React.Dispatch<PluginAction>;
-  loadPlugin: (pluginConfig: PluginConfig) => Promise<PluginLoadResult>;
-  enablePlugin: (pluginId: string) => Promise<boolean>;
-  disablePlugin: (pluginId: string) => Promise<boolean>;
-  unloadPlugin: (pluginId: string) => Promise<boolean>;
-  pluginManager: typeof pluginManager;
-}>({
-  state: initialState,
-  dispatch: () => {},
-  loadPlugin: async () => ({ success: false, error: '插件管理器未初始化' }),
-  enablePlugin: async () => false,
-  disablePlugin: async () => false,
-  unloadPlugin: async () => false,
-  pluginManager: pluginManager,
-});
+import {
+  type PluginState,
+  type PluginAction,
+  initialPluginState
+} from './types';
+import { PluginContext } from './definitions';
 
 // Reducer函数
 const pluginReducer = (state: PluginState, action: PluginAction): PluginState => {
@@ -63,7 +33,7 @@ export const PluginProvider: React.FC<PluginProviderProps> = ({
   children,
   pluginManager: injectedPluginManager = pluginManager // 默认使用单例
 }) => {
-  const [state, dispatch] = useReducer(pluginReducer, initialState);
+  const [state, dispatch] = useReducer(pluginReducer, initialPluginState);
   const manager = injectedPluginManager;
 
   // 初始化插件管理器
@@ -166,14 +136,4 @@ export const PluginProvider: React.FC<PluginProviderProps> = ({
   return <PluginContext.Provider value={value}>{children}</PluginContext.Provider>;
 };
 
-// 导出hook
-export const usePluginContext = () => {
-  const context = React.useContext(PluginContext);
-  if (!context) {
-    throw new Error('usePluginContext must be used within PluginProvider');
-  }
-  return context;
-};
-
-export { PluginContext };
 export default PluginProvider;
