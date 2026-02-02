@@ -28,6 +28,54 @@ export const parseSmartTime = (input: string): Date | null => {
   return null;
 };
 
+// 计算指定时区在某个时间点的偏移（小时）
+export const getTimeZoneOffsetHours = (timeZone: string, date: Date): number => {
+  try {
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone,
+      hour12: false,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+    const parts = formatter.formatToParts(date);
+    const values: Record<string, string> = {};
+    for (const part of parts) {
+      if (part.type !== 'literal') {
+        values[part.type] = part.value;
+      }
+    }
+    const asUtc = new Date(
+      `${values.year}-${values.month}-${values.day}T${values.hour}:${values.minute}:${values.second}Z`
+    );
+    return (asUtc.getTime() - date.getTime()) / 3600000;
+  } catch {
+    return 0;
+  }
+};
+
+// 将“时区内的本地时间”转换为 UTC 毫秒
+export const zonedTimeToUtcMillis = (localTime: Date, timeZone: string): number => {
+  const year = localTime.getFullYear();
+  const month = localTime.getMonth();
+  const day = localTime.getDate();
+  const hour = localTime.getHours();
+  const minute = localTime.getMinutes();
+  const second = localTime.getSeconds();
+
+  const utcGuess = Date.UTC(year, month, day, hour, minute, second);
+  const offset1 = getTimeZoneOffsetHours(timeZone, new Date(utcGuess));
+  const utc1 = utcGuess - offset1 * 3600000;
+  const offset2 = getTimeZoneOffsetHours(timeZone, new Date(utc1));
+  if (offset1 !== offset2) {
+    return utcGuess - offset2 * 3600000;
+  }
+  return utc1;
+};
+
 // 生成代码
 export const generateCode = (timestamp: number, lang: string): string => {
   const codes: Record<string, string> = {

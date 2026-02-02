@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Card, Input, Select, Button, Space, message } from 'antd';
-import { generateECDSAKeyPair, ecdsaSign, ecdsaVerify, type ECDSACurve } from '../../utils/asymmetric';
+import { Card, Input, Select, Button, Space, message, Switch } from 'antd';
+import { generateECDSAKeyPair, ecdsaSign, ecdsaVerify, ecdsaSignBytes, ecdsaVerifyBytes, type ECDSACurve } from '../../utils/asymmetric';
+import { hashMessageToUint8Array } from '../../utils/helpers';
 
 const { TextArea } = Input;
 
@@ -11,6 +12,8 @@ const ECDSATab: React.FC = () => {
   const [publicKey, setPublicKey] = useState('');
   const [privateKey, setPrivateKey] = useState('');
   const [curve, setCurve] = useState<ECDSACurve>('secp256k1');
+  const [prehash, setPrehash] = useState(false);
+  const [hashAlg, setHashAlg] = useState<'SHA256' | 'SHA384' | 'SHA512'>('SHA256');
 
   const handleGenerateKeyPair = () => {
     try {
@@ -28,7 +31,9 @@ const ECDSATab: React.FC = () => {
     if (!privateKey) { message.warning('请输入私钥'); return; }
 
     try {
-      const signature = ecdsaSign(inputText, privateKey, curve);
+      const signature = prehash
+        ? ecdsaSignBytes(hashMessageToUint8Array(inputText, hashAlg), privateKey, curve)
+        : ecdsaSign(inputText, privateKey, curve);
       setOutputText(signature);
       setOutputError('');
       message.success('ECDSA 签名成功');
@@ -43,7 +48,9 @@ const ECDSATab: React.FC = () => {
     if (!publicKey) { message.warning('请输入公钥'); return; }
 
     try {
-      const isValid = ecdsaVerify(inputText, outputText, publicKey, curve);
+      const isValid = prehash
+        ? ecdsaVerifyBytes(hashMessageToUint8Array(inputText, hashAlg), outputText, publicKey, curve)
+        : ecdsaVerify(inputText, outputText, publicKey, curve);
       if (isValid) {
         message.success('ECDSA 签名验证通过 ✓');
         setOutputError('');
@@ -110,7 +117,12 @@ const ECDSATab: React.FC = () => {
           <Space>
             <Select
               value={curve}
-              onChange={setCurve}
+              onChange={(value) => {
+                setCurve(value);
+                if (value === 'p384' && prehash && hashAlg === 'SHA256') {
+                  setHashAlg('SHA384');
+                }
+              }}
               style={{ width: 220 }}
               options={[
                 { value: 'secp256k1', label: 'secp256k1 (比特币/以太坊)' },
@@ -119,6 +131,22 @@ const ECDSATab: React.FC = () => {
               ]}
             />
             <Button type="primary" onClick={handleGenerateKeyPair}>生成密钥对</Button>
+          </Space>
+
+          <span>预哈希:</span>
+          <Space>
+            <Switch checked={prehash} onChange={setPrehash} />
+            <Select
+              value={hashAlg}
+              onChange={setHashAlg}
+              style={{ width: 120 }}
+              disabled={!prehash}
+              options={[
+                { value: 'SHA256', label: 'SHA-256' },
+                { value: 'SHA384', label: 'SHA-384' },
+                { value: 'SHA512', label: 'SHA-512' },
+              ]}
+            />
           </Space>
 
           <span>公钥:</span>

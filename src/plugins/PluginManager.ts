@@ -36,7 +36,7 @@ class PluginManager {
         // 这里使用动态导入，实际实现需要根据entryPoint的类型进行不同处理
         // 对于本地插件，可以直接导入
         // 对于远程插件，需要先下载，然后使用URL.createObjectURL创建本地URL
-        const pluginModule = await import(pluginConfig.entryPoint);
+        const pluginModule = await import(/* @vite-ignore */ pluginConfig.entryPoint);
         const pluginInstance: Plugin = new pluginModule.default();
         
         // 初始化插件
@@ -85,7 +85,7 @@ class PluginManager {
     try {
       // 如果插件未初始化，先初始化
       if (!plugin.instance) {
-        const pluginModule = await import(plugin.config.entryPoint);
+        const pluginModule = await import(/* @vite-ignore */ plugin.config.entryPoint);
         const pluginInstance: Plugin = new pluginModule.default();
         await pluginInstance.initialize();
         plugin.instance = pluginInstance;

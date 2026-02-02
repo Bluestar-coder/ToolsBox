@@ -31,6 +31,11 @@ export const createNavigation = {
    * 二维码工具路径
    */
   qrcode: (type?: string) => `/qrcode${type ? `/${type}` : ''}`,
+
+  /**
+   * 设置路径
+   */
+  settings: () => '/settings',
 };
 
 /**
@@ -55,4 +60,5 @@ export const pathToModuleId: Record<string, string> = {
   '/formatter': 'code-formatter',
   '/regex': 'regex-tool',
   '/qrcode': 'qrcode-tool',
+  '/settings': 'settings',
 };

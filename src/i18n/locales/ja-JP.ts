@@ -41,6 +41,7 @@ export default {
     title: '🔧 ツールボックス',
     switchToLight: 'ライトモードに切り替え',
     switchToDark: 'ダークモードに切り替え',
+    settings: '設定',
   },
   modules: {
     encoder: {

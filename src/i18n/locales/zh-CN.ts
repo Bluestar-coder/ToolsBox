@@ -41,6 +41,7 @@ export default {
     title: '🔧 效率工具箱',
     switchToLight: '切换到浅色模式',
     switchToDark: '切换到深色模式',
+    settings: '设置',
   },
   modules: {
     encoder: {

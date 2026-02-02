@@ -1,7 +1,7 @@
 import React, { Suspense, useMemo } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Layout, theme, Button, Space, Spin } from 'antd';
-import { SunOutlined, MoonOutlined } from '@ant-design/icons';
+import { SunOutlined, MoonOutlined, SettingOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import SideMenu from './SideMenu';
 import LanguageSwitcher from '../LanguageSwitcher';
@@ -25,6 +25,7 @@ const MainLayout: React.FC = React.memo(() => {
   const { isDark, toggleTheme } = useTheme();
   const { t } = useTranslation();
   const location = useLocation();
+  const navigate = useNavigate();
 
   // 根据当前路径确定当前模块ID
   const currentModuleId = useMemo(() => {
@@ -60,6 +61,13 @@ const MainLayout: React.FC = React.memo(() => {
           {t('app.title')}
         </h1>
         <Space>
+          <Button
+            type="text"
+            icon={<SettingOutlined />}
+            size="large"
+            onClick={() => navigate('/settings')}
+            title={t('app.settings')}
+          />
           <LanguageSwitcher />
           <Button type="text" icon={isDark ? <SunOutlined /> : <MoonOutlined />} size="large" onClick={toggleTheme} title={isDark ? t('app.switchToLight') : t('app.switchToDark')} />
         </Space>

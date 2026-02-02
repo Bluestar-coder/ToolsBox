@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Card, Input, Select, Button, Row, Col, message } from 'antd';
-import { formatDateTime, parseSmartTime } from '../../utils/helpers';
+import { formatDateTime, parseSmartTime, getTimeZoneOffsetHours, zonedTimeToUtcMillis } from '../../utils/helpers';
 import { timezones } from '../../utils/constants';
 
 const TimezoneTab: React.FC = () => {
@@ -10,12 +10,21 @@ const TimezoneTab: React.FC = () => {
   const [tzResult, setTzResult] = useState('');
 
   const handleTzConvert = () => {
-    const parsed = parseSmartTime(tzInput);
-    if (!parsed) { message.error('请输入有效的时间'); return; }
-    const fromOffset = timezones.find(t => t.value === fromTz)?.offset || 0;
-    const toOffset = timezones.find(t => t.value === toTz)?.offset || 0;
-    const utcTime = parsed.getTime() - fromOffset * 3600000;
-    const targetTime = new Date(utcTime + toOffset * 3600000);
+    const trimmed = tzInput.trim();
+    let utcMillis: number | null = null;
+
+    if (/^\d{10}$/.test(trimmed)) {
+      utcMillis = parseInt(trimmed, 10) * 1000;
+    } else if (/^\d{13}$/.test(trimmed)) {
+      utcMillis = parseInt(trimmed, 10);
+    } else {
+      const parsed = parseSmartTime(tzInput);
+      if (!parsed) { message.error('请输入有效的时间'); return; }
+      utcMillis = zonedTimeToUtcMillis(parsed, fromTz);
+    }
+
+    const toOffset = getTimeZoneOffsetHours(toTz, new Date(utcMillis));
+    const targetTime = new Date(utcMillis + toOffset * 3600000);
     setTzResult(formatDateTime(targetTime));
   };
 

@@ -41,6 +41,7 @@ export default {
     title: '🔧 ToolsBox',
     switchToLight: 'Switch to light mode',
     switchToDark: 'Switch to dark mode',
+    settings: 'Settings',
   },
   modules: {
     encoder: {

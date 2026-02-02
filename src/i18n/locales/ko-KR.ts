@@ -41,6 +41,7 @@ export default {
     title: '🔧 도구 상자',
     switchToLight: '라이트 모드로 전환',
     switchToDark: '다크 모드로 전환',
+    settings: '설정',
   },
   modules: {
     encoder: {

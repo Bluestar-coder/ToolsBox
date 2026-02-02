@@ -48,6 +48,26 @@ export const uint8ArrayToHex = (arr: Uint8Array): string => {
   return Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
 };
 
+export const hashMessageToUint8Array = (
+  message: string,
+  algorithm: 'SHA256' | 'SHA384' | 'SHA512'
+): Uint8Array => {
+  let hashHex: string;
+  switch (algorithm) {
+    case 'SHA384':
+      hashHex = CryptoJS.SHA384(message).toString(CryptoJS.enc.Hex);
+      break;
+    case 'SHA512':
+      hashHex = CryptoJS.SHA512(message).toString(CryptoJS.enc.Hex);
+      break;
+    case 'SHA256':
+    default:
+      hashHex = CryptoJS.SHA256(message).toString(CryptoJS.enc.Hex);
+      break;
+  }
+  return hexToUint8Array(hashHex);
+};
+
 // 解析密钥/IV (CryptoJS)
 export const parseValue = (value: string, encoding: string): CryptoJS.lib.WordArray => {
   if (encoding === 'Hex') {

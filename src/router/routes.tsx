@@ -10,6 +10,7 @@ const TimePage = lazy(() => import('../pages/TimePage'));
 const FormatterPage = lazy(() => import('../pages/FormatterPage'));
 const RegexPage = lazy(() => import('../pages/RegexPage'));
 const QRCodePage = lazy(() => import('../pages/QRCodePage'));
+const SettingsPage = lazy(() => import('../pages/SettingsPage'));
 
 // 路由配置
 export const routes: RouteObject[] = [
@@ -74,6 +75,11 @@ export const routes: RouteObject[] = [
       {
         path: 'qrcode/:type',
         element: <QRCodePage />,
+      },
+      // 设置
+      {
+        path: 'settings',
+        element: <SettingsPage />,
       },
       // 404页面
       {

@@ -20,23 +20,29 @@ export const generateEd25519KeyPair = (): Ed25519KeyPair => {
 };
 
 // Ed25519 签名
-export const ed25519Sign = (message: string, privateKeyHex: string): string => {
+export const ed25519SignBytes = (messageBytes: Uint8Array, privateKeyHex: string): string => {
   const privateKey = hexToUint8Array(privateKeyHex);
-  const messageBytes = strToUint8Array(message);
   const signature = ed25519.sign(messageBytes, privateKey);
   return uint8ArrayToHex(signature);
 };
 
+export const ed25519Sign = (message: string, privateKeyHex: string): string => {
+  return ed25519SignBytes(strToUint8Array(message), privateKeyHex);
+};
+
 // Ed25519 验签
-export const ed25519Verify = (message: string, signatureHex: string, publicKeyHex: string): boolean => {
+export const ed25519VerifyBytes = (messageBytes: Uint8Array, signatureHex: string, publicKeyHex: string): boolean => {
   try {
     const publicKey = hexToUint8Array(publicKeyHex);
     const signature = hexToUint8Array(signatureHex);
-    const messageBytes = strToUint8Array(message);
     return ed25519.verify(signature, messageBytes, publicKey);
   } catch {
     return false;
   }
+};
+
+export const ed25519Verify = (message: string, signatureHex: string, publicKeyHex: string): boolean => {
+  return ed25519VerifyBytes(strToUint8Array(message), signatureHex, publicKeyHex);
 };
 
 // ============ ECDSA (secp256k1, P-256, P-384) ============
@@ -79,25 +85,32 @@ export const generateECDSAKeyPair = (curve: ECDSACurve = 'secp256k1'): ECDSAKeyP
 };
 
 // ECDSA 签名
-export const ecdsaSign = (message: string, privateKeyHex: string, curve: ECDSACurve = 'secp256k1'): string => {
+export const ecdsaSignBytes = (messageBytes: Uint8Array, privateKeyHex: string, curve: ECDSACurve = 'secp256k1'): string => {
   const c = getCurve(curve);
   const privateKey = hexToUint8Array(privateKeyHex);
-  const messageBytes = strToUint8Array(message);
   const signature = c.sign(messageBytes, privateKey);
   return uint8ArrayToHex(signature.toCompactRawBytes());
 };
 
-// ECDSA 验签
-export const ecdsaVerify = (message: string, signatureHex: string, publicKeyHex: string, curve: ECDSACurve = 'secp256k1'): boolean => {
+// ECDSA 签名
+export const ecdsaSign = (message: string, privateKeyHex: string, curve: ECDSACurve = 'secp256k1'): string => {
+  return ecdsaSignBytes(strToUint8Array(message), privateKeyHex, curve);
+};
+
+export const ecdsaVerifyBytes = (messageBytes: Uint8Array, signatureHex: string, publicKeyHex: string, curve: ECDSACurve = 'secp256k1'): boolean => {
   try {
     const c = getCurve(curve);
     const publicKey = hexToUint8Array(publicKeyHex);
     const signature = hexToUint8Array(signatureHex);
-    const messageBytes = strToUint8Array(message);
     return c.verify(signature, messageBytes, publicKey);
   } catch {
     return false;
   }
+};
+
+// ECDSA 验签
+export const ecdsaVerify = (message: string, signatureHex: string, publicKeyHex: string, curve: ECDSACurve = 'secp256k1'): boolean => {
+  return ecdsaVerifyBytes(strToUint8Array(message), signatureHex, publicKeyHex, curve);
 };
 
 // ============ RSA (使用 Web Crypto API) ============
@@ -164,50 +177,145 @@ const extractBase64FromPem = (pem: string): string => {
     .replace(/\s/g, '');
 };
 
-// RSA 加密
-export const rsaEncrypt = async (plaintext: string, publicKeyPem: string): Promise<string> => {
+const rsaImportPublicKey = async (publicKeyPem: string): Promise<CryptoKey> => {
   const publicKeyBase64 = extractBase64FromPem(publicKeyPem);
   const publicKeyBuffer = base64ToArrayBuffer(publicKeyBase64);
-
-  const publicKey = await crypto.subtle.importKey(
+  return crypto.subtle.importKey(
     'spki',
     publicKeyBuffer,
     { name: 'RSA-OAEP', hash: 'SHA-256' },
     false,
     ['encrypt']
   );
-
-  const plaintextBytes = strToUint8Array(plaintext);
-  const ciphertext = await crypto.subtle.encrypt(
-    { name: 'RSA-OAEP' },
-    publicKey,
-    plaintextBytes.buffer as ArrayBuffer
-  );
-
-  return uint8ArrayToBase64(new Uint8Array(ciphertext));
 };
 
-// RSA 解密
-export const rsaDecrypt = async (ciphertextBase64: string, privateKeyPem: string): Promise<string> => {
+const rsaImportPrivateKey = async (privateKeyPem: string): Promise<CryptoKey> => {
   const privateKeyBase64 = extractBase64FromPem(privateKeyPem);
   const privateKeyBuffer = base64ToArrayBuffer(privateKeyBase64);
-
-  const privateKey = await crypto.subtle.importKey(
+  return crypto.subtle.importKey(
     'pkcs8',
     privateKeyBuffer,
     { name: 'RSA-OAEP', hash: 'SHA-256' },
     false,
     ['decrypt']
   );
+};
 
+export const rsaEncryptBytes = async (plaintextBytes: Uint8Array, publicKeyPem: string): Promise<string> => {
+  const publicKey = await rsaImportPublicKey(publicKeyPem);
+  const ciphertext = await crypto.subtle.encrypt(
+    { name: 'RSA-OAEP' },
+    publicKey,
+    plaintextBytes.buffer as ArrayBuffer
+  );
+  return uint8ArrayToBase64(new Uint8Array(ciphertext));
+};
+
+export const rsaDecryptBytes = async (ciphertextBase64: string, privateKeyPem: string): Promise<Uint8Array> => {
+  const privateKey = await rsaImportPrivateKey(privateKeyPem);
   const ciphertext = base64ToUint8Array(ciphertextBase64);
   const plaintext = await crypto.subtle.decrypt(
     { name: 'RSA-OAEP' },
     privateKey,
     ciphertext.buffer as ArrayBuffer
   );
+  return new Uint8Array(plaintext);
+};
+
+// RSA 加密（短消息）
+export const rsaEncrypt = async (plaintext: string, publicKeyPem: string): Promise<string> => {
+  const plaintextBytes = strToUint8Array(plaintext);
+  return rsaEncryptBytes(plaintextBytes, publicKeyPem);
+};
+
+// RSA 解密（短消息）
+export const rsaDecrypt = async (ciphertextBase64: string, privateKeyPem: string): Promise<string> => {
+  const plaintext = await rsaDecryptBytes(ciphertextBase64, privateKeyPem);
+  return new TextDecoder().decode(plaintext);
+};
+
+const HYBRID_RSA_AES_GCM = 'RSA-OAEP+AES-GCM';
+
+export interface RsaHybridPayload {
+  __type: typeof HYBRID_RSA_AES_GCM;
+  key: string; // base64 RSA encrypted AES key
+  iv: string; // base64
+  ciphertext: string; // base64
+}
+
+const hybridEncrypt = async (plaintext: string, publicKeyPem: string): Promise<string> => {
+  const aesKeyBytes = crypto.getRandomValues(new Uint8Array(32));
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+
+  const aesKey = await crypto.subtle.importKey(
+    'raw',
+    aesKeyBytes,
+    { name: 'AES-GCM' },
+    false,
+    ['encrypt', 'decrypt']
+  );
+
+  const ciphertext = await crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv },
+    aesKey,
+    strToUint8Array(plaintext)
+  );
+
+  const encryptedKey = await rsaEncryptBytes(aesKeyBytes, publicKeyPem);
+  const payload: RsaHybridPayload = {
+    __type: HYBRID_RSA_AES_GCM,
+    key: encryptedKey,
+    iv: uint8ArrayToBase64(iv),
+    ciphertext: uint8ArrayToBase64(new Uint8Array(ciphertext)),
+  };
+  return JSON.stringify(payload);
+};
+
+const hybridDecrypt = async (payload: RsaHybridPayload, privateKeyPem: string): Promise<string> => {
+  const aesKeyBytes = await rsaDecryptBytes(payload.key, privateKeyPem);
+  const iv = base64ToUint8Array(payload.iv);
+  const ciphertext = base64ToUint8Array(payload.ciphertext);
+
+  const aesKey = await crypto.subtle.importKey(
+    'raw',
+    aesKeyBytes,
+    { name: 'AES-GCM' },
+    false,
+    ['encrypt', 'decrypt']
+  );
+
+  const plaintext = await crypto.subtle.decrypt(
+    { name: 'AES-GCM', iv },
+    aesKey,
+    ciphertext.buffer as ArrayBuffer
+  );
 
   return new TextDecoder().decode(plaintext);
+};
+
+// RSA 加密（自动：短消息 RSA，否则混合加密）
+export const rsaEncryptAuto = async (plaintext: string, publicKeyPem: string): Promise<string> => {
+  try {
+    return await rsaEncrypt(plaintext, publicKeyPem);
+  } catch (error) {
+    if (error instanceof Error && error.name === 'OperationError') {
+      return hybridEncrypt(plaintext, publicKeyPem);
+    }
+    throw error;
+  }
+};
+
+// RSA 解密（自动识别混合加密载荷）
+export const rsaDecryptAuto = async (ciphertext: string, privateKeyPem: string): Promise<string> => {
+  try {
+    const parsed = JSON.parse(ciphertext) as RsaHybridPayload;
+    if (parsed && parsed.__type === HYBRID_RSA_AES_GCM) {
+      return await hybridDecrypt(parsed, privateKeyPem);
+    }
+  } catch {
+    // 非 JSON，继续按短消息解密
+  }
+  return rsaDecrypt(ciphertext, privateKeyPem);
 };
 
 // 生成 RSA 签名密钥对

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Card, Input, Button, Space, message } from 'antd';
-import { generateEd25519KeyPair, ed25519Sign, ed25519Verify } from '../../utils/asymmetric';
+import { Card, Input, Button, Space, message, Switch, Select } from 'antd';
+import { generateEd25519KeyPair, ed25519Sign, ed25519Verify, ed25519SignBytes, ed25519VerifyBytes } from '../../utils/asymmetric';
+import { hashMessageToUint8Array } from '../../utils/helpers';
 
 const { TextArea } = Input;
 
@@ -10,6 +11,8 @@ const Ed25519Tab: React.FC = () => {
   const [outputError, setOutputError] = useState('');
   const [publicKey, setPublicKey] = useState('');
   const [privateKey, setPrivateKey] = useState('');
+  const [prehash, setPrehash] = useState(false);
+  const [hashAlg, setHashAlg] = useState<'SHA256' | 'SHA384' | 'SHA512'>('SHA256');
 
   const handleGenerateKeyPair = () => {
     try {
@@ -27,7 +30,9 @@ const Ed25519Tab: React.FC = () => {
     if (!privateKey) { message.warning('请输入私钥'); return; }
 
     try {
-      const signature = ed25519Sign(inputText, privateKey);
+      const signature = prehash
+        ? ed25519SignBytes(hashMessageToUint8Array(inputText, hashAlg), privateKey)
+        : ed25519Sign(inputText, privateKey);
       setOutputText(signature);
       setOutputError('');
       message.success('Ed25519 签名成功');
@@ -42,7 +47,9 @@ const Ed25519Tab: React.FC = () => {
     if (!publicKey) { message.warning('请输入公钥'); return; }
 
     try {
-      const isValid = ed25519Verify(inputText, outputText, publicKey);
+      const isValid = prehash
+        ? ed25519VerifyBytes(hashMessageToUint8Array(inputText, hashAlg), outputText, publicKey)
+        : ed25519Verify(inputText, outputText, publicKey);
       if (isValid) {
         message.success('Ed25519 签名验证通过 ✓');
         setOutputError('');
@@ -105,6 +112,22 @@ const Ed25519Tab: React.FC = () => {
 
       <Card size="small" title="Ed25519 密钥设置" style={{ marginBottom: 16 }}>
         <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '12px 16px', alignItems: 'center' }}>
+          <span>预哈希:</span>
+          <Space>
+            <Switch checked={prehash} onChange={setPrehash} />
+            <Select
+              value={hashAlg}
+              onChange={setHashAlg}
+              style={{ width: 120 }}
+              disabled={!prehash}
+              options={[
+                { value: 'SHA256', label: 'SHA-256' },
+                { value: 'SHA384', label: 'SHA-384' },
+                { value: 'SHA512', label: 'SHA-512' },
+              ]}
+            />
+          </Space>
+
           <span>公钥:</span>
           <Space style={{ width: '100%' }}>
             <Input

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Card, Input, Select, Button, Space, message, Tabs } from 'antd';
-import { generateRSAKeyPair, generateRSASignKeyPair, rsaEncrypt, rsaDecrypt, rsaSign, rsaVerify } from '../../utils/asymmetric';
+import { generateRSAKeyPair, generateRSASignKeyPair, rsaEncryptAuto, rsaDecryptAuto, rsaSign, rsaVerify } from '../../utils/asymmetric';
 
 const { TextArea } = Input;
 
@@ -38,7 +38,7 @@ const RSATab: React.FC = () => {
 
     setLoading(true);
     try {
-      const encrypted = await rsaEncrypt(inputText, publicKey);
+      const encrypted = await rsaEncryptAuto(inputText, publicKey);
       setOutputText(encrypted);
       setOutputError('');
       message.success('RSA 加密成功');
@@ -55,7 +55,7 @@ const RSATab: React.FC = () => {
 
     setLoading(true);
     try {
-      const decrypted = await rsaDecrypt(inputText, privateKey);
+      const decrypted = await rsaDecryptAuto(inputText, privateKey);
       setOutputText(decrypted);
       setOutputError('');
       message.success('RSA 解密成功');
@@ -217,7 +217,7 @@ const RSATab: React.FC = () => {
           </Space>
         </div>
         <div style={{ marginTop: 12, padding: 8, backgroundColor: '#e6f7ff', borderRadius: 4 }}>
-          ℹ️ RSA 是最广泛使用的非对称加密算法，支持加密/解密和数字签名。推荐使用 2048 位或更长的密钥。
+          ℹ️ RSA 更适合短消息；长文本会自动切换为混合加密（RSA‑OAEP + AES‑GCM），输出为 JSON。
         </div>
       </Card>
     </>
