@@ -27,6 +27,7 @@ import {
   ClassicalTab,
   GMInfoTab,
   JWTTab,
+  OpenSSLTab,
 } from './tabs';
 
 const CryptoTool: React.FC = () => {
@@ -93,6 +94,9 @@ const CryptoTool: React.FC = () => {
     }
     if (activeSubTab === 'blowfish') {
       return <BlowfishTab />;
+    }
+    if (activeSubTab === 'openssl') {
+      return <OpenSSLTab />;
     }
     // 非对称加密
     switch (activeSubTab) {

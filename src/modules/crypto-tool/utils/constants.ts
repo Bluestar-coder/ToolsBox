@@ -78,6 +78,7 @@ export const symmetricTabItems = [
   { key: 'chacha20', label: 'ChaCha20' },
   { key: 'rc', label: 'RC系列' },
   { key: 'blowfish', label: 'Blowfish' },
+  { key: 'openssl', label: 'OpenSSL' },
 ];
 
 // 非对称加密二级标签

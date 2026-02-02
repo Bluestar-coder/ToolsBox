@@ -16,3 +16,4 @@ export { default as KDFTab } from './KDFTab';
 export { default as ClassicalTab } from './ClassicalTab';
 export { default as GMInfoTab } from './GMInfoTab';
 export { default as JWTTab } from './JWTTab';
+export { default as OpenSSLTab } from './OpenSSLTab';
