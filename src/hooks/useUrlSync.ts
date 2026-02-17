@@ -249,11 +249,18 @@ export function useUrlState<T extends Record<string, unknown>>(
     });
   };
 
+  // 将defaultState存入ref，避免作为useEffect依赖导致无限循环
+  const defaultStateRef = useRef(defaultState);
+  useEffect(() => {
+    defaultStateRef.current = defaultState;
+  }, [defaultState]);
+
   // 当URL参数变化时更新状态
   useEffect(() => {
-    const newState = { ...defaultState };
+    const currentDefault = defaultStateRef.current;
+    const newState = { ...currentDefault };
     let hasChanges = false;
-    for (const key in defaultState) {
+    for (const key in currentDefault) {
       const paramValue = searchParams.get(key);
       if (paramValue !== null) {
         const deserializer = deserializersRef.current[key as keyof T];
@@ -265,7 +272,7 @@ export function useUrlState<T extends Record<string, unknown>>(
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setState(newState);
     }
-  }, [defaultState, searchParams]);
+  }, [searchParams]);
 
   return [state, updateState];
 }

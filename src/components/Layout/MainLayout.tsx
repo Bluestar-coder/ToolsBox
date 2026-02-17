@@ -14,7 +14,7 @@ const { Header, Content, Sider } = Layout;
 // 懒加载组件的加载状态
 const LoadingFallback: React.FC = React.memo(() => (
   <div className={styles.loadingContainer}>
-    <Spin size="large" tip="加载中..." />
+    <Spin size="large" />
   </div>
 ));
 
@@ -26,9 +26,14 @@ const MainLayout: React.FC = React.memo(() => {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
+  const [siderCollapsed, setSiderCollapsed] = React.useState(false);
 
   // 根据当前路径确定当前模块ID
   const currentModuleId = useMemo(() => {
+    if (location.pathname === '/') {
+      return 'dashboard';
+    }
+
     // 尝试完整路径匹配
     if (pathToModuleId[location.pathname]) {
       return pathToModuleId[location.pathname];
@@ -75,7 +80,16 @@ const MainLayout: React.FC = React.memo(() => {
 
       <Layout className={contentLayoutClass}>
         {/* 左侧导航菜单 */}
-        <Sider width={200} className={styles.sider} style={{ background: colorBgContainer }}>
+        <Sider
+          width={200}
+          collapsedWidth={60}
+          collapsible
+          collapsed={siderCollapsed}
+          onCollapse={setSiderCollapsed}
+          breakpoint="md"
+          className={styles.sider}
+          style={{ background: colorBgContainer }}
+        >
           <SideMenu currentModuleId={currentModuleId} />
         </Sider>
 

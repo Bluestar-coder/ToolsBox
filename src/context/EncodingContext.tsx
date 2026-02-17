@@ -46,7 +46,7 @@ interface EncodingProviderProps {
 }
 
 export const EncodingProvider: React.FC<EncodingProviderProps> = ({ children }) => {
-  const [state, dispatch] = useReducer(encodingReducer, loadInitialState());
+  const [state, dispatch] = useReducer(encodingReducer, undefined, loadInitialState);
 
   // 统一持久化状态到localStorage（使用新的持久化Hook）
   useMultiKeyPersistedState({

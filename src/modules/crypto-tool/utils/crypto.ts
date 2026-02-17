@@ -94,6 +94,19 @@ const convertOutputFormat = (ciphertext: CryptoJS.lib.CipherParams, format: Outp
   }
 };
 
+// 算法映射表，消除 encrypt/decrypt 中的重复 switch
+const algorithmMap: Record<string, typeof CryptoJS.AES> = {
+  aes: CryptoJS.AES,
+  des: CryptoJS.DES,
+  '3des': CryptoJS.TripleDES,
+  tripledes: CryptoJS.TripleDES,
+  rc4: CryptoJS.RC4,
+  rabbit: CryptoJS.Rabbit,
+};
+
+// 流密码不支持 mode/padding 配置
+const streamCiphers = new Set(['rc4']);
+
 /**
  * 加密函数
  * @param plaintext 明文
@@ -104,54 +117,39 @@ const convertOutputFormat = (ciphertext: CryptoJS.lib.CipherParams, format: Outp
 export const encrypt = (plaintext: string, key: string, options: EncryptOptions): string => {
   try {
     const { algorithm, mode, padding, iv, outputFormat = 'base64' } = options;
-    
-    // 转换密钥和IV为CryptoJS所需格式
+
+    // 验证密钥长度
+    if (!validateKeyLength(algorithm, key)) {
+      const expected = getDefaultKeyLength(algorithm);
+      throw new Error(`密钥长度不正确: 期望 ${expected} 字节，实际 ${key.length} 字节`);
+    }
+
+    // 验证IV长度
+    if (!validateIvLength(algorithm, iv)) {
+      const expected = getDefaultIvLength(algorithm);
+      throw new Error(`IV长度不正确: 期望 ${expected} 字节，实际 ${iv?.length ?? 0} 字节`);
+    }
+
+    const cipher = algorithmMap[algorithm];
+    if (!cipher) {
+      throw new Error(`不支持的加密算法: ${algorithm}`);
+    }
+
     const keyBytes = CryptoJS.enc.Utf8.parse(key);
     const ivBytes = iv ? CryptoJS.enc.Utf8.parse(iv) : undefined;
-    
-    // 获取加密模式和填充方式
-    const cryptoMode = getMode(mode);
-    const cryptoPadding = getPadding(padding);
-    
+
     let ciphertext: CryptoJS.lib.CipherParams;
-    
-    // 根据算法类型执行加密
-    switch (algorithm) {
-      case 'aes':
-        ciphertext = CryptoJS.AES.encrypt(plaintext, keyBytes, {
-          mode: cryptoMode,
-          padding: cryptoPadding,
-          iv: ivBytes,
-        });
-        break;
-      case 'des':
-        ciphertext = CryptoJS.DES.encrypt(plaintext, keyBytes, {
-          mode: cryptoMode,
-          padding: cryptoPadding,
-          iv: ivBytes,
-        });
-        break;
-      case '3des':
-      case 'tripledes':
-        ciphertext = CryptoJS.TripleDES.encrypt(plaintext, keyBytes, {
-          mode: cryptoMode,
-          padding: cryptoPadding,
-          iv: ivBytes,
-        });
-        break;
-      case 'rc4':
-        ciphertext = CryptoJS.RC4.encrypt(plaintext, keyBytes);
-        break;
-      case 'rabbit':
-        ciphertext = CryptoJS.Rabbit.encrypt(plaintext, keyBytes, {
-          iv: ivBytes,
-        });
-        break;
-      default:
-        throw new Error(`不支持的加密算法: ${algorithm}`);
+
+    if (streamCiphers.has(algorithm)) {
+      ciphertext = cipher.encrypt(plaintext, keyBytes);
+    } else {
+      ciphertext = cipher.encrypt(plaintext, keyBytes, {
+        mode: getMode(mode),
+        padding: getPadding(padding),
+        iv: ivBytes,
+      });
     }
-    
-    // 转换输出格式
+
     return convertOutputFormat(ciphertext, outputFormat);
   } catch (error) {
     throw new Error(`加密失败: ${error instanceof Error ? error.message : '未知错误'}`);
@@ -168,54 +166,39 @@ export const encrypt = (plaintext: string, key: string, options: EncryptOptions)
 export const decrypt = (ciphertext: string, key: string, options: DecryptOptions): string => {
   try {
     const { algorithm, mode, padding, iv } = options;
-    
-    // 转换密钥和IV为CryptoJS所需格式
+
+    // 验证密钥长度
+    if (!validateKeyLength(algorithm, key)) {
+      const expected = getDefaultKeyLength(algorithm);
+      throw new Error(`密钥长度不正确: 期望 ${expected} 字节，实际 ${key.length} 字节`);
+    }
+
+    // 验证IV长度
+    if (!validateIvLength(algorithm, iv)) {
+      const expected = getDefaultIvLength(algorithm);
+      throw new Error(`IV长度不正确: 期望 ${expected} 字节，实际 ${iv?.length ?? 0} 字节`);
+    }
+
+    const cipher = algorithmMap[algorithm];
+    if (!cipher) {
+      throw new Error(`不支持的解密算法: ${algorithm}`);
+    }
+
     const keyBytes = CryptoJS.enc.Utf8.parse(key);
     const ivBytes = iv ? CryptoJS.enc.Utf8.parse(iv) : undefined;
-    
-    // 获取加密模式和填充方式
-    const cryptoMode = getMode(mode);
-    const cryptoPadding = getPadding(padding);
-    
+
     let plaintextBytes: CryptoJS.lib.WordArray;
-    
-    // 根据算法类型执行解密
-    switch (algorithm) {
-      case 'aes':
-        plaintextBytes = CryptoJS.AES.decrypt(ciphertext, keyBytes, {
-          mode: cryptoMode,
-          padding: cryptoPadding,
-          iv: ivBytes,
-        });
-        break;
-      case 'des':
-        plaintextBytes = CryptoJS.DES.decrypt(ciphertext, keyBytes, {
-          mode: cryptoMode,
-          padding: cryptoPadding,
-          iv: ivBytes,
-        });
-        break;
-      case '3des':
-      case 'tripledes':
-        plaintextBytes = CryptoJS.TripleDES.decrypt(ciphertext, keyBytes, {
-          mode: cryptoMode,
-          padding: cryptoPadding,
-          iv: ivBytes,
-        });
-        break;
-      case 'rc4':
-        plaintextBytes = CryptoJS.RC4.decrypt(ciphertext, keyBytes);
-        break;
-      case 'rabbit':
-        plaintextBytes = CryptoJS.Rabbit.decrypt(ciphertext, keyBytes, {
-          iv: ivBytes,
-        });
-        break;
-      default:
-        throw new Error(`不支持的解密算法: ${algorithm}`);
+
+    if (streamCiphers.has(algorithm)) {
+      plaintextBytes = cipher.decrypt(ciphertext, keyBytes);
+    } else {
+      plaintextBytes = cipher.decrypt(ciphertext, keyBytes, {
+        mode: getMode(mode),
+        padding: getPadding(padding),
+        iv: ivBytes,
+      });
     }
-    
-    // 转换输出为UTF-8字符串
+
     return plaintextBytes.toString(CryptoJS.enc.Utf8);
   } catch (error) {
     throw new Error(`解密失败: ${error instanceof Error ? error.message : '未知错误'}`);
@@ -223,14 +206,30 @@ export const decrypt = (ciphertext: string, key: string, options: DecryptOptions
 };
 
 /**
- * 生成随机密钥
+ * 生成随机密钥（使用 rejection sampling 消除取模偏差）
  * @param length 密钥长度
  * @returns 随机密钥
  */
 export const generateRandomKey = (length: number): string => {
   const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?';
-  const randomBytes = crypto.getRandomValues(new Uint8Array(length));
-  return Array.from(randomBytes, (b) => charset[b % charset.length]).join('');
+  const charsetLen = charset.length;
+  // 计算不产生偏差的最大可接受值（256 的最大整数倍 - 1）
+  const maxValid = Math.floor(256 / charsetLen) * charsetLen;
+  const result: string[] = [];
+
+  while (result.length < length) {
+    // 每次多申请一些字节以减少循环次数
+    const batchSize = Math.max(length - result.length, 16);
+    const randomBytes = crypto.getRandomValues(new Uint8Array(batchSize));
+    for (let i = 0; i < randomBytes.length && result.length < length; i++) {
+      // 丢弃会产生偏差的值
+      if (randomBytes[i] < maxValid) {
+        result.push(charset[randomBytes[i] % charsetLen]);
+      }
+    }
+  }
+
+  return result.join('');
 };
 
 /**

@@ -19,6 +19,8 @@
  * ```
  */
 
+import { logger } from '../utils/logger';
+
 type EventCallback<T = unknown> = (data: T) => void;
 
 /**
@@ -53,7 +55,7 @@ class ContextEventBusClass {
       try {
         callback(data);
       } catch (error) {
-        console.error(`Error in event handler for ${event}:`, error);
+        logger.error(`Error in event handler for ${event}:`, error);
       }
     });
   }

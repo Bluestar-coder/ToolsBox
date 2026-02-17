@@ -20,7 +20,8 @@ const AppCleanup: React.FC = () => {
     return () => {
       // 清理逻辑
     };
-  }, [setInput, setOutput]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return null;
 };

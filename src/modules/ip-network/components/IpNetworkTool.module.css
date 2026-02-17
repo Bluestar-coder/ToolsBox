@@ -1,0 +1,128 @@
+/* IpNetworkTool Styles - Modern Developer Tool Design */
+
+/* Input & Output Areas */
+.monoInput {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace) !important;
+  font-size: 13px;
+  line-height: 1.6;
+  border-radius: var(--radius-md, 10px) !important;
+}
+
+.monoInput:focus {
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 0 0 3px var(--primary-light) !important;
+}
+
+/* Button Styles */
+.primaryButton {
+  background: linear-gradient(135deg, var(--primary-color) 0%, #2563eb 100%) !important;
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+  font-weight: 500;
+}
+
+.primaryButton:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.4);
+  transform: translateY(-1px);
+}
+
+.successButton {
+  background: linear-gradient(135deg, var(--success-color) 0%, #059669 100%) !important;
+  border-color: var(--success-color) !important;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+  font-weight: 500;
+}
+
+.successButton:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.4);
+  transform: translateY(-1px);
+}
+
+/* Result Cards */
+.resultCard {
+  border-radius: var(--radius-md, 10px);
+  transition: all var(--transition-normal, 250ms ease);
+}
+
+.resultSuccess {
+  background: rgba(16, 185, 129, 0.08) !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+}
+
+.resultError {
+  background: rgba(239, 68, 68, 0.08) !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+}
+
+.resultWarning {
+  background: rgba(245, 158, 11, 0.08) !important;
+  border-color: rgba(245, 158, 11, 0.3) !important;
+}
+
+/* Code Display */
+.codeText {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 13px;
+  line-height: 1.6;
+  word-break: break-all;
+}
+
+/* High Frequency Port Highlighting */
+.highFreqPort {
+  font-weight: bold;
+  color: #ff4d4f;
+}
+
+/* Table Enhancements */
+.compactTable {
+  font-size: 13px;
+}
+
+.compactTable code {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 12px;
+}
+
+/* Empty State */
+.emptyState {
+  text-align: center;
+  padding: 20px;
+  color: #999;
+}
+
+/* Dark mode adjustments */
+[data-theme='dark'] .resultSuccess {
+  background: rgba(16, 185, 129, 0.12) !important;
+  border-color: rgba(16, 185, 129, 0.4) !important;
+}
+
+[data-theme='dark'] .resultError {
+  background: rgba(239, 68, 68, 0.12) !important;
+  border-color: rgba(239, 68, 68, 0.4) !important;
+}
+
+[data-theme='dark'] .resultWarning {
+  background: rgba(245, 158, 11, 0.12) !important;
+  border-color: rgba(245, 158, 11, 0.4) !important;
+}
+
+[data-theme='dark'] .emptyState {
+  color: #666;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .monoInput {
+    font-size: 12px;
+  }
+  
+  .codeText {
+    font-size: 12px;
+  }
+  
+  .compactTable {
+    font-size: 12px;
+  }
+}

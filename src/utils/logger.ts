@@ -60,7 +60,9 @@ class Logger {
 
   error(...args: unknown[]) {
     const entry = this.createLogEntry('error', args);
-    this.addLog(entry);
+    if (isDevelopment) {
+      this.addLog(entry);
+    }
     console.error('[ERROR]', ...args);
 
     // TODO: 在生产环境发送到错误追踪服务（如Sentry）

@@ -3,6 +3,16 @@ import { secp256k1 } from '@noble/curves/secp256k1.js';
 import { p256, p384 } from '@noble/curves/nist.js';
 import { uint8ArrayToHex, hexToUint8Array, strToUint8Array, uint8ArrayToBase64, base64ToUint8Array } from './helpers';
 
+const toArrayBuffer = (bytes: Uint8Array): ArrayBuffer => {
+  const buf = bytes.buffer;
+  if (buf instanceof ArrayBuffer) {
+    return buf.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
+  }
+  const ab = new ArrayBuffer(bytes.byteLength);
+  new Uint8Array(ab).set(bytes);
+  return ab;
+};
+
 // ============ Ed25519 ============
 
 export interface Ed25519KeyPair {
@@ -258,7 +268,7 @@ const hybridEncrypt = async (plaintext: string, publicKeyPem: string): Promise<s
   const ciphertext = await crypto.subtle.encrypt(
     { name: 'AES-GCM', iv },
     aesKey,
-    strToUint8Array(plaintext)
+    toArrayBuffer(strToUint8Array(plaintext))
   );
 
   const encryptedKey = await rsaEncryptBytes(aesKeyBytes, publicKeyPem);
@@ -278,14 +288,14 @@ const hybridDecrypt = async (payload: RsaHybridPayload, privateKeyPem: string): 
 
   const aesKey = await crypto.subtle.importKey(
     'raw',
-    aesKeyBytes,
+    toArrayBuffer(aesKeyBytes),
     { name: 'AES-GCM' },
     false,
     ['encrypt', 'decrypt']
   );
 
   const plaintext = await crypto.subtle.decrypt(
-    { name: 'AES-GCM', iv },
+    { name: 'AES-GCM', iv: toArrayBuffer(iv) },
     aesKey,
     ciphertext.buffer as ArrayBuffer
   );

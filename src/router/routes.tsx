@@ -4,12 +4,16 @@ import type { RouteObject } from 'react-router-dom';
 
 // 懒加载布局和页面组件
 const MainLayout = lazy(() => import('../components/Layout/MainLayout'));
+const DashboardPage = lazy(() => import('../pages/DashboardPage'));
 const EncoderPage = lazy(() => import('../pages/EncoderPage'));
 const CryptoPage = lazy(() => import('../pages/CryptoPage'));
 const TimePage = lazy(() => import('../pages/TimePage'));
 const FormatterPage = lazy(() => import('../pages/FormatterPage'));
 const RegexPage = lazy(() => import('../pages/RegexPage'));
 const QRCodePage = lazy(() => import('../pages/QRCodePage'));
+const DiffPage = lazy(() => import('../pages/DiffPage'));
+const HttpDebugPage = lazy(() => import('../pages/HttpDebugPage'));
+const IpNetworkPage = lazy(() => import('../pages/IpNetworkPage'));
 const SettingsPage = lazy(() => import('../pages/SettingsPage'));
 
 // 路由配置
@@ -20,7 +24,7 @@ export const routes: RouteObject[] = [
     children: [
       {
         index: true,
-        element: <Navigate to="/encoder" replace />,
+        element: <DashboardPage />,
       },
       // 编码/解码工具
       {
@@ -76,6 +80,21 @@ export const routes: RouteObject[] = [
         path: 'qrcode/:type',
         element: <QRCodePage />,
       },
+      // 差异对比工具
+      {
+        path: 'diff',
+        element: <DiffPage />,
+      },
+      // HTTP 调试工具
+      {
+        path: 'http-debug',
+        element: <HttpDebugPage />,
+      },
+      // IP/网络工具
+      {
+        path: 'ip-network',
+        element: <IpNetworkPage />,
+      },
       // 设置
       {
         path: 'settings',
@@ -84,7 +103,7 @@ export const routes: RouteObject[] = [
       // 404页面
       {
         path: '*',
-        element: <Navigate to="/encoder" replace />,
+        element: <Navigate to="/" replace />,
       },
     ],
   },

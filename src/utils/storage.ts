@@ -81,11 +81,19 @@ class SessionStorageService implements StorageService {
   }
 
   remove(key: string): void {
-    window.sessionStorage.removeItem(key);
+    try {
+      window.sessionStorage.removeItem(key);
+    } catch (error) {
+      logger.error(`Error removing from sessionStorage:`, error);
+    }
   }
 
   clear(): void {
-    window.sessionStorage.clear();
+    try {
+      window.sessionStorage.clear();
+    } catch (error) {
+      logger.error(`Error clearing sessionStorage:`, error);
+    }
   }
 }
 

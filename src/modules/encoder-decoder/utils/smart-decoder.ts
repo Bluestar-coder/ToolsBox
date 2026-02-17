@@ -101,18 +101,23 @@ export function smartDecode(input: string, options: {
       if (decodeUrl) {
         const urlMatches = result.match(URL_ENCODED_PATTERN);
         if (urlMatches) {
-          for (const match of urlMatches) {
+          // 使用 Set 去重，避免同一匹配被处理多次
+          const uniqueMatches = [...new Set(urlMatches)];
+          for (const match of uniqueMatches) {
             try {
               const decoded = urlDecode(match);
               if (decoded.success && decoded.result !== match) {
+                // 记录第一次出现的位置用于 match 信息
+                const matchIndex = result.indexOf(match);
                 matches.push({
                   original: match,
                   decoded: decoded.result,
                   type: 'URL',
-                  start: result.indexOf(match),
-                  end: result.indexOf(match) + match.length,
+                  start: matchIndex,
+                  end: matchIndex + match.length,
                 });
-                result = result.replace(match, decoded.result);
+                // 使用 replaceAll 替换所有出现
+                result = result.split(match).join(decoded.result);
                 hasChanges = true;
               }
             } catch {
@@ -187,18 +192,20 @@ export function smartDecode(input: string, options: {
       if (decodeBase64) {
         const base64Matches = result.match(BASE64_PATTERN);
         if (base64Matches) {
-          for (const match of base64Matches) {
+          const uniqueMatches = [...new Set(base64Matches)];
+          for (const match of uniqueMatches) {
             if (isValidBase64(match)) {
               const decoded = base64Decode(match);
               if (decoded.success && decoded.result !== match) {
+                const matchIndex = result.indexOf(match);
                 matches.push({
                   original: match,
                   decoded: decoded.result,
                   type: 'Base64',
-                  start: result.indexOf(match),
-                  end: result.indexOf(match) + match.length,
+                  start: matchIndex,
+                  end: matchIndex + match.length,
                 });
-                result = result.replace(match, decoded.result);
+                result = result.split(match).join(decoded.result);
                 hasChanges = true;
               }
             }

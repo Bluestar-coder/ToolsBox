@@ -65,6 +65,7 @@ export default defineConfig({
       '@context': path.resolve(__dirname, './src/context'),
       '@types': path.resolve(__dirname, './src/types'),
       '@sentry/react': path.resolve(__dirname, './src/__mocks__/@sentry/react.ts'),
+      '@tauri-apps/plugin-http': path.resolve(__dirname, './src/__mocks__/@tauri-apps/plugin-http.ts'),
     },
   },
 });

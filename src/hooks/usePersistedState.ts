@@ -68,35 +68,36 @@ export function useMultiKeyPersistedState<
   const { fields, state } = config;
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const previousStateRef = useRef<Record<string, unknown>>({});
+  // 累积式防抖：在防抖窗口内合并所有变更，避免丢失中间状态
+  const pendingChangesRef = useRef<Map<string, unknown>>(new Map());
 
   useEffect(() => {
     // 检查哪些字段发生了变化
-    const changedFields: Array<{ storageKey: string; stateKey: keyof T; value: T[keyof T] }> = [];
-
     Object.entries(fields).forEach(([storageKey, stateKey]) => {
       const currentValue = state[stateKey];
       const previousValue = previousStateRef.current[stateKey as string];
 
-      // 只保存发生变化的字段
+      // 只记录发生变化的字段
       if (currentValue !== previousValue) {
-        changedFields.push({ storageKey, stateKey, value: currentValue });
+        pendingChangesRef.current.set(storageKey, currentValue);
         previousStateRef.current[stateKey as string] = currentValue;
       }
     });
 
-    // 如果有字段发生变化，清除之前的定时器并设置新的定时器
-    if (changedFields.length > 0) {
+    // 如果有待写入的变更，重置防抖定时器
+    if (pendingChangesRef.current.size > 0) {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
 
-      // 使用防抖，300ms后才写入localStorage
+      // 使用防抖，300ms后批量写入所有累积的变更
       timeoutRef.current = setTimeout(() => {
-        changedFields.forEach(({ storageKey, value }) => {
+        pendingChangesRef.current.forEach((value, storageKey) => {
           if (value !== undefined) {
             storage.set(storageKey, value);
           }
         });
+        pendingChangesRef.current.clear();
       }, 300);
     }
 

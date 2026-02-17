@@ -33,6 +33,21 @@ export const createNavigation = {
   qrcode: (type?: string) => `/qrcode${type ? `/${type}` : ''}`,
 
   /**
+   * 差异对比工具路径
+   */
+  diff: () => '/diff',
+
+  /**
+   * HTTP 调试工具路径
+   */
+  httpDebug: () => '/http-debug',
+
+  /**
+   * IP/网络工具路径
+   */
+  ipNetwork: () => '/ip-network',
+
+  /**
    * 设置路径
    */
   settings: () => '/settings',
@@ -48,6 +63,9 @@ export const moduleIdToPath: Record<string, string> = {
   'code-formatter': '/formatter',
   'regex-tool': '/regex',
   'qrcode-tool': '/qrcode',
+  'diff-tool': '/diff',
+  'http-debug': '/http-debug',
+  'ip-network': '/ip-network',
 };
 
 /**
@@ -60,5 +78,8 @@ export const pathToModuleId: Record<string, string> = {
   '/formatter': 'code-formatter',
   '/regex': 'regex-tool',
   '/qrcode': 'qrcode-tool',
+  '/diff': 'diff-tool',
+  '/http-debug': 'http-debug',
+  '/ip-network': 'ip-network',
   '/settings': 'settings',
 };

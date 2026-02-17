@@ -1,0 +1,132 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 16px;
+}
+
+.editorContainer {
+  display: flex;
+  gap: 16px;
+  flex: 1;
+  min-height: 200px;
+}
+
+.inputColumn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.diffContainer {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--bg-secondary);
+}
+
+.diffHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--card-bg);
+}
+
+.diffContent {
+  overflow: auto;
+  max-height: 600px;
+}
+
+.diffTable {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.diffRow {
+  width: 100%;
+}
+
+.lineNumber {
+  width: 50px;
+  padding: 0 8px;
+  text-align: right;
+  color: var(--text-secondary);
+  user-select: none;
+  border-right: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+}
+
+.codeCell {
+  padding: 0 8px;
+  white-space: pre-wrap;
+  word-break: break-all;
+  color: var(--text-color);
+}
+
+/* Diff Colors - Light Mode */
+.added {
+  background-color: #e6ffec;
+}
+
+.added .codeCell {
+  background-color: #e6ffec;
+}
+
+.removed {
+  background-color: #ffebe9;
+}
+
+.removed .codeCell {
+  background-color: #ffebe9;
+}
+
+.gutterAdded {
+  background-color: #ccffd8;
+}
+
+.gutterRemoved {
+  background-color: #ffd7d5;
+}
+
+/* Diff Colors - Dark Mode */
+:global([data-theme='dark']) .added {
+  background-color: rgba(46, 160, 67, 0.15);
+}
+
+:global([data-theme='dark']) .added .codeCell {
+  background-color: rgba(46, 160, 67, 0.15);
+}
+
+:global([data-theme='dark']) .removed {
+  background-color: rgba(248, 81, 73, 0.15);
+}
+
+:global([data-theme='dark']) .removed .codeCell {
+  background-color: rgba(248, 81, 73, 0.15);
+}
+
+:global([data-theme='dark']) .gutterAdded {
+  background-color: rgba(46, 160, 67, 0.3);
+}
+
+:global([data-theme='dark']) .gutterRemoved {
+  background-color: rgba(248, 81, 73, 0.3);
+}
+
+.emptyRow {
+  background-color: var(--bg-secondary);
+}
+
+.marker {
+  display: inline-block;
+  width: 10px;
+  text-align: center;
+  color: var(--text-secondary);
+}

@@ -2,6 +2,30 @@
 
 import type { Plugin, PluginConfig, PluginMetadata, PluginLoadResult, PluginEvent } from './types';
 
+// 插件入口点路径白名单前缀
+const ALLOWED_ENTRY_PREFIXES = [
+  './plugins/',
+  '../plugins/',
+  '/src/plugins/',
+];
+
+/**
+ * 验证插件入口点路径是否安全
+ * 防止任意路径的代码注入
+ */
+function isValidEntryPoint(entryPoint: string): boolean {
+  // 禁止协议前缀（http:, https:, data:, javascript: 等）
+  if (/^[a-zA-Z]+:/.test(entryPoint)) {
+    return false;
+  }
+  // 禁止路径遍历
+  if (entryPoint.includes('..') && !entryPoint.startsWith('../plugins/')) {
+    return false;
+  }
+  // 必须匹配白名单前缀
+  return ALLOWED_ENTRY_PREFIXES.some(prefix => entryPoint.startsWith(prefix));
+}
+
 class PluginManager {
   private plugins: Map<string, PluginMetadata> = new Map();
   private eventListeners: Array<(event: PluginEvent) => void> = [];
@@ -15,7 +39,15 @@ class PluginManager {
   async loadPlugin(pluginConfig: PluginConfig): Promise<PluginLoadResult> {
     try {
       const pluginId = `${pluginConfig.name}-${pluginConfig.version}`;
-      
+
+      // 验证插件入口点路径安全性
+      if (!isValidEntryPoint(pluginConfig.entryPoint)) {
+        return {
+          success: false,
+          error: `不安全的插件入口点路径: ${pluginConfig.entryPoint}，仅允许从 plugins/ 目录加载`,
+        };
+      }
+
       // 检查插件是否已加载
       if (this.plugins.has(pluginId)) {
         return { success: false, error: '插件已加载' };
@@ -33,9 +65,6 @@ class PluginManager {
 
       // 尝试加载插件入口点
       try {
-        // 这里使用动态导入，实际实现需要根据entryPoint的类型进行不同处理
-        // 对于本地插件，可以直接导入
-        // 对于远程插件，需要先下载，然后使用URL.createObjectURL创建本地URL
         const pluginModule = await import(/* @vite-ignore */ pluginConfig.entryPoint);
         const pluginInstance: Plugin = new pluginModule.default();
         
@@ -85,6 +114,12 @@ class PluginManager {
     try {
       // 如果插件未初始化，先初始化
       if (!plugin.instance) {
+        // 验证插件入口点路径安全性
+        if (!isValidEntryPoint(plugin.config.entryPoint)) {
+          plugin.status = 'error';
+          plugin.error = `不安全的插件入口点路径: ${plugin.config.entryPoint}`;
+          return false;
+        }
         const pluginModule = await import(/* @vite-ignore */ plugin.config.entryPoint);
         const pluginInstance: Plugin = new pluginModule.default();
         await pluginInstance.initialize();

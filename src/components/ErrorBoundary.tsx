@@ -5,6 +5,7 @@ import { CloseCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icon
 import { useErrorContext } from '../hooks/useErrorContext';
 import * as Sentry from '@sentry/react';
 import { logger } from '../utils/logger';
+import i18n from '../i18n';
 import styles from './styles/ErrorBoundary.module.css';
 
 const { Title, Text } = Typography;
@@ -67,7 +68,7 @@ export class ErrorBoundaryClass extends Component<ErrorBoundaryProps, ErrorBound
             title={
               <Space>
                 <ExclamationCircleOutlined className={styles.errorIcon} />
-                <Title level={4} className={styles.errorTitle}>应用发生错误</Title>
+                <Title level={4} className={styles.errorTitle}>{i18n.t('errorBoundary.title')}</Title>
               </Space>
             }
             variant="borderless"
@@ -78,18 +79,18 @@ export class ErrorBoundaryClass extends Component<ErrorBoundaryProps, ErrorBound
                 onClick={this.handleReset}
                 icon={<CloseCircleOutlined />}
               >
-                重试
+                {i18n.t('errorBoundary.retry')}
               </Button>
             ]}
           >
             <div className={styles.errorInfo}>
-              <Text strong>错误信息：</Text>
+              <Text strong>{i18n.t('errorBoundary.errorMessage')}</Text>
               <Text className={styles.errorMessage}>{this.state.error?.message}</Text>
             </div>
 
             {this.state.errorInfo && (
               <div>
-                <Text strong>组件栈：</Text>
+                <Text strong>{i18n.t('errorBoundary.componentStack')}</Text>
                 <pre className={styles.componentStack}>
                   {this.state.errorInfo.componentStack}
                 </pre>
@@ -98,7 +99,7 @@ export class ErrorBoundaryClass extends Component<ErrorBoundaryProps, ErrorBound
 
             <div className={styles.errorHint}>
               <Text type="danger">
-                提示：此错误已被错误边界捕获，应用不会崩溃。点击重试按钮可以重置组件状态。
+                {i18n.t('errorBoundary.hint')}
               </Text>
             </div>
           </Card>

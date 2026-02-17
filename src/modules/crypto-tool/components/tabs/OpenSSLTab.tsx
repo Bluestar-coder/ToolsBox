@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { Button, Input, Select, Space, message, Typography, Radio, Form, Card } from 'antd';
-import CryptoJS from 'crypto-js';
+import React, { useState, useEffect, useRef } from 'react';
+import { Button, Input, Select, Space, message, Typography, Form, Card, Spin } from 'antd';
+import { useTranslation } from 'react-i18next';
+import CryptoWorker from '../../utils/crypto.worker?worker';
 import { 
   CopyOutlined, 
   DeleteOutlined, 
@@ -8,15 +9,39 @@ import {
   UnlockOutlined 
 } from '@ant-design/icons';
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 const { TextArea } = Input;
 
 export const OpenSSLTab: React.FC = () => {
+  const { t } = useTranslation();
   const [algorithm, setAlgorithm] = useState('AES-256-CBC');
   const [password, setPassword] = useState('');
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
+  const [loading, setLoading] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
+  const workerRef = useRef<Worker | null>(null);
+
+  useEffect(() => {
+    workerRef.current = new CryptoWorker();
+    
+    workerRef.current.onmessage = (e) => {
+      const { success, result, error } = e.data;
+      setLoading(false);
+      
+      if (success) {
+        setOutput(result);
+        messageApi.success(t('modules.crypto.openssl.encryptSuccess')); // Message might need context
+      } else {
+        console.error(error);
+        messageApi.error(t('modules.crypto.openssl.encryptFailed'));
+      }
+    };
+
+    return () => {
+      workerRef.current?.terminate();
+    };
+  }, [messageApi, t]);
 
   const algorithmOptions = [
     { value: 'AES-128-CBC', label: 'AES-128 CBC' },
@@ -30,100 +55,48 @@ export const OpenSSLTab: React.FC = () => {
 
   const handleEncrypt = () => {
     if (!password) {
-      messageApi.error('Please enter a password');
+      messageApi.error(t('modules.crypto.openssl.passwordRequired'));
       return;
     }
     if (!input) {
-      messageApi.warning('Please enter content to encrypt');
+      messageApi.warning(t('modules.crypto.openssl.contentRequired'));
       return;
     }
 
-    try {
-      let encrypted;
-      // crypto-js format for OpenSSL compatibility (EvpKDF)
-      // Note: This matches "openssl enc -[algo] -k [password] -md md5" (OpenSSL < 1.1.0 default)
-      // Modern OpenSSL defaults to PBKDF2-SHA256 which requires manual implementation in crypto-js
-      
-      switch (algorithm) {
-        case 'AES-128-CBC':
-        case 'AES-192-CBC':
-        case 'AES-256-CBC':
-          // CryptoJS AES treats string password as OpenSSL compatible
-          encrypted = CryptoJS.AES.encrypt(input, password).toString();
-          break;
-        case 'DES-CBC':
-          encrypted = CryptoJS.DES.encrypt(input, password).toString();
-          break;
-        case 'TripleDES-CBC':
-          encrypted = CryptoJS.TripleDES.encrypt(input, password).toString();
-          break;
-        case 'Rabbit':
-          encrypted = CryptoJS.Rabbit.encrypt(input, password).toString();
-          break;
-        case 'RC4':
-          encrypted = CryptoJS.RC4.encrypt(input, password).toString();
-          break;
-        default:
-          encrypted = CryptoJS.AES.encrypt(input, password).toString();
-      }
-      setOutput(encrypted);
-      messageApi.success('Encrypted successfully');
-    } catch (error) {
-      console.error(error);
-      messageApi.error('Encryption failed');
-    }
+    setLoading(true);
+    workerRef.current?.postMessage({
+      id: Date.now().toString(),
+      type: 'encrypt',
+      algorithm,
+      input,
+      password
+    });
   };
 
   const handleDecrypt = () => {
     if (!password) {
-      messageApi.error('Please enter a password');
+      messageApi.error(t('modules.crypto.openssl.passwordRequired'));
       return;
     }
     if (!input) {
-      messageApi.warning('Please enter content to decrypt');
+      messageApi.warning(t('modules.crypto.openssl.decryptContentRequired'));
       return;
     }
 
-    try {
-      let decryptedBytes;
-      switch (algorithm) {
-        case 'AES-128-CBC':
-        case 'AES-192-CBC':
-        case 'AES-256-CBC':
-          decryptedBytes = CryptoJS.AES.decrypt(input, password);
-          break;
-        case 'DES-CBC':
-          decryptedBytes = CryptoJS.DES.decrypt(input, password);
-          break;
-        case 'TripleDES-CBC':
-          decryptedBytes = CryptoJS.TripleDES.decrypt(input, password);
-          break;
-        case 'Rabbit':
-          decryptedBytes = CryptoJS.Rabbit.decrypt(input, password);
-          break;
-        case 'RC4':
-          decryptedBytes = CryptoJS.RC4.decrypt(input, password);
-          break;
-        default:
-          decryptedBytes = CryptoJS.AES.decrypt(input, password);
-      }
-      
-      const decrypted = decryptedBytes.toString(CryptoJS.enc.Utf8);
-      if (!decrypted) {
-        throw new Error('Decryption result is empty');
-      }
-      setOutput(decrypted);
-      messageApi.success('Decrypted successfully');
-    } catch (error) {
-      console.error(error);
-      messageApi.error('Decryption failed. Please check your password and input.');
-    }
+    setLoading(true);
+    workerRef.current?.postMessage({
+      id: Date.now().toString(),
+      type: 'decrypt',
+      algorithm,
+      input,
+      password
+    });
   };
 
   const handleCopy = () => {
     if (output) {
       navigator.clipboard.writeText(output);
-      messageApi.success('Copied to clipboard');
+      messageApi.success(t('modules.crypto.openssl.copySuccess'));
     }
   };
 
@@ -137,10 +110,10 @@ export const OpenSSLTab: React.FC = () => {
     <div className="openssl-tab">
       {contextHolder}
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
-        <Card title="OpenSSL Encryption/Decryption" size="small">
+        <Card title={t('modules.crypto.openssl.title')} size="small">
           <Form layout="vertical">
             <Space size="large" wrap>
-              <Form.Item label="Algorithm">
+              <Form.Item label={t('modules.crypto.openssl.algorithm')}>
                 <Select
                   value={algorithm}
                   onChange={setAlgorithm}
@@ -148,59 +121,66 @@ export const OpenSSLTab: React.FC = () => {
                   style={{ width: 200 }}
                 />
               </Form.Item>
-              <Form.Item label="Password" required>
+              <Form.Item label={t('modules.crypto.openssl.password')} required>
                 <Input.Password
+                  id="openssl-password"
+                  name="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter secret password"
+                  placeholder={t('modules.crypto.openssl.passwordPlaceholder')}
                   style={{ width: 250 }}
                 />
               </Form.Item>
             </Space>
 
             <div style={{ marginTop: 16 }}>
-              <Text strong>Input</Text>
+              <Text strong>{t('modules.crypto.openssl.input')}</Text>
               <TextArea
+                id="openssl-input"
+                name="input"
                 rows={4}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Enter text to encrypt or OpenSSL format string to decrypt (e.g., U2FsdGVkX1...)"
+                placeholder={t('modules.crypto.openssl.inputPlaceholder')}
                 style={{ marginTop: 8, fontFamily: 'monospace' }}
               />
             </div>
 
             <Space style={{ marginTop: 16 }}>
               <Button type="primary" icon={<LockOutlined />} onClick={handleEncrypt}>
-                Encrypt
+                {t('modules.crypto.openssl.encrypt')}
               </Button>
               <Button icon={<UnlockOutlined />} onClick={handleDecrypt}>
-                Decrypt
+                {t('modules.crypto.openssl.decrypt')}
               </Button>
               <Button icon={<DeleteOutlined />} onClick={handleClear}>
-                Clear
+                {t('modules.crypto.openssl.clear')}
               </Button>
             </Space>
 
             <div style={{ marginTop: 24 }}>
-              <Space style={{ justifyContent: 'space-between', width: '100%' }}>
-                <Text strong>Output</Text>
-                <Button type="text" icon={<CopyOutlined />} onClick={handleCopy}>
-                  Copy
-                </Button>
-              </Space>
-              <TextArea
-                rows={4}
-                value={output}
-                readOnly
-                placeholder="Result will appear here..."
-                style={{ marginTop: 8, fontFamily: 'monospace', backgroundColor: '#f5f5f5' }}
-              />
+              <Spin spinning={loading}>
+                <Space style={{ justifyContent: 'space-between', width: '100%' }}>
+                  <Text strong>{t('modules.crypto.openssl.output')}</Text>
+                  <Button type="text" icon={<CopyOutlined />} onClick={handleCopy}>
+                    {t('modules.crypto.openssl.copy')}
+                  </Button>
+                </Space>
+                <TextArea
+                  id="openssl-output"
+                  name="output"
+                  rows={4}
+                  value={output}
+                  readOnly
+                  placeholder={t('modules.crypto.openssl.resultPlaceholder')}
+                  style={{ marginTop: 8, fontFamily: 'monospace', backgroundColor: '#f5f5f5' }}
+                />
+              </Spin>
             </div>
             
             <div style={{ marginTop: 16 }}>
               <Text type="secondary" style={{ fontSize: 12 }}>
-                Note: This tool uses CryptoJS default behavior, which is compatible with `openssl enc -[algo] -k [pass] -md md5`. 
-                Output format is Base64 encoded string starting with "Salted__".
+                {t('modules.crypto.openssl.note')}
               </Text>
             </div>
           </Form>
