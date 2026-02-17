@@ -1,6 +1,6 @@
 # 效率工具箱 (ToolsBox)
 
-一个功能强大的在线工具集，提供编码/解码、时间处理、加密/解密、代码格式化、正则表达式和二维码等实用工具。基于 React + TypeScript + Ant Design 构建，支持多语言切换。
+一个功能强大的在线工具集，提供编码/解码、时间处理、加密/解密、代码格式化、正则表达式、二维码、网络调试和 IP/网络工具等实用功能。基于 React + TypeScript + Ant Design 构建，支持多语言切换，同时提供 Tauri 桌面端版本。
 
 ## 功能特性
 
@@ -86,6 +86,46 @@
   - 上传图片识别
   - 剪贴板粘贴识别 (Ctrl+V)
 
+### 🌐 网络调试工具
+- **HTTP 调试**：
+  - 支持 GET、POST、PUT、DELETE、PATCH、HEAD、OPTIONS 等方法
+  - 自定义请求头和请求体（JSON、Form、Multipart、Raw、Binary）
+  - 环境变量管理和变量替换（`{{variable}}` 语法）
+  - 请求历史记录（最多 100 条）
+  - 响应查看器（状态码、响应头、响应体、耗时、大小）
+  - Tauri 桌面端支持无 CORS 限制的请求
+- **WebSocket 调试**：
+  - WebSocket 连接管理（ws:// 和 wss://）
+  - 文本和二进制消息收发
+  - 消息时间线日志
+  - 自动重连配置（间隔时间、最大次数）
+  - 自定义子协议支持
+
+### 🔧 IP/网络工具
+- **IP 地址转换**：
+  - IPv4 格式转换（十进制、十六进制、二进制、整数）
+  - IPv6 格式转换（完整展开、压缩形式、二进制）
+  - 自动检测输入格式
+- **CIDR 计算器**：
+  - 网络地址、广播地址计算
+  - 子网掩码和通配符掩码
+  - 可用主机 IP 范围和数量
+  - 支持 IPv4 CIDR（/0-32）
+- **子网划分**：
+  - 按子网数量划分
+  - 按主机数量划分
+  - 表格展示划分结果
+- **IP 归属地查询**：
+  - 查询 IP 的国家、地区、城市、ISP、AS 号
+  - 支持批量查询
+  - 查询本机公网 IP
+  - 使用免费 API（ip-api.com）
+- **端口号速查**：
+  - 内置常见端口数据库
+  - 按端口号或服务名搜索
+  - 高亮标注高频端口（21、22、80、443、3306、3389 等）
+  - 安全风险等级标注
+
 ## 🌍 多语言支持
 
 - 🇨🇳 简体中文
@@ -98,6 +138,7 @@
 - **React 19** + **TypeScript 5.9**
 - **Ant Design 6** - UI 组件库
 - **Vite 7** - 构建工具
+- **Tauri 2** - 桌面端框架
 - **i18next** - 国际化
 - **crypto-js** - 对称加密
 - **@noble/curves** - 椭圆曲线密码
@@ -107,6 +148,8 @@
 - **html5-qrcode** - 二维码识别
 
 ## 快速开始
+
+### Web 版本
 
 ```bash
 # 安装依赖
@@ -118,6 +161,28 @@ npm run dev
 # 构建生产版本
 npm run build
 ```
+
+### Tauri 桌面版
+
+```bash
+# 安装依赖
+npm install
+
+# 启动 Tauri 开发模式
+npm run tauri dev
+
+# 构建桌面应用
+npm run tauri build
+```
+
+### Tauri 桌面版特色功能
+
+- ✅ **无 CORS 限制**：HTTP 请求不受浏览器跨域限制
+- ✅ **窗口状态保存**：自动记住窗口大小和位置
+- ✅ **原生性能**：比浏览器版本更快的启动和运行速度
+- ✅ **完整文件系统访问**：可以读写本地文件
+
+详细测试指南请查看 [TAURI_TEST_GUIDE.md](./TAURI_TEST_GUIDE.md)
 
 ## 项目结构
 
@@ -137,10 +202,15 @@ src/
 │   ├── time-tool/       # 时间工具
 │   ├── code-formatter/  # 代码格式化
 │   ├── regex-tool/      # 正则工具
-│   └── qrcode-tool/     # 二维码工具
+│   ├── qrcode-tool/     # 二维码工具
+│   ├── http-debug/      # 网络调试
+│   └── ip-network/      # IP/网络工具
+├── pages/               # 页面组件
 ├── plugins/             # 插件系统
+├── router/              # 路由配置
 ├── utils/               # 公共工具
-└── types/               # 类型定义
+├── types/               # 类型定义
+└── src-tauri/           # Tauri 桌面端配置
 ```
 
 ## 开发进度
@@ -151,6 +221,9 @@ src/
 - [x] 代码格式化工具模块
 - [x] 正则表达式工具模块
 - [x] 二维码工具模块
+- [x] 网络调试工具模块（HTTP + WebSocket）
+- [x] IP/网络工具模块
+- [x] Tauri 桌面端支持
 - [x] 多语言国际化支持
 - [x] 深色/浅色主题切换
 - [ ] 数据导入/导出
@@ -162,6 +235,14 @@ src/
 - ECB 模式安全性较低，推荐使用 CBC/GCM/CTR 模式
 - RC4 等古典算法仅供学习，不建议用于生产环境
 - 请妥善保管密钥，丢失将无法恢复数据
+- 浏览器端 HTTP 请求受 CORS 限制，建议使用 Tauri 桌面端进行跨域请求
+
+## 相关文档
+
+- [Tauri 测试指南](./TAURI_TEST_GUIDE.md) - Tauri 桌面端功能测试
+- [Tauri 状态总结](./TAURI_STATUS_SUMMARY.md) - Tauri 功能状态和配置
+- [HTTP 调试工具规范](./.kiro/specs/http-debug-tool/) - HTTP 调试工具需求和设计
+- [IP/网络工具规范](./.kiro/specs/ip-network-tool/) - IP/网络工具需求和设计
 
 ## 浏览器支持
 
