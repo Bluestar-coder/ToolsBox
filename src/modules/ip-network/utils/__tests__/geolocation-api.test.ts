@@ -202,15 +202,25 @@ describe('queryGeolocation — unit tests', () => {
     );
   });
 
-  // --- Requirement 4.4: timeout / network error ---
-  it('throws on network error (e.g. timeout)', async () => {
+  // --- Requirement 4.4: timeout / network error / mixed content ---
+  it('returns mixed content error for Failed to fetch (browser security)', async () => {
     (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
       new TypeError('Failed to fetch')
     );
 
-    await expect(queryGeolocation('8.8.8.8')).rejects.toThrow(
-      'Failed to fetch'
-    );
+    const result = await queryGeolocation('8.8.8.8');
+
+    expect(result).toEqual({
+      ip: '',
+      country: '',
+      region: '',
+      city: '',
+      isp: '',
+      org: '',
+      asNumber: '',
+      status: 'fail',
+      message: 'MIXED_CONTENT_ERROR',
+    });
   });
 
   // --- Requirement 4.3: private IP rejection ---
@@ -381,37 +391,73 @@ describe('queryMyIp — unit tests', () => {
     vi.restoreAllMocks();
   });
 
-  it('returns current public IP info', async () => {
-    const mockResponse = {
-      status: 'success',
-      query: '203.0.113.50',
-      country: 'Japan',
-      regionName: 'Tokyo',
-      city: 'Tokyo',
-      isp: 'Example ISP',
-      org: 'Example Org',
-      as: 'AS12345 Example',
-    };
-
-    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockResponse,
-    });
+  it('returns current public IP info using fallback services', async () => {
+    // 模拟备用 IP 检测服务返回 IP
+    (global.fetch as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ ip: '203.0.113.50' }),
+      })
+      // 然后模拟 ip-api.com 返回归属地信息
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          status: 'success',
+          query: '203.0.113.50',
+          country: 'Japan',
+          regionName: 'Tokyo',
+          city: 'Tokyo',
+          isp: 'Example ISP',
+          org: 'Example Org',
+          as: 'AS12345 Example',
+        }),
+      });
 
     const result = await queryMyIp();
 
-    expect(global.fetch).toHaveBeenCalledWith('http://ip-api.com/json/');
     expect(result.status).toBe('success');
     expect(result.ip).toBe('203.0.113.50');
     expect(result.country).toBe('Japan');
   });
 
-  it('throws on API failure', async () => {
-    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      ok: false,
-      status: 503,
-      statusText: 'Service Unavailable',
-    });
+  it('falls back to ip-api auto-detect when fallback services fail', async () => {
+    // 模拟所有备用服务都失败
+    (global.fetch as ReturnType<typeof vi.fn>)
+      .mockRejectedValueOnce(new Error('Service 1 failed'))
+      .mockRejectedValueOnce(new Error('Service 2 failed'))
+      .mockRejectedValueOnce(new Error('Service 3 failed'))
+      // 然后模拟 ip-api.com 直接返回
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          status: 'success',
+          query: '203.0.113.50',
+          country: 'Japan',
+          regionName: 'Tokyo',
+          city: 'Tokyo',
+          isp: 'Example ISP',
+          org: 'Example Org',
+          as: 'AS12345 Example',
+        }),
+      });
+
+    const result = await queryMyIp();
+
+    expect(result.status).toBe('success');
+    expect(result.ip).toBe('203.0.113.50');
+  });
+
+  it('throws on API failure when all services fail', async () => {
+    // 模拟所有服务都失败
+    (global.fetch as ReturnType<typeof vi.fn>)
+      .mockRejectedValueOnce(new Error('Service 1 failed'))
+      .mockRejectedValueOnce(new Error('Service 2 failed'))
+      .mockRejectedValueOnce(new Error('Service 3 failed'))
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 503,
+        statusText: 'Service Unavailable',
+      });
 
     await expect(queryMyIp()).rejects.toThrow(
       'API request failed: 503 Service Unavailable'

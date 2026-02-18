@@ -334,6 +334,8 @@ export default {
         errorTitle: '오류',
         queryFailed: '조회 실패',
         statusSuccess: '성공',
+        errorMixedContent: '브라우저 보안 제한',
+        errorMixedContentDesc: '브라우저 혼합 콘텐츠 정책(HTTP/HTTPS)으로 인해 브라우저에서는 IP 위치 조회를 사용할 수 없습니다. Tauri 데스크톱 앱 버전을 사용하거나, 브라우저에서 HTTP 버전에 접속하세요(사용 가능한 경우).',
         colIp: 'IP 주소',
         colCountry: '국가',
         colRegion: '지역',

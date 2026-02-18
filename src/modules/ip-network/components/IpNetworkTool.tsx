@@ -6,6 +6,7 @@ import CidrCalculatorTab from './tabs/CidrCalculatorTab';
 import SubnetDividerTab from './tabs/SubnetDividerTab';
 import GeolocationTab from './tabs/GeolocationTab';
 import PortReferenceTab from './tabs/PortReferenceTab';
+import SubnetMaskConverterTab from './tabs/SubnetMaskConverterTab';
 
 const IpNetworkTool: React.FC = () => {
   const { t } = useTranslation();
@@ -26,6 +27,11 @@ const IpNetworkTool: React.FC = () => {
       key: 'subnet',
       label: t('modules.ipNetwork.tabs.subnet'),
       children: <SubnetDividerTab />,
+    },
+    {
+      key: 'subnetMask',
+      label: t('modules.ipNetwork.tabs.subnetMask'),
+      children: <SubnetMaskConverterTab />,
     },
     {
       key: 'geolocation',

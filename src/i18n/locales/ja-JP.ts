@@ -338,6 +338,8 @@ export default {
         errorTitle: 'エラー',
         queryFailed: '照会失敗',
         statusSuccess: '成功',
+        errorMixedContent: 'ブラウザセキュリティ制限',
+        errorMixedContentDesc: 'ブラウザの混合コンテンツポリシー（HTTP/HTTPS）により、ブラウザではIP位置情報の照会ができません。Tauriデスクトップアプリバージョンを使用するか、ブラウザでHTTPバージョンにアクセスしてください（利用可能な場合）。',
         colIp: 'IPアドレス',
         colCountry: '国',
         colRegion: '地域',

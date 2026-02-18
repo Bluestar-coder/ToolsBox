@@ -1,8 +1,8 @@
 import React, { useState, useCallback } from 'react';
-import { Input, Button, Table, Alert, Space, Spin } from 'antd';
+import { Input, Button, Table, Alert, Space, Spin, Card, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useTranslation } from 'react-i18next';
-import { queryGeolocation, batchQueryGeolocation, queryMyIp } from '../../utils/geolocation-api';
+import { queryGeolocation, batchQueryGeolocation, queryMyIp, queryMyIpDetailed } from '../../utils/geolocation-api';
 import type { GeolocationInfo } from '../../utils/types';
 
 const BATCH_MAX = 20;
@@ -13,6 +13,7 @@ const GeolocationTab: React.FC = () => {
   const [results, setResults] = useState<GeolocationInfo[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [proxyInfo, setProxyInfo] = useState<{ realIp: GeolocationInfo; proxyIp?: GeolocationInfo } | null>(null);
 
   const handleQuery = useCallback(async () => {
     const trimmed = ipInput.trim();
@@ -55,11 +56,29 @@ const GeolocationTab: React.FC = () => {
 
   const handleQueryMyIp = useCallback(async () => {
     setError(null);
+    setProxyInfo(null);
     setLoading(true);
     try {
-      const data = await queryMyIp();
-      setIpInput(data.ip);
-      setResults([data]);
+      // 尝试获取详细的 IP 信息（包括真实 IP 和代理 IP）
+      const detailedInfo = await queryMyIpDetailed();
+      
+      if (detailedInfo) {
+        // 如果获取到详细信息，同时显示真实 IP 和代理 IP
+        setProxyInfo(detailedInfo);
+        setIpInput(detailedInfo.realIp.ip);
+        
+        // 如果有代理 IP，同时显示两个 IP 的信息
+        if (detailedInfo.proxyIp) {
+          setResults([detailedInfo.realIp, detailedInfo.proxyIp]);
+        } else {
+          setResults([detailedInfo.realIp]);
+        }
+      } else {
+        // 回退到普通查询
+        const data = await queryMyIp();
+        setIpInput(data.ip);
+        setResults([data]);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : t('modules.ipNetwork.geolocation.errorUnknown'));
     } finally {
@@ -103,12 +122,23 @@ const GeolocationTab: React.FC = () => {
       title: t('modules.ipNetwork.geolocation.colStatus'),
       dataIndex: 'status',
       key: 'status',
-      render: (_: string, record: GeolocationInfo) =>
-        record.status === 'fail' ? (
-          <Alert type="warning" showIcon title={record.message ?? t('modules.ipNetwork.geolocation.queryFailed')} />
-        ) : (
-          t('modules.ipNetwork.geolocation.statusSuccess')
-        ),
+      render: (_: string, record: GeolocationInfo) => {
+        if (record.status === 'fail') {
+          // 处理混合内容错误
+          if (record.message === 'MIXED_CONTENT_ERROR') {
+            return (
+              <Alert 
+                type="error" 
+                showIcon 
+                message={t('modules.ipNetwork.geolocation.errorMixedContent')}
+                description={t('modules.ipNetwork.geolocation.errorMixedContentDesc')}
+              />
+            );
+          }
+          return <Alert type="warning" showIcon message={record.message ?? t('modules.ipNetwork.geolocation.queryFailed')} />;
+        }
+        return t('modules.ipNetwork.geolocation.statusSuccess');
+      },
     },
   ];
 
@@ -142,6 +172,32 @@ const GeolocationTab: React.FC = () => {
       )}
 
       {loading && <Spin />}
+
+      {/* 代理信息提示 */}
+      {proxyInfo && proxyInfo.proxyIp && (
+        <Card 
+          size="small" 
+          title={
+            <Space>
+              <span>🌐 IP 信息</span>
+              <Tag color="blue">检测到代理</Tag>
+            </Space>
+          }
+        >
+          <Space direction="vertical" style={{ width: '100%' }}>
+            <div>
+              <Tag color="green">国内 IP（真实）</Tag>
+              <code>{proxyInfo.realIp.ip}</code>
+              <span style={{ marginLeft: 8 }}>{proxyInfo.realIp.country} {proxyInfo.realIp.region} {proxyInfo.realIp.city}</span>
+            </div>
+            <div>
+              <Tag color="orange">国外 IP（代理）</Tag>
+              <code>{proxyInfo.proxyIp.ip}</code>
+              <span style={{ marginLeft: 8 }}>{proxyInfo.proxyIp.country} {proxyInfo.proxyIp.region} {proxyInfo.proxyIp.city}</span>
+            </div>
+          </Space>
+        </Card>
+      )}
 
       {results.length > 0 && !loading && (
         <Table<GeolocationInfo>

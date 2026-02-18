@@ -52,6 +52,7 @@ export default defineConfig({
       'prismjs',
       'i18next',
       'react-i18next',
+      '@tauri-apps/plugin-http',
     ],
   },
 })

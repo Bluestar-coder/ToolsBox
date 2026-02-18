@@ -62,6 +62,16 @@ export interface GeolocationInfo {
   message?: string;
 }
 
+/** Tauri 返回的 IP 信息 */
+export interface TauriIpInfo {
+  /** 本机真实 IP（通过国内服务获取，不走代理） */
+  real_ip: string;
+  /** 代理 IP（通过国外服务获取，走代理） */
+  proxy_ip?: string;
+  /** 是否使用了代理 */
+  using_proxy: boolean;
+}
+
 /** 端口记录 */
 export interface PortEntry {
   port: number;
