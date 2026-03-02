@@ -1,29 +1,37 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@/test/utils';
+import i18n from '@/i18n';
 import GeolocationTab from '../GeolocationTab';
 
 vi.mock('../../../utils/geolocation-api', () => ({
   queryGeolocation: vi.fn(),
   batchQueryGeolocation: vi.fn(),
   queryMyIp: vi.fn(),
+  queryMyIpDetailed: vi.fn(),
 }));
 
-import { queryGeolocation, batchQueryGeolocation, queryMyIp } from '../../../utils/geolocation-api';
+import { queryGeolocation, batchQueryGeolocation, queryMyIp, queryMyIpDetailed } from '../../../utils/geolocation-api';
 
 const mockedQueryGeolocation = vi.mocked(queryGeolocation);
 const mockedBatchQueryGeolocation = vi.mocked(batchQueryGeolocation);
 const mockedQueryMyIp = vi.mocked(queryMyIp);
+const mockedQueryMyIpDetailed = vi.mocked(queryMyIpDetailed);
 
 describe('GeolocationTab', () => {
+  const t = (key: string, options?: Record<string, unknown>) => i18n.t(key, options);
+  const getQueryButton = () => screen.getByRole('button', { name: /查\s*询\s*$/ });
+  const getQueryMyIpButton = () => screen.getByRole('button', { name: /查询本机IP/ });
+
   beforeEach(() => {
     vi.clearAllMocks();
+    mockedQueryMyIpDetailed.mockResolvedValue(null);
   });
 
   it('should render textarea, query button, and query my IP button', () => {
     render(<GeolocationTab />);
-    expect(screen.getByPlaceholderText('ipNetwork.geolocation.placeholder')).toBeInTheDocument();
-    expect(screen.getByText('ipNetwork.geolocation.query')).toBeInTheDocument();
-    expect(screen.getByText('ipNetwork.geolocation.queryMyIp')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(t('modules.ipNetwork.geolocation.placeholder'))).toBeInTheDocument();
+    expect(getQueryButton()).toBeInTheDocument();
+    expect(getQueryMyIpButton()).toBeInTheDocument();
   });
 
   it('should show no results and no error initially', () => {
@@ -34,7 +42,7 @@ describe('GeolocationTab', () => {
 
   it('should show error when querying with empty input', async () => {
     render(<GeolocationTab />);
-    fireEvent.click(screen.getByText('ipNetwork.geolocation.query'));
+    fireEvent.click(getQueryButton());
     expect(screen.getByRole('alert')).toBeInTheDocument();
   });
 
@@ -51,9 +59,9 @@ describe('GeolocationTab', () => {
     });
 
     render(<GeolocationTab />);
-    const textarea = screen.getByPlaceholderText('ipNetwork.geolocation.placeholder');
+    const textarea = screen.getByPlaceholderText(t('modules.ipNetwork.geolocation.placeholder'));
     fireEvent.change(textarea, { target: { value: '8.8.8.8' } });
-    fireEvent.click(screen.getByText('ipNetwork.geolocation.query'));
+    fireEvent.click(getQueryButton());
 
     await waitFor(() => {
       expect(screen.getByRole('table')).toBeInTheDocument();
@@ -91,9 +99,9 @@ describe('GeolocationTab', () => {
     ]);
 
     render(<GeolocationTab />);
-    const textarea = screen.getByPlaceholderText('ipNetwork.geolocation.placeholder');
+    const textarea = screen.getByPlaceholderText(t('modules.ipNetwork.geolocation.placeholder'));
     fireEvent.change(textarea, { target: { value: '8.8.8.8\n1.1.1.1' } });
-    fireEvent.click(screen.getByText('ipNetwork.geolocation.query'));
+    fireEvent.click(getQueryButton());
 
     await waitFor(() => {
       expect(screen.getByRole('table')).toBeInTheDocument();
@@ -118,9 +126,9 @@ describe('GeolocationTab', () => {
     });
 
     render(<GeolocationTab />);
-    const textarea = screen.getByPlaceholderText('ipNetwork.geolocation.placeholder');
+    const textarea = screen.getByPlaceholderText(t('modules.ipNetwork.geolocation.placeholder'));
     fireEvent.change(textarea, { target: { value: '192.168.1.1' } });
-    fireEvent.click(screen.getByText('ipNetwork.geolocation.query'));
+    fireEvent.click(getQueryButton());
 
     await waitFor(() => {
       expect(screen.getByRole('table')).toBeInTheDocument();
@@ -133,9 +141,9 @@ describe('GeolocationTab', () => {
     mockedQueryGeolocation.mockRejectedValue(new Error('Network error'));
 
     render(<GeolocationTab />);
-    const textarea = screen.getByPlaceholderText('ipNetwork.geolocation.placeholder');
+    const textarea = screen.getByPlaceholderText(t('modules.ipNetwork.geolocation.placeholder'));
     fireEvent.change(textarea, { target: { value: '8.8.8.8' } });
-    fireEvent.click(screen.getByText('ipNetwork.geolocation.query'));
+    fireEvent.click(getQueryButton());
 
     await waitFor(() => {
       expect(screen.getByRole('alert')).toBeInTheDocument();
@@ -157,7 +165,7 @@ describe('GeolocationTab', () => {
     });
 
     render(<GeolocationTab />);
-    fireEvent.click(screen.getByText('ipNetwork.geolocation.queryMyIp'));
+    fireEvent.click(getQueryMyIpButton());
 
     await waitFor(() => {
       expect(screen.getByRole('table')).toBeInTheDocument();
@@ -172,9 +180,9 @@ describe('GeolocationTab', () => {
     const manyIps = Array.from({ length: 21 }, (_, i) => `1.2.3.${i}`).join('\n');
 
     render(<GeolocationTab />);
-    const textarea = screen.getByPlaceholderText('ipNetwork.geolocation.placeholder');
+    const textarea = screen.getByPlaceholderText(t('modules.ipNetwork.geolocation.placeholder'));
     fireEvent.change(textarea, { target: { value: manyIps } });
-    fireEvent.click(screen.getByText('ipNetwork.geolocation.query'));
+    fireEvent.click(getQueryButton());
 
     expect(screen.getByRole('alert')).toBeInTheDocument();
   });

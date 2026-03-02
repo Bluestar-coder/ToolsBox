@@ -7,7 +7,8 @@ import { applyVariablesToRequest } from './variable-engine';
  */
 export function isTauriEnvironment(): boolean {
   try {
-    return typeof window !== 'undefined' && !!(window as any).__TAURI_INTERNALS__;
+    const tauriGlobal = globalThis as typeof globalThis & { __TAURI_INTERNALS__?: unknown };
+    return typeof window !== 'undefined' && !!tauriGlobal.__TAURI_INTERNALS__;
   } catch {
     return false;
   }
@@ -148,25 +149,41 @@ export async function sendViaFetch(config: HttpRequestConfig): Promise<HttpRespo
       duration,
       contentType: responseContentType,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     const duration = Math.round(performance.now() - startTime);
+    const errorMessage = error instanceof Error ? error.message : String(error);
 
     // 判断错误类型
-    let errorMessage: string;
     if (error instanceof TypeError) {
       // Fetch API 的 TypeError 通常是网络错误或 CORS 错误
-      errorMessage = `Network error: ${error.message}. This may be caused by CORS restrictions in the browser. Consider using the Tauri desktop app to bypass CORS.`;
-    } else if (error.name === 'AbortError') {
-      errorMessage = `Request timeout: ${error.message}`;
-    } else {
-      errorMessage = `Request failed: ${error.message || String(error)}`;
+      return {
+        status: 0,
+        statusText: 'Error',
+        headers: {},
+        body: `Network error: ${errorMessage}. This may be caused by CORS restrictions in the browser. Consider using the Tauri desktop app to bypass CORS.`,
+        size: 0,
+        duration,
+        contentType: '',
+      };
+    }
+
+    if (error instanceof Error && error.name === 'AbortError') {
+      return {
+        status: 0,
+        statusText: 'Error',
+        headers: {},
+        body: `Request timeout: ${errorMessage}`,
+        size: 0,
+        duration,
+        contentType: '',
+      };
     }
 
     return {
       status: 0,
       statusText: 'Error',
       headers: {},
-      body: errorMessage,
+      body: `Request failed: ${errorMessage}`,
       size: 0,
       duration,
       contentType: '',
@@ -191,7 +208,6 @@ export async function sendViaTauri(config: HttpRequestConfig): Promise<HttpRespo
   try {
     // 动态导入 Tauri HTTP 插件（运行时才可用，构建时可能不存在）
     // 使用字符串拼接避免 Vite 在构建时解析此依赖
-    // @ts-ignore - @tauri-apps/plugin-http is only available in Tauri runtime
     const pluginName = '@tauri-apps/plugin-http';
     const { fetch: tauriFetch } = await import(/* @vite-ignore */ pluginName);
 
@@ -216,14 +232,20 @@ export async function sendViaTauri(config: HttpRequestConfig): Promise<HttpRespo
       duration,
       contentType: responseContentType,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     const duration = Math.round(performance.now() - startTime);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorCode = (
+      typeof error === 'object' &&
+      error !== null &&
+      'code' in error
+    ) ? (error as { code?: string }).code : undefined;
 
     // Tauri 插件未安装或其他错误，回退到 Fetch API
     if (
-      error.message?.includes('Failed to resolve') ||
-      error.message?.includes('Module not found') ||
-      error.code === 'ERR_MODULE_NOT_FOUND'
+      errorMessage.includes('Failed to resolve') ||
+      errorMessage.includes('Module not found') ||
+      errorCode === 'ERR_MODULE_NOT_FOUND'
     ) {
       console.warn('Tauri HTTP plugin not available, falling back to Fetch API');
       return sendViaFetch(config);
@@ -233,7 +255,7 @@ export async function sendViaTauri(config: HttpRequestConfig): Promise<HttpRespo
       status: 0,
       statusText: 'Error',
       headers: {},
-      body: `Request failed: ${error.message || String(error)}`,
+      body: `Request failed: ${errorMessage}`,
       size: 0,
       duration,
       contentType: '',

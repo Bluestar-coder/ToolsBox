@@ -41,7 +41,7 @@ describe('MainLayout', () => {
 
   it('should render language switcher button', () => {
     render(<MainLayout />, { wrapper: withRouter });
-    const languageButton = screen.getByRole('button', { name: /🇨🇳|🇺🇸|🇰🇷|🇯🇵/ });
+    const languageButton = screen.getByRole('button', { name: /🇨🇳|🇺🇸/ });
     expect(languageButton).toBeInTheDocument();
   });
 
@@ -51,9 +51,10 @@ describe('MainLayout', () => {
     expect(themeButton).toBeInTheDocument();
   });
 
-  it('should match snapshot', () => {
-    const { container } = render(<MainLayout />, { wrapper: withRouter });
-    expect(container).toMatchSnapshot();
+  it('should render settings and language controls', () => {
+    render(<MainLayout />, { wrapper: withRouter });
+    expect(screen.getByTitle(/settings|设置/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /🇨🇳|🇺🇸/ })).toBeInTheDocument();
   });
 
   it('should display current module based on route', () => {

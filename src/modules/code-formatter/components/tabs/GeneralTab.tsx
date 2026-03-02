@@ -31,9 +31,28 @@ const GeneralTab: React.FC<GeneralTabProps> = ({ defaultLanguage = 'javascript' 
       return;
     }
     try {
+      const syntax = checkSyntax(input, language);
+      setSyntaxResult(syntax);
+
       const options: FormatOptions = { indentSize, useTabs };
       const result = await formatCode(input, language, options);
       setOutput(result);
+
+      if (!syntax.valid) {
+        message.warning('检测到语法问题，已尽力处理，结果可能不完整');
+        return;
+      }
+
+      if (result === input) {
+        message.info('未检测到可格式化变更');
+        return;
+      }
+
+      if (syntax.warnings.length > 0) {
+        message.info(`格式化完成，另有 ${syntax.warnings.length} 条建议`);
+        return;
+      }
+
       message.success('格式化成功');
     } catch (error) {
       message.error(`格式化失败: ${error instanceof Error ? error.message : '未知错误'}`);
@@ -165,7 +184,7 @@ const GeneralTab: React.FC<GeneralTabProps> = ({ defaultLanguage = 'javascript' 
             <>
               {syntaxResult.errors.length > 0 && (
                 <Alert
-                  message="语法错误"
+                  title="语法错误"
                   description={
                     <List
                       size="small"
@@ -183,7 +202,7 @@ const GeneralTab: React.FC<GeneralTabProps> = ({ defaultLanguage = 'javascript' 
               )}
               {syntaxResult.warnings.length > 0 && (
                 <Alert
-                  message="建议"
+                  title="建议"
                   description={
                     <List
                       size="small"

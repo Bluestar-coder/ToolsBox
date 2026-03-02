@@ -76,7 +76,7 @@ const GenerateTab: React.FC = () => {
   return (
     <Row gutter={[16, 16]}>
       <Col xs={24} lg={12}>
-        <Space direction="vertical" style={{ width: '100%' }} size="middle">
+        <Space orientation="vertical" style={{ width: '100%' }} size="middle">
           <TextArea
             autoSize={{ minRows: 6, maxRows: 20 }}
             value={text}
@@ -87,7 +87,7 @@ const GenerateTab: React.FC = () => {
           />
           
           <Card size="small" title={t('modules.qrcode.options')}>
-            <Space direction="vertical" style={{ width: '100%' }} size="small">
+            <Space orientation="vertical" style={{ width: '100%' }} size="small">
               <div>
                 <span>{t('modules.qrcode.size')}: {options.width}px</span>
                 <Slider

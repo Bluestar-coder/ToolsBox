@@ -2,6 +2,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import type { HttpRequestConfig } from '../types';
 import { isTauriEnvironment, sendViaFetch, sendHttpRequest } from '../http-client';
 
+type TauriWindow = Window & { __TAURI_INTERNALS__?: unknown };
+const tauriWindow = window as TauriWindow;
+
 // Mock @tauri-apps/plugin-http to prevent Vite import resolution errors
 vi.mock('@tauri-apps/plugin-http', () => ({
   fetch: vi.fn(),
@@ -38,27 +41,27 @@ function makePostJsonConfig(overrides?: Partial<HttpRequestConfig>): HttpRequest
 // ─── isTauriEnvironment ─────────────────────────────────────────────────────
 
 describe('isTauriEnvironment', () => {
-  let originalTauri: any;
+  let originalTauri: unknown;
 
   beforeEach(() => {
-    originalTauri = (window as any).__TAURI_INTERNALS__;
+    originalTauri = tauriWindow.__TAURI_INTERNALS__;
   });
 
   afterEach(() => {
     if (originalTauri === undefined) {
-      delete (window as any).__TAURI_INTERNALS__;
+      delete tauriWindow.__TAURI_INTERNALS__;
     } else {
-      (window as any).__TAURI_INTERNALS__ = originalTauri;
+      tauriWindow.__TAURI_INTERNALS__ = originalTauri;
     }
   });
 
   it('returns false in test environment (no __TAURI_INTERNALS__)', () => {
-    delete (window as any).__TAURI_INTERNALS__;
+    delete tauriWindow.__TAURI_INTERNALS__;
     expect(isTauriEnvironment()).toBe(false);
   });
 
   it('returns true when window.__TAURI_INTERNALS__ is set', () => {
-    (window as any).__TAURI_INTERNALS__ = { appName: 'test' };
+    tauriWindow.__TAURI_INTERNALS__ = { appName: 'test' };
     expect(isTauriEnvironment()).toBe(true);
   });
 });
@@ -236,21 +239,21 @@ describe('sendViaFetch', () => {
 
 describe('sendHttpRequest', () => {
   let originalFetch: typeof globalThis.fetch;
-  let originalTauri: any;
+  let originalTauri: unknown;
 
   beforeEach(() => {
     originalFetch = globalThis.fetch;
-    originalTauri = (window as any).__TAURI_INTERNALS__;
+    originalTauri = tauriWindow.__TAURI_INTERNALS__;
     // Ensure non-Tauri environment for these tests
-    delete (window as any).__TAURI_INTERNALS__;
+    delete tauriWindow.__TAURI_INTERNALS__;
   });
 
   afterEach(() => {
     globalThis.fetch = originalFetch;
     if (originalTauri === undefined) {
-      delete (window as any).__TAURI_INTERNALS__;
+      delete tauriWindow.__TAURI_INTERNALS__;
     } else {
-      (window as any).__TAURI_INTERNALS__ = originalTauri;
+      tauriWindow.__TAURI_INTERNALS__ = originalTauri;
     }
   });
 

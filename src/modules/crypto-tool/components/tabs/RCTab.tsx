@@ -122,7 +122,7 @@ const RCTab: React.FC = () => {
 
       <TextArea autoSize={{ minRows: 4, maxRows: 20 }} value={output} readOnly placeholder="输出结果" />
 
-      <Alert type="warning" message={getAlgorithmInfo()} />
+      <Alert type="warning" title={getAlgorithmInfo()} />
     </Space>
   );
 };

@@ -47,6 +47,7 @@ const MessageComposer: React.FC<MessageComposerProps> = ({ onSend, disabled }) =
       {/* Message type selector */}
       <div style={{ marginBottom: 8 }}>
         <Radio.Group
+          name="ws-message-type"
           value={messageType}
           onChange={(e) => {
             setMessageType(e.target.value);
@@ -66,6 +67,7 @@ const MessageComposer: React.FC<MessageComposerProps> = ({ onSend, disabled }) =
 
       {/* Message input */}
       <TextArea
+        name="ws-message"
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         onKeyDown={handleKeyDown}
@@ -76,7 +78,7 @@ const MessageComposer: React.FC<MessageComposerProps> = ({ onSend, disabled }) =
         }
         disabled={disabled}
         autoSize={{ minRows: 3, maxRows: 8 }}
-        style={isBinary ? { fontFamily: 'monospace' } : undefined}
+        style={isBinary ? { fontFamily: 'monospace', lineHeight: '22px' } : { lineHeight: '22px' }}
         status={!hexValid ? 'error' : undefined}
       />
 

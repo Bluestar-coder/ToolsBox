@@ -80,7 +80,7 @@ const BlowfishTab: React.FC = () => {
 
       <TextArea autoSize={{ minRows: 4, maxRows: 20 }} value={output} readOnly placeholder="输出结果" />
 
-      <Alert type="info" message="Blowfish 是 64 位分组密码，密钥长度 32-448 位。虽然安全性尚可，但因块大小较小，推荐使用 AES。" />
+      <Alert type="info" title="Blowfish 是 64 位分组密码，密钥长度 32-448 位。虽然安全性尚可，但因块大小较小，推荐使用 AES。" />
     </Space>
   );
 };

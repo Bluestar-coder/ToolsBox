@@ -113,7 +113,7 @@ const TestTab: React.FC = () => {
         <>
           <Alert
             type={result.matchCount > 0 ? 'success' : 'info'}
-            message={t('modules.regex.matchCount', { count: result.matchCount })}
+            title={t('modules.regex.matchCount', { count: result.matchCount })}
             showIcon
           />
 

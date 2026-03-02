@@ -39,6 +39,8 @@ describe('detectIpFormat', () => {
     expect(detectIpFormat('::1')).toBe('ipv6');
     expect(detectIpFormat('::')).toBe('ipv6');
     expect(detectIpFormat('fe80::1%eth0')).toBe('ipv6');
+    expect(detectIpFormat('::ffff:192.168.1.1')).toBe('ipv6');
+    expect(detectIpFormat('::1.2.3.4')).toBe('ipv6');
   });
 
   it('returns unknown for invalid input', () => {
@@ -134,6 +136,11 @@ describe('parseIPv6', () => {
     expect(parseIPv6('2001:db8::1')).toBe(0x20010db8000000000000000000000001n);
     expect(parseIPv6('::1')).toBe(1n);
     expect(parseIPv6('::')).toBe(0n);
+  });
+
+  it('parses mixed IPv6 with embedded IPv4', () => {
+    expect(parseIPv6('::ffff:192.168.1.1')).toBe(0x00000000000000000000ffffc0a80101n);
+    expect(parseIPv6('::1.2.3.4')).toBe(0x00000000000000000000000001020304n);
   });
 
   it('parses all-ones', () => {

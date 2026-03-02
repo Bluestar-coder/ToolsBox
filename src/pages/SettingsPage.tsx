@@ -5,7 +5,7 @@ import PluginManagement from '../components/Settings/PluginManagement';
 
 const SettingsPage: React.FC = () => {
   return (
-    <Space direction="vertical" style={{ width: '100%' }} size="large">
+    <Space orientation="vertical" style={{ width: '100%' }} size="large">
       <Card title="数据管理" variant="borderless">
         <DataManagement />
       </Card>

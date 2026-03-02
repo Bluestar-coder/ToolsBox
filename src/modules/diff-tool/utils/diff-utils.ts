@@ -18,7 +18,9 @@ export const computeDiff = (
   
   try {
     if (mode === 'json') {
-      changes = diffJson(oldText, newText);
+      const oldJson = JSON.parse(oldText);
+      const newJson = JSON.parse(newText);
+      changes = diffJson(oldJson, newJson);
     } else {
       changes = diffLines(oldText, newText);
     }

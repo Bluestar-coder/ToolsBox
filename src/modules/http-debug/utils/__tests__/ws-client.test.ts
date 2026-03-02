@@ -4,7 +4,7 @@ import type { WsConnectionConfig, WsMessage } from '../types';
 
 // --- Mock WebSocket ---
 
-type WsHandler = ((event: any) => void) | null;
+type WsHandler = ((event: Event | CloseEvent | MessageEvent) => void) | null;
 
 class MockWebSocket {
   static instances: MockWebSocket[] = [];
@@ -47,16 +47,17 @@ class MockWebSocket {
 
 // Replace global WebSocket
 const OriginalWebSocket = globalThis.WebSocket;
+const mutableGlobal = globalThis as typeof globalThis & { WebSocket: typeof WebSocket };
 
 beforeEach(() => {
   MockWebSocket.instances = [];
-  (globalThis as any).WebSocket = MockWebSocket as any;
+  mutableGlobal.WebSocket = MockWebSocket as unknown as typeof WebSocket;
   vi.useFakeTimers();
 });
 
 afterEach(() => {
   vi.useRealTimers();
-  (globalThis as any).WebSocket = OriginalWebSocket;
+  mutableGlobal.WebSocket = OriginalWebSocket;
 });
 
 function defaultConfig(): WsConnectionConfig {
@@ -114,6 +115,24 @@ describe('WsClient', () => {
       client.connect({ url: 'ws://localhost:9090', protocols: [] });
       expect(firstWs.close).toHaveBeenCalled();
       expect(MockWebSocket.instances).toHaveLength(2);
+    });
+
+    it('should transition to closed when connection times out', () => {
+      const client = new WsClient();
+      const statuses: string[] = [];
+      const errors: string[] = [];
+      client.onStatusChange = (s) => statuses.push(s);
+      client.onError = (e) => errors.push(e);
+
+      client.connect(defaultConfig());
+      const connectingWs = lastMockWs();
+
+      vi.advanceTimersByTime(10_000);
+
+      expect(connectingWs.close).toHaveBeenCalled();
+      expect(client.status).toBe('closed');
+      expect(statuses).toEqual(['connecting', 'closed']);
+      expect(errors.some((e) => e.includes('timed out'))).toBe(true);
     });
   });
 

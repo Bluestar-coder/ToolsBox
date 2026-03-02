@@ -116,7 +116,7 @@ describe('isValidCidr (re-exported)', () => {
 });
 
 import * as fc from 'fast-check';
-import { parseIPv4ToInteger, integerToIPv4Formats } from '../ip-utils';
+import { parseIPv4ToInteger } from '../ip-utils';
 
 // Feature: ip-network-tool, Property 3: CIDR 计算数学一致性
 // **Validates: Requirements 2.1, 2.2, 2.5**

@@ -1,0 +1,332 @@
+/**
+ * Recipe工作台组件样式
+ */
+
+.recipeWorkbench {
+  height: 100vh;
+  background: var(--background-color, #f0f2f5);
+}
+
+.operationsSider {
+  background: var(--background-color, #fff);
+  border-right: 1px solid var(--border-color, #f0f0f0);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.siderHeader {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-color, #f0f0f0);
+}
+
+.siderHeader h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--heading-color, rgba(0, 0, 0, 0.85));
+}
+
+.siderContent {
+  flex: 1;
+  overflow: hidden;
+}
+
+.mainLayout {
+  overflow: hidden;
+}
+
+.mainContent {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.editorSection {
+  flex: 1;
+  overflow: hidden;
+  padding: 16px;
+}
+
+.ioSection {
+  display: flex;
+  gap: 16px;
+  padding: 0 16px 16px;
+  height: 40%;
+  min-height: 300px;
+}
+
+.inputSection,
+.outputSection {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.ioCard {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.ioCard .ant-card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sectionTitle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.inputTextarea,
+.outputTextarea {
+  flex: 1;
+  resize: none;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.outputTextarea {
+  background-color: var(--background-color-light, #fafafa);
+  color: var(--text-color, rgba(0, 0, 0, 0.65));
+}
+
+.dataTypeHints {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background-color: var(--background-color-light, #f6f8fa);
+  border-radius: 6px;
+  border-left: 3px solid var(--info-color, #1890ff);
+}
+
+.dataTypeHintsTitle {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--info-color, #1890ff);
+  margin-bottom: 4px;
+}
+
+.dataTypeHintsList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dataTypeHint {
+  font-size: 12px;
+  color: var(--text-color, rgba(0, 0, 0, 0.65));
+}
+
+.dataTypeName {
+  font-weight: 500;
+  color: var(--text-color, rgba(0, 0, 0, 0.85));
+}
+
+.dataTypeConfidence {
+  color: var(--text-color-secondary, rgba(0, 0, 0, 0.45));
+  margin-left: 4px;
+}
+
+.suggestedOperations {
+  font-size: 11px;
+  color: var(--text-color-secondary, rgba(0, 0, 0, 0.45));
+  margin-top: 2px;
+}
+
+.outputContent {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+  gap: 12px;
+}
+
+.loadingText {
+  font-size: 14px;
+  color: var(--text-color-secondary, rgba(0, 0, 0, 0.45));
+}
+
+.executionAlert {
+  margin-top: 12px;
+}
+
+.executionResult {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background-color: var(--background-color-light, #f6f8fa);
+  border-radius: 6px;
+  border-left: 3px solid var(--success-color, #52c41a);
+}
+
+.executionResultHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.executionResultHeader h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--success-color, #52c41a);
+}
+
+.executionTime {
+  font-size: 12px;
+  color: var(--text-color-secondary, rgba(0, 0, 0, 0.45));
+}
+
+.executionSteps {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.executionStep {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.stepSuccess {
+  background-color: rgba(82, 196, 26, 0.1);
+  border-left: 2px solid var(--success-color, #52c41a);
+}
+
+.stepError {
+  background-color: rgba(255, 77, 79, 0.1);
+  border-left: 2px solid var(--error-color, #ff4d4f);
+}
+
+.stepHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stepName {
+  font-weight: 500;
+  color: var(--text-color, rgba(0, 0, 0, 0.65));
+}
+
+.stepTime {
+  font-size: 11px;
+  color: var(--text-color-secondary, rgba(0, 0, 0, 0.45));
+}
+
+.stepError {
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--error-color, #ff4d4f);
+}
+
+/* 暗色主题适配 */
+[data-theme='dark'] .recipeWorkbench {
+  background: var(--background-color-dark, #000);
+}
+
+[data-theme='dark'] .operationsSider {
+  background: var(--background-color-dark, #141414);
+  border-right-color: var(--border-color-dark, #303030);
+}
+
+[data-theme='dark'] .siderHeader h3 {
+  color: var(--text-color-dark, rgba(255, 255, 255, 0.85));
+}
+
+[data-theme='dark'] .ioCard {
+  background-color: var(--component-background-dark, #1f1f1f);
+  border-color: var(--border-color-dark, #303030);
+}
+
+[data-theme='dark'] .inputTextarea {
+  background-color: var(--input-bg-dark, #1f1f1f);
+  border-color: var(--border-color-dark, #303030);
+  color: var(--text-color-dark, rgba(255, 255, 255, 0.85));
+}
+
+[data-theme='dark'] .outputTextarea {
+  background-color: var(--input-bg-dark, #1f1f1f);
+  border-color: var(--border-color-dark, #303030);
+  color: var(--text-color-dark, rgba(255, 255, 255, 0.85));
+}
+
+[data-theme='dark'] .dataTypeHints {
+  background-color: var(--background-color-light-dark, #262626);
+  border-left-color: var(--info-color-dark, #177ddc);
+}
+
+[data-theme='dark'] .dataTypeHintsTitle {
+  color: var(--info-color-dark, #177ddc);
+}
+
+[data-theme='dark'] .dataTypeHint {
+  color: var(--text-color-dark, rgba(255, 255, 255, 0.65));
+}
+
+[data-theme='dark'] .dataTypeName {
+  color: var(--text-color-dark, rgba(255, 255, 255, 0.85));
+}
+
+[data-theme='dark'] .dataTypeConfidence {
+  color: var(--text-color-secondary-dark, rgba(255, 255, 255, 0.45));
+}
+
+[data-theme='dark'] .suggestedOperations {
+  color: var(--text-color-secondary-dark, rgba(255, 255, 255, 0.45));
+}
+
+[data-theme='dark'] .loadingText {
+  color: var(--text-color-secondary-dark, rgba(255, 255, 255, 0.45));
+}
+
+[data-theme='dark'] .executionResult {
+  background-color: var(--background-color-light-dark, #262626);
+  border-left-color: var(--success-color-dark, #49aa19);
+}
+
+[data-theme='dark'] .executionResultHeader h4 {
+  color: var(--success-color-dark, #49aa19);
+}
+
+[data-theme='dark'] .executionTime {
+  color: var(--text-color-secondary-dark, rgba(255, 255, 255, 0.45));
+}
+
+[data-theme='dark'] .stepSuccess {
+  background-color: rgba(73, 170, 25, 0.1);
+  border-left-color: var(--success-color-dark, #49aa19);
+}
+
+[data-theme='dark'] .stepError {
+  background-color: rgba(255, 77, 79, 0.1);
+  border-left-color: var(--error-color-dark, #ff7875);
+}
+
+[data-theme='dark'] .stepName {
+  color: var(--text-color-dark, rgba(255, 255, 255, 0.65));
+}
+
+[data-theme='dark'] .stepTime {
+  color: var(--text-color-secondary-dark, rgba(255, 255, 255, 0.45));
+}
+
+[data-theme='dark'] .stepError {
+  color: var(--error-color-dark, #ff7875);
+}

@@ -36,7 +36,6 @@ const WebSocketTab: React.FC = () => {
 
   // Reconnect state
   const [reconnectConfig, setReconnectConfig] = useState<ReconnectConfig>(DEFAULT_RECONNECT_CONFIG);
-  const [reconnectCount, setReconnectCount] = useState(0);
 
   // WsClient instance (stable across renders)
   const clientRef = useRef<WsClient | null>(null);
@@ -54,7 +53,6 @@ const WebSocketTab: React.FC = () => {
       setStatus(newStatus);
       if (newStatus === 'connected') {
         setError(null);
-        setReconnectCount(0);
       }
     };
 
@@ -66,21 +64,6 @@ const WebSocketTab: React.FC = () => {
       client.disconnect();
     };
   }, []);
-
-  // Track reconnect count by monitoring status changes
-  useEffect(() => {
-    if (status === 'connecting' && clientRef.current) {
-      // Read reconnect count from the client's internal state via status transitions
-      // When status goes to 'connecting' after 'closed', it's a reconnect attempt
-      setReconnectCount((prev) => {
-        // Only increment if reconnect is enabled and we were previously closed
-        if (reconnectConfig.enabled) {
-          return prev;
-        }
-        return 0;
-      });
-    }
-  }, [status, reconnectConfig.enabled]);
 
   // Sync reconnect config to WsClient
   useEffect(() => {
@@ -100,7 +83,6 @@ const WebSocketTab: React.FC = () => {
     if (!client) return;
 
     setError(null);
-    setReconnectCount(0);
 
     if (reconnectConfig.enabled) {
       client.enableReconnect(reconnectConfig);
@@ -115,7 +97,6 @@ const WebSocketTab: React.FC = () => {
     if (!client) return;
 
     client.disconnect();
-    setReconnectCount(0);
   }, []);
 
   // Send message handler
@@ -181,6 +162,7 @@ const WebSocketTab: React.FC = () => {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Text>{t('modules.httpDebug.ws.enableReconnect', '启用自动重连')}</Text>
                 <Switch
+                  id="ws-auto-reconnect"
                   checked={reconnectConfig.enabled}
                   onChange={handleReconnectEnabledChange}
                   size="small"
@@ -194,6 +176,8 @@ const WebSocketTab: React.FC = () => {
                       {t('modules.httpDebug.ws.reconnectInterval', '重连间隔 (ms)')}
                     </Text>
                     <InputNumber
+                      id="ws-reconnect-interval"
+                      name="ws-reconnect-interval"
                       value={reconnectConfig.interval}
                       onChange={handleReconnectIntervalChange}
                       min={500}
@@ -209,6 +193,8 @@ const WebSocketTab: React.FC = () => {
                       {t('modules.httpDebug.ws.maxRetries', '最大重连次数')}
                     </Text>
                     <InputNumber
+                      id="ws-max-retries"
+                      name="ws-max-retries"
                       value={reconnectConfig.maxRetries}
                       onChange={handleReconnectMaxRetriesChange}
                       min={1}
@@ -219,10 +205,10 @@ const WebSocketTab: React.FC = () => {
                   </div>
 
                   {/* Reconnect status display */}
-                  {(status === 'closed' || isConnecting) && reconnectCount > 0 && (
+                  {(status === 'closed' || isConnecting) && reconnectConfig.enabled && (
                     <div>
                       <Tag color="warning">
-                        {t('modules.httpDebug.ws.reconnecting', '重连中')}: {reconnectCount} / {reconnectConfig.maxRetries}
+                        {t('modules.httpDebug.ws.reconnecting', '重连中')} (max {reconnectConfig.maxRetries})
                       </Tag>
                     </div>
                   )}

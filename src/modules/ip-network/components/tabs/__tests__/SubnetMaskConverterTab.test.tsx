@@ -5,30 +5,35 @@
 import React from 'react';
 import { screen, fireEvent, waitFor } from '@testing-library/react';
 import { render } from '@/test/utils';
+import i18n from '@/i18n';
 import SubnetMaskConverterTab from '../SubnetMaskConverterTab';
 
 describe('SubnetMaskConverterTab', () => {
-  it('应该正确渲染子网掩码转换工具', () => {
+  const t = (key: string, options?: Record<string, unknown>) => i18n.t(key, options);
+
+  it('应该正确渲染子网掩码转换工具', async () => {
     render(<SubnetMaskConverterTab />);
     
     // 检查标题
-    expect(screen.getByText('子网掩码转换工具')).toBeInTheDocument();
+    expect(screen.getByText(t('modules.ipNetwork.subnetMaskConverter.title'))).toBeInTheDocument();
     
     // 检查输入区域
-    expect(screen.getByText('输入参数')).toBeInTheDocument();
+    expect(screen.getByText(t('modules.ipNetwork.subnetMaskConverter.inputTitle'))).toBeInTheDocument();
     
-    // 检查初始计算结果
-    expect(screen.getByText('子网掩码信息')).toBeInTheDocument();
-    expect(screen.getByText('网络信息')).toBeInTheDocument();
-    expect(screen.getByText('子网规划')).toBeInTheDocument();
-    expect(screen.getByText('子网掩码推荐')).toBeInTheDocument();
+    // 初始渲染存在150ms防抖，等待结果区域出现
+    await waitFor(() => {
+      expect(screen.getByText(t('modules.ipNetwork.subnetMaskConverter.subnetMaskInfo'))).toBeInTheDocument();
+    });
+    expect(screen.getByText(t('modules.ipNetwork.subnetMaskConverter.networkInfo'))).toBeInTheDocument();
+    expect(screen.getByText(t('modules.ipNetwork.subnetMaskConverter.subnetPlanning'))).toBeInTheDocument();
+    expect(screen.getByText(t('modules.ipNetwork.subnetMaskConverter.subnetMaskRecommendation'))).toBeInTheDocument();
   });
 
   it('应该正确处理子网掩码输入', async () => {
     render(<SubnetMaskConverterTab />);
     
     // 获取子网掩码输入框
-    const subnetMaskInput = screen.getByPlaceholderText(/输入CIDR/);
+    const subnetMaskInput = screen.getByPlaceholderText(t('modules.ipNetwork.subnetMaskConverter.subnetMaskPlaceholder'));
     
     // 输入新的子网掩码
     fireEvent.change(subnetMaskInput, { target: { value: '16' } });
@@ -43,14 +48,14 @@ describe('SubnetMaskConverterTab', () => {
     render(<SubnetMaskConverterTab />);
     
     // 获取子网掩码输入框
-    const subnetMaskInput = screen.getByPlaceholderText(/输入CIDR/);
+    const subnetMaskInput = screen.getByPlaceholderText(t('modules.ipNetwork.subnetMaskConverter.subnetMaskPlaceholder'));
     
     // 输入无效的子网掩码
     fireEvent.change(subnetMaskInput, { target: { value: '33' } });
     
     // 等待错误提示
     await waitFor(() => {
-      expect(screen.getByText('计算错误')).toBeInTheDocument();
+      expect(screen.getByText(t('modules.ipNetwork.subnetMaskConverter.calculateError'))).toBeInTheDocument();
     });
   });
 });

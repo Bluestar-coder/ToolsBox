@@ -43,6 +43,9 @@ describe('isValidIPv6', () => {
     expect(isValidIPv6('::')).toBe(true);
     expect(isValidIPv6('::1')).toBe(true);
     expect(isValidIPv6('fe80::1%eth0')).toBe(true);
+    expect(isValidIPv6('::ffff:192.168.1.1')).toBe(true);
+    expect(isValidIPv6('2001:db8::192.0.2.1')).toBe(true);
+    expect(isValidIPv6('::1.2.3.4')).toBe(true);
     expect(isValidIPv6('ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff')).toBe(true);
   });
 
@@ -52,6 +55,8 @@ describe('isValidIPv6', () => {
     expect(isValidIPv6('2001:db8:gggg::1')).toBe(false); // invalid hex
     expect(isValidIPv6('2001:db8:00000::1')).toBe(false); // 5-digit group
     expect(isValidIPv6('1:2:3:4:5:6:7:8:9')).toBe(false); // too many groups
+    expect(isValidIPv6('::ffff:999.1.1.1')).toBe(false); // invalid embedded IPv4
+    expect(isValidIPv6('1:2:3:4:5:6:7:192.168.1.1')).toBe(false); // too many groups with mixed form
   });
 });
 

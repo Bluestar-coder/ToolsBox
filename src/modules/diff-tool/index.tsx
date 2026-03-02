@@ -1,6 +1,6 @@
 import React from 'react';
 import { DiffOutlined } from '@ant-design/icons';
-import { DiffTool } from './components/DiffTool';
+import DiffTool from './components/DiffTool';
 import type { ToolModule } from '../index';
 
 const diffModule: ToolModule = {

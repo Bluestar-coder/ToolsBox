@@ -14,10 +14,7 @@ import {
   calculateNetworkInfo,
   planSubnets,
   recommendSubnetMask,
-  validateSubnetMask,
-  SubnetMaskInfo,
-  NetworkInfo,
-  SubnetPlan
+  validateSubnetMask
 } from '../subnet-mask-converter';
 
 describe('子网掩码转换工具', () => {
@@ -127,6 +124,13 @@ describe('子网掩码转换工具', () => {
       
       expect(cidrInfo.cidr).toBe(dottedInfo.cidr);
       expect(dottedInfo.cidr).toBe(binaryInfo.cidr);
+    });
+
+    it('应该拒绝无效CIDR字符串和非法数字', () => {
+      expect(() => getSubnetMaskInfo('24abc')).toThrow('无法识别的子网掩码格式');
+      expect(() => getSubnetMaskInfo('abc')).toThrow('无法识别的子网掩码格式');
+      expect(() => getSubnetMaskInfo(Number.NaN)).toThrow('CIDR值必须在0-32之间');
+      expect(() => getSubnetMaskInfo(24.5)).toThrow('CIDR值必须在0-32之间');
     });
   });
 

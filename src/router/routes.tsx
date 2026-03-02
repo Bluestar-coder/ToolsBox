@@ -14,6 +14,7 @@ const QRCodePage = lazy(() => import('../pages/QRCodePage'));
 const DiffPage = lazy(() => import('../pages/DiffPage'));
 const HttpDebugPage = lazy(() => import('../pages/HttpDebugPage'));
 const IpNetworkPage = lazy(() => import('../pages/IpNetworkPage'));
+const RecipePage = lazy(() => import('../pages/RecipePage'));
 const SettingsPage = lazy(() => import('../pages/SettingsPage'));
 
 // 路由配置
@@ -94,6 +95,11 @@ export const routes: RouteObject[] = [
       {
         path: 'ip-network',
         element: <IpNetworkPage />,
+      },
+      // Recipe工具
+      {
+        path: 'recipe',
+        element: <RecipePage />,
       },
       // 设置
       {

@@ -128,8 +128,8 @@ const PortReferenceTab: React.FC = () => {
   ];
 
   return (
-    <Space direction="vertical" style={{ width: '100%' }} size="middle">
-      <Space direction="vertical" style={{ width: '100%' }} size="small">
+    <Space orientation="vertical" style={{ width: '100%' }} size="middle">
+      <Space orientation="vertical" style={{ width: '100%' }} size="small">
         <Space wrap>
           <Select
             value={searchMode}

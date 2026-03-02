@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { moduleManager } from '../modules';
 import type { LazyModuleList } from '../modules';
 
@@ -10,10 +10,6 @@ export const useModules = (): LazyModuleList => {
   const [modules, setModules] = useState<LazyModuleList>(moduleManager.getLazyModules());
 
   useEffect(() => {
-    // 初始设置，确保在组件挂载时获取最新状态
-    setModules(moduleManager.getLazyModules());
-
-    // 订阅更新
     const unsubscribe = moduleManager.subscribe(() => {
       setModules(moduleManager.getLazyModules());
     });

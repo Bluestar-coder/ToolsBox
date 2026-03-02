@@ -23,9 +23,10 @@ const moduleI18nKeys: Record<string, string> = {
   'diff-tool': 'modules.diff',
   'http-debug': 'modules.httpDebug',
   'ip-network': 'modules.ipNetwork',
+  'recipe-tool': 'modules.recipe',
 };
 
-// 定义菜单顺序：编码/解码、加密/解密、时间工具、正则工具、代码格式化、二维码工具、差异对比、HTTP调试、IP/网络工具
+// 定义菜单顺序：编码/解码、加密/解密、时间工具、正则工具、代码格式化、二维码工具、差异对比、HTTP调试、IP/网络工具、Recipe工具
 const moduleOrder = [
   'encoder-decoder',
   'crypto-tool',
@@ -36,6 +37,7 @@ const moduleOrder = [
   'diff-tool',
   'http-debug',
   'ip-network',
+  'recipe-tool',
 ];
 
 const SideMenu: React.FC<SideMenuProps> = React.memo(({ currentModuleId }) => {

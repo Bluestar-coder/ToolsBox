@@ -144,9 +144,9 @@ const ScanTab: React.FC = () => {
     <Row gutter={[16, 16]}>
       <Col xs={24} lg={12}>
         <Card title={t('modules.qrcode.scanMethods')}>
-          <Space direction="vertical" style={{ width: '100%' }} size="middle">
+          <Space orientation="vertical" style={{ width: '100%' }} size="middle">
             {cameraError && (
-              <Alert message={cameraError} type="error" showIcon closable />
+              <Alert title={cameraError} type="error" showIcon closable />
             )}
             
             <div
@@ -198,7 +198,7 @@ const ScanTab: React.FC = () => {
             </Space>
             
             <Alert
-              message={t('modules.qrcode.scanTipWithPaste')}
+              title={t('modules.qrcode.scanTipWithPaste')}
               type="info"
               showIcon
             />

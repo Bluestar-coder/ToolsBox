@@ -14,7 +14,7 @@ import type { WsConnectionConfig, WsMessage } from '../types';
 
 // --- Mock WebSocket ---
 
-type WsHandler = ((event: any) => void) | null;
+type WsHandler = ((event: Event | MessageEvent) => void) | null;
 
 class MockWebSocket {
   static instances: MockWebSocket[] = [];
@@ -105,6 +105,7 @@ const arbActionSequence: fc.Arbitrary<MessageAction[]> = fc.array(arbAction, {
 // --- Helpers ---
 
 const OriginalWebSocket = globalThis.WebSocket;
+const mutableGlobal = globalThis as typeof globalThis & { WebSocket: typeof WebSocket };
 
 function defaultConfig(): WsConnectionConfig {
   return { url: 'ws://localhost:8080', protocols: [] };
@@ -122,11 +123,11 @@ function bytesToHex(bytes: number[]): string {
 
 beforeEach(() => {
   MockWebSocket.instances = [];
-  (globalThis as any).WebSocket = MockWebSocket as any;
+  mutableGlobal.WebSocket = MockWebSocket as unknown as typeof WebSocket;
 });
 
 afterEach(() => {
-  (globalThis as any).WebSocket = OriginalWebSocket;
+  mutableGlobal.WebSocket = OriginalWebSocket;
 });
 
 describe('Property-Based Tests: 消息日志完整性 (Property 8)', () => {

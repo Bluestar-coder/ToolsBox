@@ -28,7 +28,16 @@ export function isValidIPv6(ip: string): boolean {
 
   // 去除可能的 zone ID（如 %eth0）
   const addr = ip.split('%')[0];
+  if (!addr) return false;
 
+  if (addr.includes('.')) {
+    return isValidMixedIPv6(addr);
+  }
+
+  return isValidPureIPv6(addr);
+}
+
+function isValidPureIPv6(addr: string): boolean {
   // 处理 :: 压缩表示
   if (addr.includes('::')) {
     // :: 最多出现一次
@@ -38,7 +47,7 @@ export function isValidIPv6(ip: string): boolean {
     const leftGroups = left === '' ? [] : left.split(':');
     const rightGroups = right === '' ? [] : right.split(':');
 
-    // 总组数不能超过 8
+    // 总组数不能超过 8（含压缩位）
     if (leftGroups.length + rightGroups.length > 7) return false;
 
     return (
@@ -51,6 +60,22 @@ export function isValidIPv6(ip: string): boolean {
   const groups = addr.split(':');
   if (groups.length !== 8) return false;
   return groups.every(isValidIPv6Group);
+}
+
+function isValidMixedIPv6(addr: string): boolean {
+  const match = addr.match(/^(.*:)(\d+\.\d+\.\d+\.\d+)$/);
+  if (!match) return false;
+
+  const prefixWithColon = match[1];
+  const ipv4Part = match[2];
+  if (!isValidIPv4(ipv4Part)) return false;
+
+  const octets = ipv4Part.split('.').map(Number);
+  const upper = ((octets[0] << 8) | octets[1]).toString(16);
+  const lower = ((octets[2] << 8) | octets[3]).toString(16);
+
+  // 规范化为纯 IPv6 hextet 后复用同一套校验逻辑
+  return isValidPureIPv6(`${prefixWithColon}${upper}:${lower}`);
 }
 
 /** 验证单个 IPv6 组（1-4 位十六进制） */

@@ -70,12 +70,13 @@ const SmartDecodeTab: React.FC = () => {
   return (
     <Row gutter={[16, 16]}>
       <Col xs={24} lg={12}>
-        <Space direction="vertical" style={{ width: '100%' }} size="middle">
+        <Space orientation="vertical" style={{ width: '100%' }} size="middle">
           <Card size="small" title={t('modules.encoder.smart.options')}>
             <Space wrap>
               {supportedDecodeTypes.map((type) => (
                 <Checkbox
                   key={type.key}
+                  name={`smart-decode-${type.key}`}
                   checked={options[`decode${type.key.charAt(0).toUpperCase() + type.key.slice(1)}` as keyof typeof options]}
                   onChange={(e) =>
                     setOptions({
@@ -91,6 +92,7 @@ const SmartDecodeTab: React.FC = () => {
           </Card>
 
           <TextArea
+            name="smart-decode-input"
             autoSize={{ minRows: 12, maxRows: 20 }}
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -113,7 +115,7 @@ const SmartDecodeTab: React.FC = () => {
       </Col>
 
       <Col xs={24} lg={12}>
-        <Space direction="vertical" style={{ width: '100%' }} size="middle">
+        <Space orientation="vertical" style={{ width: '100%' }} size="middle">
           <Card
             size="small"
             title={t('modules.encoder.smart.result')}
@@ -129,6 +131,7 @@ const SmartDecodeTab: React.FC = () => {
             }
           >
             <TextArea
+              name="smart-decode-output"
               autoSize={{ minRows: 8, maxRows: 20 }}
               value={output}
               readOnly
@@ -152,7 +155,7 @@ const SmartDecodeTab: React.FC = () => {
                     </Space>
                   ),
                   children: (
-                    <Space direction="vertical" style={{ width: '100%' }}>
+                    <Space orientation="vertical" style={{ width: '100%' }}>
                       <div>
                         <Text type="secondary">{t('modules.encoder.smart.original')}:</Text>
                         <div style={{ 

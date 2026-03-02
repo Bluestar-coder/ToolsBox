@@ -106,7 +106,6 @@ const SubnetMaskConverterTab: React.FC = () => {
   const [subnetPlans, setSubnetPlans] = useState<SubnetPlan[]>([]);
   const [subnetCidr, setSubnetCidr] = useState<number>(26);
   const [requiredHosts, setRequiredHosts] = useState<number>(10);
-  const [recommendedCidr, setRecommendedCidr] = useState<number>(24);
   const [error, setError] = useState<string>('');
   
   // 使用 useTransition 处理非紧急更新
@@ -164,11 +163,7 @@ const SubnetMaskConverterTab: React.FC = () => {
   }, [deferredSubnetMaskInput, deferredIpAddress, subnetCidr]);
   
   // 推荐子网掩码
-  const calculateRecommendedCidr = useCallback(() => {
-    const cidr = recommendSubnetMask(requiredHosts);
-    setRecommendedCidr(cidr);
-    setSubnetMaskInput(cidr.toString());
-  }, [requiredHosts]);
+  const recommendedCidr = useMemo(() => recommendSubnetMask(requiredHosts), [requiredHosts]);
   
   // 子网规划表格列定义
   const subnetPlanColumns = useMemo(() => [
@@ -232,10 +227,8 @@ const SubnetMaskConverterTab: React.FC = () => {
     },
   ], [t, copyToClipboard, formatNumber]);
   
-  // 初始计算
+  // 组件卸载时清理延迟计算定时器
   useEffect(() => {
-    calculateSubnetMaskInfo();
-    
     return () => {
       if (calculationTimeoutRef.current) {
         clearTimeout(calculationTimeoutRef.current);
@@ -251,7 +244,7 @@ const SubnetMaskConverterTab: React.FC = () => {
   // 子网CIDR选项 - 使用 useMemo 缓存
   const subnetCidrOptions = useMemo(() => {
     if (!networkInfo) return [];
-    const options = [];
+    const options: Array<{ value: number; label: string }> = [];
     for (let cidr = networkInfo.subnetMask.cidr + 1; cidr <= 32; cidr++) {
       try {
         const info = getSubnetMaskInfo(cidr);
@@ -259,17 +252,12 @@ const SubnetMaskConverterTab: React.FC = () => {
           value: cidr,
           label: `/${cidr} (${t('modules.ipNetwork.subnetMaskConverter.usableHosts')}: ${formatNumber(info.usableHosts)})`
         });
-      } catch (e) {
+      } catch {
         // 忽略无效CIDR
       }
     }
     return options;
-  }, [networkInfo?.subnetMask.cidr, t, formatNumber]);
-  
-  // 计算推荐CIDR
-  useEffect(() => {
-    calculateRecommendedCidr();
-  }, [calculateRecommendedCidr]);
+  }, [networkInfo, t, formatNumber]);
   
   // 输入处理函数 - 立即更新输入值，延迟计算
   const handleSubnetMaskChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -278,6 +266,12 @@ const SubnetMaskConverterTab: React.FC = () => {
   
   const handleIpAddressChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setIpAddress(e.target.value);
+  }, []);
+
+  const handleRequiredHostsChange = useCallback((value: number | null) => {
+    if (!value) return;
+    setRequiredHosts(value);
+    setSubnetMaskInput(recommendSubnetMask(value).toString());
   }, []);
   
   return (
@@ -333,7 +327,7 @@ const SubnetMaskConverterTab: React.FC = () => {
         
         {error && (
           <Alert
-            message={t('modules.ipNetwork.subnetMaskConverter.calculateError')}
+            title={t('modules.ipNetwork.subnetMaskConverter.calculateError')}
             description={error}
             type="error"
             showIcon
@@ -514,7 +508,7 @@ const SubnetMaskConverterTab: React.FC = () => {
               min={1}
               max={16777214}
               value={requiredHosts}
-              onChange={(value) => value && setRequiredHosts(value)}
+              onChange={handleRequiredHostsChange}
               style={{ width: '100%', marginTop: 8 }}
             />
           </Col>

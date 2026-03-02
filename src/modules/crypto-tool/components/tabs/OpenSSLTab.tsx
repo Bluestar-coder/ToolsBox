@@ -109,7 +109,7 @@ export const OpenSSLTab: React.FC = () => {
   return (
     <div className="openssl-tab">
       {contextHolder}
-      <Space direction="vertical" size="large" style={{ width: '100%' }}>
+      <Space orientation="vertical" size="large" style={{ width: '100%' }}>
         <Card title={t('modules.crypto.openssl.title')} size="small">
           <Form layout="vertical">
             <Space size="large" wrap>

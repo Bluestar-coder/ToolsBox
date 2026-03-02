@@ -87,8 +87,8 @@ const HttpTab: React.FC = () => {
         // status === 0 means network error; show the body as error message
         setError(res.body);
       }
-    } catch (err: any) {
-      setError(err.message || String(err));
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);
     }

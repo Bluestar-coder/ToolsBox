@@ -7,6 +7,8 @@ import type {
 } from './types';
 import { arrayBufferToHex } from './validators';
 
+const CONNECTION_TIMEOUT_MS = 10_000;
+
 let messageIdCounter = 0;
 
 function generateMessageId(): string {
@@ -30,6 +32,7 @@ export class WsClient {
   private reconnectConfig: ReconnectConfig | null = null;
   private reconnectCount = 0;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+  private connectTimeoutTimer: ReturnType<typeof setTimeout> | null = null;
   private manualDisconnect = false;
 
   /**
@@ -52,9 +55,10 @@ export class WsClient {
 
       this.ws.binaryType = 'arraybuffer';
       this.setupEventHandlers();
-    } catch (error: any) {
+      this.startConnectTimeout();
+    } catch (error: unknown) {
       this.setStatus('closed');
-      this.onError(`Connection failed: ${error.message || String(error)}`);
+      this.onError(`Connection failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -64,6 +68,7 @@ export class WsClient {
   disconnect(): void {
     this.manualDisconnect = true;
     this.clearReconnectTimer();
+    this.clearConnectTimeout();
     this.cleanupConnection();
     this.setStatus('disconnected');
   }
@@ -94,8 +99,8 @@ export class WsClient {
       };
 
       this.onMessage(message);
-    } catch (error: any) {
-      this.onError(`Send failed: ${error.message || String(error)}`);
+    } catch (error: unknown) {
+      this.onError(`Send failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -118,6 +123,9 @@ export class WsClient {
   // --- 内部方法 ---
 
   private setStatus(status: WsConnectionStatus): void {
+    if (status !== 'connecting') {
+      this.clearConnectTimeout();
+    }
     this.status = status;
     this.onStatusChange(status);
   }
@@ -144,6 +152,23 @@ export class WsClient {
 
     this.ws.onerror = () => {
       this.onError('WebSocket connection error');
+
+      // 某些目标地址会长期停留在 CONNECTING，需要主动收敛状态
+      if (this.status === 'connecting' && this.ws) {
+        const socket = this.ws;
+        this.ws = null;
+        socket.onopen = null;
+        socket.onclose = null;
+        socket.onerror = null;
+        socket.onmessage = null;
+        try {
+          socket.close();
+        } catch {
+          // ignore close errors
+        }
+        this.setStatus('closed');
+        this.attemptReconnect();
+      }
     };
 
     this.ws.onmessage = (event: MessageEvent) => {
@@ -192,9 +217,10 @@ export class WsClient {
 
         this.ws.binaryType = 'arraybuffer';
         this.setupEventHandlers();
-      } catch (error: any) {
+        this.startConnectTimeout();
+      } catch (error: unknown) {
         this.setStatus('closed');
-        this.onError(`Reconnect failed: ${error.message || String(error)}`);
+        this.onError(`Reconnect failed: ${error instanceof Error ? error.message : String(error)}`);
         this.attemptReconnect();
       }
     }, interval);
@@ -207,7 +233,40 @@ export class WsClient {
     }
   }
 
+  private startConnectTimeout(): void {
+    this.clearConnectTimeout();
+    this.connectTimeoutTimer = setTimeout(() => {
+      if (!this.ws || this.status !== 'connecting' || this.manualDisconnect) {
+        return;
+      }
+
+      this.onError(`Connection timed out after ${CONNECTION_TIMEOUT_MS}ms`);
+      const socket = this.ws;
+      this.ws = null;
+      socket.onopen = null;
+      socket.onclose = null;
+      socket.onerror = null;
+      socket.onmessage = null;
+      try {
+        socket.close();
+      } catch {
+        // ignore close errors
+      }
+
+      this.setStatus('closed');
+      this.attemptReconnect();
+    }, CONNECTION_TIMEOUT_MS);
+  }
+
+  private clearConnectTimeout(): void {
+    if (this.connectTimeoutTimer !== null) {
+      clearTimeout(this.connectTimeoutTimer);
+      this.connectTimeoutTimer = null;
+    }
+  }
+
   private cleanupConnection(): void {
+    this.clearConnectTimeout();
     this.clearReconnectTimer();
     if (this.ws) {
       // Remove handlers before closing to avoid triggering onclose logic

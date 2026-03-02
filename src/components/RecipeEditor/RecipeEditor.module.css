@@ -1,0 +1,213 @@
+/**
+ * Recipe编辑器组件样式
+ */
+
+.recipeEditor {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--background-color, #fff);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.recipeHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color, #f0f0f0);
+}
+
+.recipeTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--heading-color, rgba(0, 0, 0, 0.85));
+}
+
+.stepsContainer {
+  flex: 1;
+  overflow: auto;
+}
+
+.stepsList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stepCard {
+  cursor: move;
+  transition: all 0.2s ease;
+  border: 1px solid var(--border-color, #f0f0f0);
+}
+
+.stepCard:hover {
+  border-color: var(--primary-color, #1890ff);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.stepDisabled {
+  opacity: 0.6;
+  background-color: var(--background-color-light, #fafafa);
+}
+
+.stepBreakpoint {
+  border-left: 4px solid var(--error-color, #ff4d4f);
+}
+
+.stepHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stepInfo {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.stepIcon {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--primary-color, #1890ff);
+  flex-shrink: 0;
+}
+
+.dragHandle {
+  cursor: move;
+  color: var(--text-color-secondary, rgba(0, 0, 0, 0.45));
+}
+
+.stepDetails {
+  flex: 1;
+  min-width: 0;
+}
+
+.stepName {
+  font-weight: 500;
+  font-size: 14px;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stepDescription {
+  font-size: 12px;
+  color: var(--text-color-secondary, rgba(0, 0, 0, 0.45));
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stepActions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.breakpointBadge {
+  color: var(--error-color, #ff4d4f);
+  font-size: 12px;
+}
+
+.breakpointButton {
+  color: var(--error-color, #ff4d4f);
+  border-color: var(--error-color, #ff4d4f);
+}
+
+.stepEditForm {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.stepEditHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.stepEditIcon {
+  font-size: 20px;
+  color: var(--primary-color, #1890ff);
+  flex-shrink: 0;
+}
+
+.stepEditInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.stepEditName {
+  font-weight: 500;
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.stepEditDescription {
+  font-size: 14px;
+  color: var(--text-color-secondary, rgba(0, 0, 0, 0.45));
+  line-height: 1.4;
+}
+
+.noParameters {
+  text-align: center;
+  padding: 20px 0;
+  color: var(--text-color-secondary, rgba(0, 0, 0, 0.45));
+}
+
+/* 暗色主题适配 */
+[data-theme='dark'] .recipeEditor {
+  background: var(--background-color-dark, #141414);
+}
+
+[data-theme='dark'] .recipeTitle {
+  color: var(--text-color-dark, rgba(255, 255, 255, 0.85));
+}
+
+[data-theme='dark'] .recipeHeader {
+  border-bottom-color: var(--border-color-dark, #303030);
+}
+
+[data-theme='dark'] .stepCard {
+  background-color: var(--component-background-dark, #1f1f1f);
+  border-color: var(--border-color-dark, #303030);
+}
+
+[data-theme='dark'] .stepCard:hover {
+  border-color: var(--primary-color-dark, #177ddc);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.48);
+}
+
+[data-theme='dark'] .stepDisabled {
+  background-color: var(--background-color-light-dark, #262626);
+}
+
+[data-theme='dark'] .stepName {
+  color: var(--text-color-dark, rgba(255, 255, 255, 0.85));
+}
+
+[data-theme='dark'] .stepDescription {
+  color: var(--text-color-secondary-dark, rgba(255, 255, 255, 0.45));
+}
+
+[data-theme='dark'] .stepEditName {
+  color: var(--text-color-dark, rgba(255, 255, 255, 0.85));
+}
+
+[data-theme='dark'] .stepEditDescription {
+  color: var(--text-color-secondary-dark, rgba(255, 255, 255, 0.45));
+}
+
+[data-theme='dark'] .noParameters {
+  color: var(--text-color-secondary-dark, rgba(255, 255, 255, 0.45));
+}

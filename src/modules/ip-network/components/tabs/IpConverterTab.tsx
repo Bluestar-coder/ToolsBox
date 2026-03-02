@@ -74,9 +74,9 @@ const IpConverterTab: React.FC = () => {
   );
 
   return (
-    <Space direction="vertical" style={{ width: '100%' }} size="middle">
+    <Space orientation="vertical" style={{ width: '100%' }} size="middle">
       <Card size="small" title={t('modules.ipNetwork.converter.inputTitle')}>
-        <Space direction="vertical" style={{ width: '100%' }} size="small">
+        <Space orientation="vertical" style={{ width: '100%' }} size="small">
           <Input
             value={input}
             onChange={handleInputChange}

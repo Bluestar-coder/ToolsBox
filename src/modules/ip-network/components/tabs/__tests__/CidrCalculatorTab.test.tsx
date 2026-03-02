@@ -1,26 +1,29 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen, fireEvent } from '@/test/utils';
+import i18n from '@/i18n';
 import CidrCalculatorTab from '../CidrCalculatorTab';
 
 describe('CidrCalculatorTab', () => {
+  const t = (key: string, options?: Record<string, unknown>) => i18n.t(key, options);
+
   it('should render CIDR input field with placeholder', () => {
     render(<CidrCalculatorTab />);
-    expect(screen.getByPlaceholderText('ipNetwork.cidr.placeholder')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(t('modules.ipNetwork.cidr.placeholder'))).toBeInTheDocument();
   });
 
   it('should show no results and no error when input is empty', () => {
     render(<CidrCalculatorTab />);
-    expect(screen.queryByText('ipNetwork.cidr.resultTitle')).not.toBeInTheDocument();
+    expect(screen.queryByText(t('modules.ipNetwork.cidr.resultTitle'))).not.toBeInTheDocument();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
   it('should calculate and display CIDR info for valid input', () => {
     render(<CidrCalculatorTab />);
-    const input = screen.getByPlaceholderText('ipNetwork.cidr.placeholder');
+    const input = screen.getByPlaceholderText(t('modules.ipNetwork.cidr.placeholder'));
     fireEvent.change(input, { target: { value: '192.168.1.0/24' } });
 
     // Result card should appear
-    expect(screen.getByText('ipNetwork.cidr.resultTitle')).toBeInTheDocument();
+    expect(screen.getByText(t('modules.ipNetwork.cidr.resultTitle'))).toBeInTheDocument();
 
     // Check computed values
     expect(screen.getByText('192.168.1.0')).toBeInTheDocument();       // network address
@@ -35,16 +38,16 @@ describe('CidrCalculatorTab', () => {
 
   it('should show error for invalid CIDR input', () => {
     render(<CidrCalculatorTab />);
-    const input = screen.getByPlaceholderText('ipNetwork.cidr.placeholder');
+    const input = screen.getByPlaceholderText(t('modules.ipNetwork.cidr.placeholder'));
     fireEvent.change(input, { target: { value: '192.168.1.0/33' } });
 
     expect(screen.getByRole('alert')).toBeInTheDocument();
-    expect(screen.queryByText('ipNetwork.cidr.resultTitle')).not.toBeInTheDocument();
+    expect(screen.queryByText(t('modules.ipNetwork.cidr.resultTitle'))).not.toBeInTheDocument();
   });
 
   it('should update results in real-time when CIDR changes', () => {
     render(<CidrCalculatorTab />);
-    const input = screen.getByPlaceholderText('ipNetwork.cidr.placeholder');
+    const input = screen.getByPlaceholderText(t('modules.ipNetwork.cidr.placeholder'));
 
     fireEvent.change(input, { target: { value: '10.0.0.0/8' } });
     expect(screen.getByText('10.0.0.0')).toBeInTheDocument();
@@ -57,28 +60,28 @@ describe('CidrCalculatorTab', () => {
 
   it('should clear results when input is cleared', () => {
     render(<CidrCalculatorTab />);
-    const input = screen.getByPlaceholderText('ipNetwork.cidr.placeholder');
+    const input = screen.getByPlaceholderText(t('modules.ipNetwork.cidr.placeholder'));
 
     fireEvent.change(input, { target: { value: '192.168.1.0/24' } });
-    expect(screen.getByText('ipNetwork.cidr.resultTitle')).toBeInTheDocument();
+    expect(screen.getByText(t('modules.ipNetwork.cidr.resultTitle'))).toBeInTheDocument();
 
     fireEvent.change(input, { target: { value: '' } });
-    expect(screen.queryByText('ipNetwork.cidr.resultTitle')).not.toBeInTheDocument();
+    expect(screen.queryByText(t('modules.ipNetwork.cidr.resultTitle'))).not.toBeInTheDocument();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
   it('should render minimum CIDR section with two IP inputs and button', () => {
     render(<CidrCalculatorTab />);
-    expect(screen.getByPlaceholderText('ipNetwork.cidr.ip1Placeholder')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('ipNetwork.cidr.ip2Placeholder')).toBeInTheDocument();
-    expect(screen.getByText('ipNetwork.cidr.calculateMinCidr')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(t('modules.ipNetwork.cidr.ip1Placeholder'))).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(t('modules.ipNetwork.cidr.ip2Placeholder'))).toBeInTheDocument();
+    expect(screen.getByText(t('modules.ipNetwork.cidr.calculateMinCidr'))).toBeInTheDocument();
   });
 
   it('should calculate minimum CIDR for two valid IPs', () => {
     render(<CidrCalculatorTab />);
-    const ip1Input = screen.getByPlaceholderText('ipNetwork.cidr.ip1Placeholder');
-    const ip2Input = screen.getByPlaceholderText('ipNetwork.cidr.ip2Placeholder');
-    const button = screen.getByText('ipNetwork.cidr.calculateMinCidr');
+    const ip1Input = screen.getByPlaceholderText(t('modules.ipNetwork.cidr.ip1Placeholder'));
+    const ip2Input = screen.getByPlaceholderText(t('modules.ipNetwork.cidr.ip2Placeholder'));
+    const button = screen.getByText(t('modules.ipNetwork.cidr.calculateMinCidr'));
 
     fireEvent.change(ip1Input, { target: { value: '192.168.1.0' } });
     fireEvent.change(ip2Input, { target: { value: '192.168.2.0' } });
@@ -89,17 +92,17 @@ describe('CidrCalculatorTab', () => {
 
   it('should show error when minimum CIDR IPs are missing', () => {
     render(<CidrCalculatorTab />);
-    const button = screen.getByText('ipNetwork.cidr.calculateMinCidr');
+    const button = screen.getByText(t('modules.ipNetwork.cidr.calculateMinCidr'));
     fireEvent.click(button);
 
-    expect(screen.getByText('ipNetwork.cidr.errorBothIpsRequired')).toBeInTheDocument();
+    expect(screen.getByText(t('modules.ipNetwork.cidr.errorBothIpsRequired'))).toBeInTheDocument();
   });
 
   it('should show error for invalid IP in minimum CIDR calculation', () => {
     render(<CidrCalculatorTab />);
-    const ip1Input = screen.getByPlaceholderText('ipNetwork.cidr.ip1Placeholder');
-    const ip2Input = screen.getByPlaceholderText('ipNetwork.cidr.ip2Placeholder');
-    const button = screen.getByText('ipNetwork.cidr.calculateMinCidr');
+    const ip1Input = screen.getByPlaceholderText(t('modules.ipNetwork.cidr.ip1Placeholder'));
+    const ip2Input = screen.getByPlaceholderText(t('modules.ipNetwork.cidr.ip2Placeholder'));
+    const button = screen.getByText(t('modules.ipNetwork.cidr.calculateMinCidr'));
 
     fireEvent.change(ip1Input, { target: { value: 'invalid' } });
     fireEvent.change(ip2Input, { target: { value: '192.168.1.1' } });

@@ -106,7 +106,7 @@ const ECDHTab: React.FC = () => {
 
       <Alert
         type="info"
-        message="ECDH 是基于椭圆曲线的 Diffie-Hellman 密钥交换协议，双方交换公钥后可计算出相同的共享密钥用于对称加密。"
+        title="ECDH 是基于椭圆曲线的 Diffie-Hellman 密钥交换协议，双方交换公钥后可计算出相同的共享密钥用于对称加密。"
       />
     </Space>
   );

@@ -40,10 +40,20 @@ const HEX_ESCAPE_PATTERN = /\\x[0-9A-Fa-f]{2}/g;
  */
 function isValidBase64(str: string): boolean {
   if (str.length < 8) return false; // 太短的不处理
+  if (str.length % 4 !== 0) return false;
   if (!/^[A-Za-z0-9+/]*={0,2}$/.test(str)) return false;
-  
+
+  const hasPadding = /=$|==$/.test(str);
+  const hasSymbolOrDigit = /[0-9+/]/.test(str);
+  const hasMixedLetterCase = /[a-z]/.test(str) && /[A-Z]/.test(str);
+  if (!hasPadding && !hasSymbolOrDigit && !hasMixedLetterCase) {
+    // 避免把普通英文单词误判为Base64
+    return false;
+  }
+
   try {
     const decoded = atob(str);
+    if (decoded.length === 0) return false;
     // 检查解码后是否包含可打印字符
     const printableRatio = decoded.split('').filter(c => {
       const code = c.charCodeAt(0);
@@ -91,6 +101,54 @@ export function smartDecode(input: string, options: {
   let hasChanges = true;
 
   try {
+    const replaceAt = (source: string, start: number, end: number, replacement: string): string => {
+      return source.slice(0, start) + replacement + source.slice(end);
+    };
+
+    const decodeByPattern = (
+      pattern: RegExp,
+      type: string,
+      decoder: (text: string) => { success: boolean; result: string }
+    ): void => {
+      const foundMatches = Array.from(result.matchAll(new RegExp(pattern.source, pattern.flags)));
+      if (foundMatches.length === 0) {
+        return;
+      }
+
+      const iterationMatches: DecodeMatch[] = [];
+      for (const match of [...foundMatches].reverse()) {
+        const matchedText = match[0];
+        const matchIndex = match.index ?? -1;
+        if (matchIndex < 0) {
+          continue;
+        }
+
+        const decoded = decoder(matchedText);
+        if (!decoded.success || decoded.result === matchedText) {
+          continue;
+        }
+
+        result = replaceAt(
+          result,
+          matchIndex,
+          matchIndex + matchedText.length,
+          decoded.result
+        );
+        iterationMatches.unshift({
+          original: matchedText,
+          decoded: decoded.result,
+          type,
+          start: matchIndex,
+          end: matchIndex + matchedText.length,
+        });
+        hasChanges = true;
+      }
+
+      if (iterationMatches.length > 0) {
+        matches.push(...iterationMatches);
+      }
+    };
+
     // 迭代解码，直到没有变化或达到最大迭代次数
     while (hasChanges && iteration < maxIterations) {
       hasChanges = false;
@@ -99,117 +157,60 @@ export function smartDecode(input: string, options: {
 
       // 1. 解码URL编码
       if (decodeUrl) {
-        const urlMatches = result.match(URL_ENCODED_PATTERN);
-        if (urlMatches) {
-          // 使用 Set 去重，避免同一匹配被处理多次
-          const uniqueMatches = [...new Set(urlMatches)];
-          for (const match of uniqueMatches) {
-            try {
-              const decoded = urlDecode(match);
-              if (decoded.success && decoded.result !== match) {
-                // 记录第一次出现的位置用于 match 信息
-                const matchIndex = result.indexOf(match);
-                matches.push({
-                  original: match,
-                  decoded: decoded.result,
-                  type: 'URL',
-                  start: matchIndex,
-                  end: matchIndex + match.length,
-                });
-                // 使用 replaceAll 替换所有出现
-                result = result.split(match).join(decoded.result);
-                hasChanges = true;
-              }
-            } catch {
-              // 忽略解码错误
-            }
-          }
-        }
+        decodeByPattern(URL_ENCODED_PATTERN, 'URL', (text) => urlDecode(text));
       }
 
       // 2. 解码Unicode转义
       if (decodeUnicode) {
-        const unicodeMatches = result.match(UNICODE_PATTERN);
-        if (unicodeMatches) {
-          const fullMatch = unicodeMatches.join('');
-          const decoded = unicodeDecode(result);
-          if (decoded.success && decoded.result !== result) {
-            matches.push({
-              original: fullMatch,
-              decoded: decoded.result.substring(
-                result.indexOf(unicodeMatches[0]),
-                result.indexOf(unicodeMatches[0]) + fullMatch.length
-              ),
-              type: 'Unicode',
-              start: 0,
-              end: result.length,
-            });
-            result = decoded.result;
-            hasChanges = true;
-          }
-        }
+        decodeByPattern(UNICODE_PATTERN, 'Unicode', (text) => unicodeDecode(text));
       }
 
       // 3. 解码Hex转义
       if (decodeHex) {
-        const hexMatches = result.match(HEX_ESCAPE_PATTERN);
-        if (hexMatches) {
-          const decoded = decodeHexEscape(result);
-          if (decoded !== result) {
-            matches.push({
-              original: hexMatches.join(', '),
-              decoded: decoded,
-              type: 'Hex',
-              start: 0,
-              end: result.length,
-            });
-            result = decoded;
-            hasChanges = true;
-          }
-        }
+        decodeByPattern(HEX_ESCAPE_PATTERN, 'Hex', (text) => {
+          const decoded = decodeHexEscape(text);
+          return { success: decoded !== text, result: decoded };
+        });
       }
 
       // 4. 解码HTML实体
       if (decodeHtml) {
-        const htmlMatches = result.match(HTML_ENTITY_PATTERN);
-        if (htmlMatches) {
-          const decoded = htmlDecode(result);
-          if (decoded.success && decoded.result !== result) {
-            matches.push({
-              original: htmlMatches.join(', '),
-              decoded: decoded.result,
-              type: 'HTML',
-              start: 0,
-              end: result.length,
-            });
-            result = decoded.result;
-            hasChanges = true;
-          }
-        }
+        decodeByPattern(HTML_ENTITY_PATTERN, 'HTML', (text) => htmlDecode(text));
       }
 
       // 5. 解码Base64（最后处理，因为可能误匹配）
       if (decodeBase64) {
-        const base64Matches = result.match(BASE64_PATTERN);
-        if (base64Matches) {
-          const uniqueMatches = [...new Set(base64Matches)];
-          for (const match of uniqueMatches) {
-            if (isValidBase64(match)) {
-              const decoded = base64Decode(match);
-              if (decoded.success && decoded.result !== match) {
-                const matchIndex = result.indexOf(match);
-                matches.push({
-                  original: match,
-                  decoded: decoded.result,
-                  type: 'Base64',
-                  start: matchIndex,
-                  end: matchIndex + match.length,
-                });
-                result = result.split(match).join(decoded.result);
-                hasChanges = true;
-              }
-            }
+        const foundBase64 = Array.from(result.matchAll(new RegExp(BASE64_PATTERN.source, BASE64_PATTERN.flags)));
+        const iterationMatches: DecodeMatch[] = [];
+        for (const match of [...foundBase64].reverse()) {
+          const matchedText = match[0];
+          const matchIndex = match.index ?? -1;
+          if (matchIndex < 0 || !isValidBase64(matchedText)) {
+            continue;
           }
+
+          const decoded = base64Decode(matchedText);
+          if (!decoded.success || decoded.result === matchedText) {
+            continue;
+          }
+
+          result = replaceAt(
+            result,
+            matchIndex,
+            matchIndex + matchedText.length,
+            decoded.result
+          );
+          iterationMatches.unshift({
+            original: matchedText,
+            decoded: decoded.result,
+            type: 'Base64',
+            start: matchIndex,
+            end: matchIndex + matchedText.length,
+          });
+          hasChanges = true;
+        }
+        if (iterationMatches.length > 0) {
+          matches.push(...iterationMatches);
         }
       }
 

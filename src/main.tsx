@@ -13,6 +13,10 @@ import { ErrorBoundaryClass } from './components/ErrorBoundary.tsx'
 import AntdThemeProvider from './components/AntdThemeProvider.tsx'
 import ErrorDisplay from './components/ErrorDisplayNew.tsx'
 import { initSentry } from './utils/sentry'
+import { initializeOperations } from './core/operations/init'
+
+// 初始化操作系统
+initializeOperations()
 
 // 初始化Sentry错误监控
 initSentry()

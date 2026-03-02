@@ -154,7 +154,7 @@ export function binaryToDottedDecimal(binary: string): string {
   // 验证转换后的点分十进制是否是有效的子网掩码
   try {
     dottedDecimalToCidr(dottedDecimal);
-  } catch (error) {
+  } catch {
     throw new Error('无效的二进制子网掩码');
   }
 
@@ -202,27 +202,31 @@ export function dottedDecimalToHexadecimal(dottedDecimal: string): string {
  */
 export function getSubnetMaskInfo(input: string | number): SubnetMaskInfo {
   let cidr: number;
+  const normalizedStringInput = typeof input === 'string' ? input.trim() : '';
 
   // 根据输入类型确定CIDR值
   if (typeof input === 'number') {
     cidr = input;
-  } else if (input.includes('.')) {
+  } else if (normalizedStringInput.includes('.')) {
     // 检查是否是二进制格式
-    const parts = input.split('.');
+    const parts = normalizedStringInput.split('.');
     if (parts.length === 4 && parts.every(part => /^[01]+$/.test(part) && part.length === 8)) {
       // 二进制转点分十进制
-      const dottedDecimal = binaryToDottedDecimal(input);
+      const dottedDecimal = binaryToDottedDecimal(normalizedStringInput);
       cidr = dottedDecimalToCidr(dottedDecimal);
     } else {
       // 点分十进制
-      cidr = dottedDecimalToCidr(input);
+      cidr = dottedDecimalToCidr(normalizedStringInput);
     }
   } else {
-    // 假设是CIDR
-    cidr = parseInt(input, 10);
+    // CIDR 字符串需要是纯数字，避免 parseInt('24abc') 这类歧义输入
+    if (!/^\d+$/.test(normalizedStringInput)) {
+      throw new Error('无法识别的子网掩码格式');
+    }
+    cidr = parseInt(normalizedStringInput, 10);
   }
 
-  if (cidr < 0 || cidr > 32) {
+  if (!Number.isInteger(cidr) || cidr < 0 || cidr > 32) {
     throw new Error('CIDR值必须在0-32之间');
   }
 

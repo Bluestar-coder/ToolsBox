@@ -10,7 +10,12 @@ export const parseSmartTime = (input: string): Date | null => {
   const trimmed = input.trim().toLowerCase();
   
   // 特殊关键字
-  if (trimmed === 'now' || trimmed === 'today') return new Date();
+  if (trimmed === 'now') return new Date();
+  if (trimmed === 'today') {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
   if (trimmed === 'yesterday') {
     const d = new Date();
     d.setDate(d.getDate() - 1);

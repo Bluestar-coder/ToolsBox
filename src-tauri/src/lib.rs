@@ -25,13 +25,7 @@ fn extract_ip_from_text(text: &str) -> Option<String> {
         let ip = mat.as_str();
         let parts: Vec<&str> = ip.split('.').collect();
         if parts.len() == 4 {
-            let valid = parts.iter().all(|part| {
-                if let Ok(num) = part.parse::<u8>() {
-                    num <= 255
-                } else {
-                    false
-                }
-            });
+            let valid = parts.iter().all(|part| part.parse::<u8>().is_ok());
             if valid {
                 return Some(ip.to_string());
             }

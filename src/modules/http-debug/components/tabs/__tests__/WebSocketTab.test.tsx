@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@/test/utils';
 import WebSocketTab from '../WebSocketTab';
+import type { WsMessage } from '../../../utils/types';
 
 // Mock WsClient
 const mockConnect = vi.fn();
@@ -9,8 +10,7 @@ const mockSend = vi.fn();
 const mockEnableReconnect = vi.fn();
 const mockDisableReconnect = vi.fn();
 
-let capturedOnMessage: ((msg: any) => void) | null = null;
-let capturedOnStatusChange: ((status: string) => void) | null = null;
+let capturedOnMessage: ((msg: WsMessage) => void) | null = null;
 let capturedOnError: ((error: string) => void) | null = null;
 
 vi.mock('../../../utils/ws-client', () => {
@@ -22,11 +22,11 @@ vi.mock('../../../utils/ws-client', () => {
     enableReconnect = mockEnableReconnect;
     disableReconnect = mockDisableReconnect;
 
-    set onMessage(fn: (msg: any) => void) {
+    set onMessage(fn: (msg: WsMessage) => void) {
       capturedOnMessage = fn;
     }
-    set onStatusChange(fn: (status: string) => void) {
-      capturedOnStatusChange = fn;
+    set onStatusChange(_fn: (status: string) => void) {
+      // no-op in tests
     }
     set onError(fn: (error: string) => void) {
       capturedOnError = fn;
@@ -39,7 +39,6 @@ describe('WebSocketTab', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     capturedOnMessage = null;
-    capturedOnStatusChange = null;
     capturedOnError = null;
   });
 

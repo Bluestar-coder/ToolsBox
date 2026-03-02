@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Typography, Card, Row, Col, theme, Space } from 'antd';
+import { Typography, Card, Row, Col, theme } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useModules } from '../hooks/useModules';
@@ -16,6 +16,9 @@ const moduleI18nKeys: Record<string, string> = {
   'regex-tool': 'modules.regex',
   'qrcode-tool': 'modules.qrcode',
   'diff-tool': 'modules.diff',
+  'http-debug': 'modules.httpDebug',
+  'ip-network': 'modules.ipNetwork',
+  'recipe-tool': 'modules.recipe',
 };
 
 // Define module order same as SideMenu
@@ -27,6 +30,9 @@ const moduleOrder = [
   'code-formatter',
   'qrcode-tool',
   'diff-tool',
+  'http-debug',
+  'ip-network',
+  'recipe-tool',
 ];
 
 const DashboardPage: React.FC = () => {

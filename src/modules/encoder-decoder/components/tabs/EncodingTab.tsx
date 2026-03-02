@@ -178,6 +178,7 @@ const EncodingTab: React.FC<EncodingTabProps> = ({ activeCategory }) => {
         placeholder="请在这里填写原文/密文"
         autoSize={{ minRows: 8, maxRows: 20 }}
         className={styles.inputWrapper}
+        style={{ lineHeight: '22px' }}
       />
 
       <Space className={styles.buttonGroup}>
@@ -210,6 +211,7 @@ const EncodingTab: React.FC<EncodingTabProps> = ({ activeCategory }) => {
                 autoSize={{ minRows: 6, maxRows: 20 }}
                 className={styles.outputWrapper}
                 style={{
+                  lineHeight: '22px',
                   backgroundColor: 'transparent',
                   border: 'none'
                 }}

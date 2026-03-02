@@ -173,7 +173,7 @@ export function parseIPv6(input: string): bigint {
  * Expand an IPv6 address string into exactly 8 hex groups
  */
 function expandIPv6Groups(ip: string): string[] {
-  const addr = ip.split('%')[0]; // strip zone ID
+  const addr = normalizeEmbeddedIPv4(ip.split('%')[0]); // strip zone ID
 
   if (addr.includes('::')) {
     const [left, right] = addr.split('::');
@@ -184,6 +184,25 @@ function expandIPv6Groups(ip: string): string[] {
   }
 
   return addr.split(':');
+}
+
+function normalizeEmbeddedIPv4(addr: string): string {
+  if (!addr.includes('.')) {
+    return addr;
+  }
+
+  const match = addr.match(/^(.*:)(\d+\.\d+\.\d+\.\d+)$/);
+  if (!match) {
+    return addr;
+  }
+
+  const prefix = match[1];
+  const ipv4Part = match[2];
+  const octets = ipv4Part.split('.').map(Number);
+  const upper = ((octets[0] << 8) | octets[1]).toString(16);
+  const lower = ((octets[2] << 8) | octets[3]).toString(16);
+
+  return `${prefix}${upper}:${lower}`;
 }
 
 /**

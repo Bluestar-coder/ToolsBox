@@ -104,17 +104,17 @@ class ModuleManager {
 // 创建模块管理器实例
 export const moduleManager = new ModuleManager();
 
-// 动态导入和注册模块的辅助函数
-async function registerLazyModule(
+// 动态导入和注册模块的辅助函数（直接导入组件）
+async function registerLazyComponentModule(
   moduleImport: Promise<{ default: ToolModule }>,
-  lazyComponent: React.LazyExoticComponent<ComponentType<Record<string, unknown>>>
+  componentImport: Promise<{ default: ComponentType<Record<string, unknown>> }>
 ): Promise<void> {
   const module = await moduleImport;
   moduleManager.registerLazyModule({
     id: module.default.id,
     name: module.default.name,
     icon: module.default.icon,
-    component: lazyComponent,
+    component: React.lazy(() => componentImport),
     description: module.default.description,
   });
 }
@@ -129,55 +129,51 @@ const shouldRegisterModules = !(
 );
 
 // 1. 编码/解码模块
-const EncoderDecoderModule = React.lazy(() => import('./encoder-decoder'));
 if (shouldRegisterModules) {
-  void registerLazyModule(import('./encoder-decoder'), EncoderDecoderModule);
+  void registerLazyComponentModule(import('./encoder-decoder'), import('./encoder-decoder/components/EncoderDecoder'));
 }
 
 // 2. 加密/解密工具模块
-const CryptoToolModule = React.lazy(() => import('./crypto-tool'));
 if (shouldRegisterModules) {
-  void registerLazyModule(import('./crypto-tool'), CryptoToolModule);
+  void registerLazyComponentModule(import('./crypto-tool'), import('./crypto-tool/components/CryptoTool'));
 }
 
 // 3. 时间处理工具模块
-const TimeToolModule = React.lazy(() => import('./time-tool'));
 if (shouldRegisterModules) {
-  void registerLazyModule(import('./time-tool'), TimeToolModule);
+  void registerLazyComponentModule(import('./time-tool'), import('./time-tool/components/TimeTool'));
 }
 
 // 4. 正则表达式工具模块
-const RegexToolModule = React.lazy(() => import('./regex-tool'));
 if (shouldRegisterModules) {
-  void registerLazyModule(import('./regex-tool'), RegexToolModule);
+  void registerLazyComponentModule(import('./regex-tool'), import('./regex-tool/components/RegexTool'));
 }
 
 // 5. 代码格式化模块
-const CodeFormatterModule = React.lazy(() => import('./code-formatter'));
 if (shouldRegisterModules) {
-  void registerLazyModule(import('./code-formatter'), CodeFormatterModule);
+  void registerLazyComponentModule(import('./code-formatter'), import('./code-formatter/components/CodeFormatter'));
 }
 
 // 6. 二维码工具模块
-const QRCodeToolModule = React.lazy(() => import('./qrcode-tool'));
 if (shouldRegisterModules) {
-  void registerLazyModule(import('./qrcode-tool'), QRCodeToolModule);
+  void registerLazyComponentModule(import('./qrcode-tool'), import('./qrcode-tool/components/QRCodeTool'));
 }
 
 // 7. 差异对比工具模块
-const DiffToolModule = React.lazy(() => import('./diff-tool'));
 if (shouldRegisterModules) {
-  void registerLazyModule(import('./diff-tool'), DiffToolModule);
+  void registerLazyComponentModule(import('./diff-tool'), import('./diff-tool/components/DiffTool'));
 }
 
 // 8. HTTP 调试模块
-const HttpDebugModule = React.lazy(() => import('./http-debug'));
 if (shouldRegisterModules) {
-  void registerLazyModule(import('./http-debug'), HttpDebugModule);
+  void registerLazyComponentModule(import('./http-debug'), import('./http-debug/components/HttpDebugTool'));
 }
 
 // 9. IP/网络工具模块
-const IpNetworkModule = React.lazy(() => import('./ip-network'));
 if (shouldRegisterModules) {
-  void registerLazyModule(import('./ip-network'), IpNetworkModule);
+  void registerLazyComponentModule(import('./ip-network'), import('./ip-network/components/IpNetworkTool'));
+}
+
+// 10. Recipe工具模块
+if (shouldRegisterModules) {
+  void registerLazyComponentModule(import('./recipe-tool'), import('./recipe-tool/components/RecipeTool'));
 }

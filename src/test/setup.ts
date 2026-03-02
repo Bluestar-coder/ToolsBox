@@ -22,16 +22,24 @@ const ignoredConsoleMessages: RegExp[] = [
   /Unsupported language for formatting:/,
   /Test error/,
   /ErrorBoundary caught an error/,
+  /invalid value for the .*height.*css style property/i,
+  /Not implemented: Window's getComputedStyle\(\) method: with pseudo-elements/,
 ];
 
 const shouldIgnoreConsoleMessage = (args: unknown[]) => {
   if (args.length === 0) {
     return false;
   }
+  const hasNaNHeightStyleWarning =
+    args.some((arg) => String(arg).includes('invalid value for the `%s` css style property')) &&
+    args.some((arg) => String(arg).includes('NaN')) &&
+    args.some((arg) => String(arg).includes('height'));
+
   const message = args
     .map((arg) => (arg instanceof Error ? arg.message : String(arg)))
     .join(' ');
-  return ignoredConsoleMessages.some((pattern) => pattern.test(message));
+
+  return hasNaNHeightStyleWarning || ignoredConsoleMessages.some((pattern) => pattern.test(message));
 };
 
 const originalConsoleError = console.error.bind(console);
@@ -59,6 +67,8 @@ const ignoredStderrMessages: RegExp[] = [
   /Prettier format error/,
   /Potentially unsafe URL parameter value/,
   /Test error/,
+  /invalid value for the .*height.*css style property/i,
+  /Not implemented: Window's getComputedStyle\(\) method: with pseudo-elements/,
 ];
 
 const originalStderrWrite = process.stderr.write.bind(process.stderr);
@@ -130,3 +140,20 @@ global.ResizeObserver = class ResizeObserver {
   unobserve() {}
   disconnect() {}
 } as unknown as typeof ResizeObserver;
+
+// JSDOM 对 getComputedStyle 的 pseudo-element 参数支持不完整，会产生大量无关告警
+const originalGetComputedStyle = window.getComputedStyle.bind(window);
+window.getComputedStyle = ((element: Element, pseudoElt?: string | null) => {
+  void pseudoElt;
+  return originalGetComputedStyle(element);
+}) as typeof window.getComputedStyle;
+
+// 为 TextArea 提供稳定行高，避免 autoSize 在测试环境计算出 NaN
+const testStyle = document.createElement('style');
+testStyle.textContent = `
+  textarea,
+  .ant-input-textarea textarea {
+    line-height: 22px !important;
+  }
+`;
+document.head.appendChild(testStyle);

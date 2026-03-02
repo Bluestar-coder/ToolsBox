@@ -136,7 +136,7 @@ const JWTTab: React.FC = () => {
   const renderDecodeTab = () => (
     <Row gutter={[16, 16]}>
       <Col xs={24} lg={12}>
-        <Space direction="vertical" style={{ width: '100%' }} size="middle">
+        <Space orientation="vertical" style={{ width: '100%' }} size="middle">
           <TextArea
             autoSize={{ minRows: 6, maxRows: 20 }}
             value={token}
@@ -146,7 +146,7 @@ const JWTTab: React.FC = () => {
           />
           
           <Card size="small" title={t('modules.crypto.jwt.verifyOptions')}>
-            <Space direction="vertical" style={{ width: '100%' }}>
+            <Space orientation="vertical" style={{ width: '100%' }}>
               <Space>
                 <span>{t('modules.crypto.jwt.verifySignature')}:</span>
                 <Switch checked={verifySignature} onChange={setVerifySignature} />
@@ -180,7 +180,7 @@ const JWTTab: React.FC = () => {
       
       <Col xs={24} lg={12}>
         {decodeResult && (
-          <Space direction="vertical" style={{ width: '100%' }} size="middle">
+          <Space orientation="vertical" style={{ width: '100%' }} size="middle">
             {decodeResult.isValid !== undefined && (
               <Tag
                 icon={decodeResult.isValid ? <CheckCircleOutlined /> : <CloseCircleOutlined />}
@@ -252,7 +252,7 @@ const JWTTab: React.FC = () => {
   const renderGenerateTab = () => (
     <Row gutter={[16, 16]}>
       <Col xs={24} lg={12}>
-        <Space direction="vertical" style={{ width: '100%' }} size="middle">
+        <Space orientation="vertical" style={{ width: '100%' }} size="middle">
           <Card size="small" title={t('modules.crypto.jwt.algorithm')}>
             <Select
               style={{ width: '100%' }}
@@ -280,7 +280,7 @@ const JWTTab: React.FC = () => {
                 </Button>
               }
             >
-              <Space direction="vertical" style={{ width: '100%' }}>
+              <Space orientation="vertical" style={{ width: '100%' }}>
                 <div>
                   <div style={{ marginBottom: 4 }}>{t('modules.crypto.jwt.privateKey')}:</div>
                   <TextArea

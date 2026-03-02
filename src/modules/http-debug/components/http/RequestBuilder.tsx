@@ -243,6 +243,7 @@ const RequestBuilder: React.FC<RequestBuilderProps> = ({
           style={{ width: 120 }}
         />
         <Input
+          name="http-request-url"
           value={config.url}
           onChange={(e) => updateConfig({ url: e.target.value })}
           placeholder={t('modules.httpDebug.urlPlaceholder', '输入请求 URL，如 https://api.example.com/path')}

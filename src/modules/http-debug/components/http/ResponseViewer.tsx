@@ -53,7 +53,7 @@ const ResponseViewer: React.FC<ResponseViewerProps> = ({
   }
 
   if (error && !response) {
-    return <Alert type="error" showIcon message={t('modules.httpDebug.requestError', '请求错误')} description={error} />;
+    return <Alert type="error" showIcon title={t('modules.httpDebug.requestError', '请求错误')} description={error} />;
   }
 
   if (!response) {
@@ -105,7 +105,7 @@ const ResponseViewer: React.FC<ResponseViewerProps> = ({
         <Tag icon={<DatabaseOutlined />}>{formatSize(response.size)}</Tag>
       </div>
       {error && (
-        <Alert type="warning" showIcon message={error} style={{ marginBottom: 12 }} />
+        <Alert type="warning" showIcon title={error} style={{ marginBottom: 12 }} />
       )}
       <Tabs items={tabItems} size="small" />
     </div>

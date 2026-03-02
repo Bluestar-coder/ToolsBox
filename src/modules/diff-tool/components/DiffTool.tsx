@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Input, Radio, Space, Card, Button, Typography } from 'antd';
 import { computeDiff } from '../utils/diff-utils';
-import type { DiffMode, DiffResult } from '../utils/diff-utils';
+import type { DiffMode } from '../utils/diff-utils';
 import { DiffViewer } from './DiffViewer';
 import styles from './styles/DiffTool.module.css';
 import { useTranslation } from 'react-i18next';
@@ -10,21 +10,17 @@ import { SwapOutlined, ClearOutlined } from '@ant-design/icons';
 const { TextArea } = Input;
 const { Text } = Typography;
 
-export const DiffTool: React.FC = () => {
+const DiffTool: React.FC = () => {
   const { t } = useTranslation();
   const [original, setOriginal] = useState('');
   const [modified, setModified] = useState('');
   const [diffMode, setDiffMode] = useState<DiffMode>('lines');
   const [splitView, setSplitView] = useState(true);
-  const [diffResult, setDiffResult] = useState<DiffResult | null>(null);
-
-  useEffect(() => {
+  const diffResult = useMemo(() => {
     if (!original && !modified) {
-      setDiffResult(null);
-      return;
+      return null;
     }
-    const result = computeDiff(original, modified, diffMode);
-    setDiffResult(result);
+    return computeDiff(original, modified, diffMode);
   }, [original, modified, diffMode]);
 
   const handleSwap = () => {
@@ -104,3 +100,5 @@ export const DiffTool: React.FC = () => {
     </div>
   );
 };
+
+export default DiffTool;

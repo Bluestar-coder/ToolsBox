@@ -48,6 +48,11 @@ export const createNavigation = {
   ipNetwork: () => '/ip-network',
 
   /**
+   * Recipe工具路径
+   */
+  recipe: () => '/recipe',
+
+  /**
    * 设置路径
    */
   settings: () => '/settings',
@@ -66,6 +71,7 @@ export const moduleIdToPath: Record<string, string> = {
   'diff-tool': '/diff',
   'http-debug': '/http-debug',
   'ip-network': '/ip-network',
+  'recipe-tool': '/recipe',
 };
 
 /**
@@ -81,5 +87,6 @@ export const pathToModuleId: Record<string, string> = {
   '/diff': 'diff-tool',
   '/http-debug': 'http-debug',
   '/ip-network': 'ip-network',
+  '/recipe': 'recipe-tool',
   '/settings': 'settings',
 };

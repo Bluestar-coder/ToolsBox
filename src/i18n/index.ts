@@ -4,14 +4,10 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 
 import zhCN from './locales/zh-CN';
 import enUS from './locales/en-US';
-import koKR from './locales/ko-KR';
-import jaJP from './locales/ja-JP';
 
 const resources = {
   'zh-CN': { translation: zhCN },
   'en-US': { translation: enUS },
-  'ko-KR': { translation: koKR },
-  'ja-JP': { translation: jaJP },
 };
 
 i18n
@@ -19,6 +15,7 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
+    supportedLngs: ['zh-CN', 'en-US'],
     fallbackLng: 'zh-CN',
     debug: false,
     interpolation: {
@@ -37,8 +34,6 @@ export default i18n;
 export const supportedLanguages = [
   { code: 'zh-CN', name: '简体中文', flag: '🇨🇳' },
   { code: 'en-US', name: 'English', flag: '🇺🇸' },
-  { code: 'ko-KR', name: '한국어', flag: '🇰🇷' },
-  { code: 'ja-JP', name: '日本語', flag: '🇯🇵' },
 ];
 
 // 切换语言

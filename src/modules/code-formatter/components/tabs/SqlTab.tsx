@@ -24,11 +24,28 @@ const SqlTab: React.FC = () => {
       return;
     }
     try {
+      const validationResult = validateSql(input);
       const result = formatSQL(input, { indentSize: 2, useTabs: false });
       setOutput(result);
-      setValidation(validateSql(input));
+      setValidation(validationResult);
       setStatements(parseSqlStatements(input));
       setTables(extractTables(input));
+
+      if (!validationResult.valid) {
+        message.warning('检测到 SQL 语法错误，已保留原文或部分格式化结果');
+        return;
+      }
+
+      if (result === input) {
+        message.info('未检测到可格式化变更');
+        return;
+      }
+
+      if (validationResult.warnings.length > 0) {
+        message.info(`格式化完成，检测到 ${validationResult.warnings.length} 条建议`);
+        return;
+      }
+
       message.success('格式化成功');
     } catch (error) {
       message.error(`格式化失败: ${error instanceof Error ? error.message : '未知错误'}`);

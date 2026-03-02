@@ -130,6 +130,23 @@ describe('Property 6: 私有/保留地址识别', () => {
       { numRuns: 100 }
     );
   });
+
+  it('detects private/reserved IPv6 ranges', () => {
+    expect(isPrivateOrReservedIp('::')).toBe(true);
+    expect(isPrivateOrReservedIp('::1')).toBe(true);
+    expect(isPrivateOrReservedIp('fc00::1')).toBe(true);
+    expect(isPrivateOrReservedIp('fd12:3456:789a::1')).toBe(true);
+    expect(isPrivateOrReservedIp('fe80::1')).toBe(true);
+    expect(isPrivateOrReservedIp('ff02::1')).toBe(true);
+    expect(isPrivateOrReservedIp('2001:db8::1234')).toBe(true);
+    expect(isPrivateOrReservedIp('::ffff:192.168.1.1')).toBe(true);
+  });
+
+  it('does not mark public IPv6 as private/reserved', () => {
+    expect(isPrivateOrReservedIp('2001:4860:4860::8888')).toBe(false);
+    expect(isPrivateOrReservedIp('2606:4700:4700::1111')).toBe(false);
+    expect(isPrivateOrReservedIp('::ffff:8.8.8.8')).toBe(false);
+  });
 });
 
 // ============================================================
@@ -204,9 +221,9 @@ describe('queryGeolocation — unit tests', () => {
 
   // --- Requirement 4.4: timeout / network error / mixed content ---
   it('returns mixed content error for Failed to fetch (browser security)', async () => {
-    (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
-      new TypeError('Failed to fetch')
-    );
+    const fetchMock = global.fetch as ReturnType<typeof vi.fn>;
+    fetchMock.mockRejectedValueOnce(new TypeError('Failed to fetch'));
+    fetchMock.mockImplementation(() => Promise.reject(new Error('fallback failed')));
 
     const result = await queryGeolocation('8.8.8.8');
 
@@ -220,6 +237,40 @@ describe('queryGeolocation — unit tests', () => {
       asNumber: '',
       status: 'fail',
       message: 'MIXED_CONTENT_ERROR',
+    });
+  });
+
+  it('falls back to HTTPS geolocation providers on mixed content', async () => {
+    (global.fetch as ReturnType<typeof vi.fn>)
+      .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          success: true,
+          ip: '8.8.8.8',
+          country: 'United States',
+          region: 'California',
+          city: 'Mountain View',
+          org: 'Google LLC',
+          connection: {
+            isp: 'Google LLC',
+            org: 'Google LLC',
+            asn: 15169,
+          },
+        }),
+      });
+
+    const result = await queryGeolocation('8.8.8.8');
+
+    expect(result).toEqual({
+      ip: '8.8.8.8',
+      country: 'United States',
+      region: 'California',
+      city: 'Mountain View',
+      isp: 'Google LLC',
+      org: 'Google LLC',
+      asNumber: '15169',
+      status: 'success',
     });
   });
 
@@ -243,6 +294,14 @@ describe('queryGeolocation — unit tests', () => {
 
   it('returns fail status for loopback address without calling fetch', async () => {
     const result = await queryGeolocation('127.0.0.1');
+
+    expect(global.fetch).not.toHaveBeenCalled();
+    expect(result.status).toBe('fail');
+    expect(result.message).toBe('Private or reserved IP address');
+  });
+
+  it('returns fail status for private/reserved IPv6 without calling fetch', async () => {
+    const result = await queryGeolocation('fc00::1');
 
     expect(global.fetch).not.toHaveBeenCalled();
     expect(result.status).toBe('fail');
@@ -380,6 +439,51 @@ describe('batchQueryGeolocation — unit tests', () => {
       batchQueryGeolocation(['8.8.8.8'])
     ).rejects.toThrow('Batch API request failed: 500 Internal Server Error');
   });
+
+  it('falls back to HTTPS providers when batch endpoint is blocked', async () => {
+    (global.fetch as ReturnType<typeof vi.fn>)
+      .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          success: true,
+          ip: '8.8.8.8',
+          country: 'United States',
+          region: 'California',
+          city: 'Mountain View',
+          org: 'Google LLC',
+          connection: {
+            isp: 'Google LLC',
+            org: 'Google LLC',
+            asn: 15169,
+          },
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          success: true,
+          ip: '1.1.1.1',
+          country: 'Australia',
+          region: 'Queensland',
+          city: 'South Brisbane',
+          org: 'Cloudflare, Inc.',
+          connection: {
+            isp: 'Cloudflare, Inc.',
+            org: 'APNIC and Cloudflare DNS Resolver project',
+            asn: 13335,
+          },
+        }),
+      });
+
+    const results = await batchQueryGeolocation(['8.8.8.8', '1.1.1.1']);
+
+    expect(results).toHaveLength(2);
+    expect(results[0].status).toBe('success');
+    expect(results[0].ip).toBe('8.8.8.8');
+    expect(results[1].status).toBe('success');
+    expect(results[1].ip).toBe('1.1.1.1');
+  });
 });
 
 describe('queryMyIp — unit tests', () => {
@@ -462,5 +566,35 @@ describe('queryMyIp — unit tests', () => {
     await expect(queryMyIp()).rejects.toThrow(
       'API request failed: 503 Service Unavailable'
     );
+  });
+
+  it('falls back to HTTPS auto-detect when ip-api auto-detect is blocked', async () => {
+    (global.fetch as ReturnType<typeof vi.fn>)
+      .mockRejectedValueOnce(new Error('Service 1 failed'))
+      .mockRejectedValueOnce(new Error('Service 2 failed'))
+      .mockRejectedValueOnce(new Error('Service 3 failed'))
+      .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          success: true,
+          ip: '198.51.100.10',
+          country: 'United States',
+          region: 'Virginia',
+          city: 'Ashburn',
+          org: 'Example ISP',
+          connection: {
+            isp: 'Example ISP',
+            org: 'Example Org',
+            asn: 64500,
+          },
+        }),
+      });
+
+    const result = await queryMyIp();
+
+    expect(result.status).toBe('success');
+    expect(result.ip).toBe('198.51.100.10');
+    expect(result.country).toBe('United States');
   });
 });

@@ -18,8 +18,6 @@ import * as parserYaml from 'prettier/plugins/yaml';
 import * as parserMarkdown from 'prettier/plugins/markdown';
 import * as parserGraphql from 'prettier/plugins/graphql';
 import * as parserTypescript from 'prettier/plugins/typescript';
-import parserXml from '@prettier/plugin-xml';
-import parserPhp from '@prettier/plugin-php';
 
 import { format as formatSqlLib } from 'sql-formatter';
 
@@ -54,6 +52,25 @@ const defaultOptions: FormatOptions = {
   indentSize: 2,
   useTabs: false,
 };
+
+let parserXmlPromise: Promise<Plugin> | null = null;
+let parserPhpPromise: Promise<Plugin> | null = null;
+
+async function loadXmlPlugin(): Promise<Plugin> {
+  if (!parserXmlPromise) {
+    parserXmlPromise = import('@prettier/plugin-xml')
+      .then((mod) => (mod.default ?? mod) as unknown as Plugin);
+  }
+  return parserXmlPromise;
+}
+
+async function loadPhpPlugin(): Promise<Plugin> {
+  if (!parserPhpPromise) {
+    parserPhpPromise = import('@prettier/plugin-php')
+      .then((mod) => (mod.default ?? mod) as unknown as Plugin);
+  }
+  return parserPhpPromise;
+}
 
 /**
  * 使用 Prettier 格式化代码的通用函数
@@ -100,6 +117,7 @@ export async function formatCSS(input: string, options: FormatOptions = defaultO
 
 // XML
 export async function formatXML(input: string, options: FormatOptions = defaultOptions): Promise<string> {
+  const parserXml = await loadXmlPlugin();
   return formatWithPrettier(input, 'xml', [parserXml], options);
 }
 
@@ -155,6 +173,7 @@ export async function formatGraphQL(input: string, options: FormatOptions = defa
 
 // PHP
 export async function formatPHP(input: string, options: FormatOptions = defaultOptions): Promise<string> {
+  const parserPhp = await loadPhpPlugin();
   return formatWithPrettier(input, 'php', [parserPhp], options);
 }
 

@@ -4,6 +4,11 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  server: {
+    // Keep dev URL stable for Tauri (tauri.conf.json -> build.devUrl)
+    port: 5173,
+    strictPort: true,
+  },
   build: {
     rollupOptions: {
       output: {

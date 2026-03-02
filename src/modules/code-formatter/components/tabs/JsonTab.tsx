@@ -319,7 +319,7 @@ const JsonTab: React.FC = () => {
             <Alert title="JSON 语法检查通过" type="success" icon={<CheckCircleOutlined />} showIcon />
           ) : (
             <Alert
-              message="JSON 语法错误"
+              title="JSON 语法错误"
               description={
                 <List
                   size="small"
@@ -337,7 +337,7 @@ const JsonTab: React.FC = () => {
           )}
           {syntaxResult.warnings.length > 0 && (
             <Alert
-              message="警告"
+              title="警告"
               description={
                 <List
                   size="small"

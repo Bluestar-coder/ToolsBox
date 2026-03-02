@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { useEncodingContext } from '../hooks/useEncodingContext';
 import { clearSensitiveData } from '../utils/storage';
 
 /**
@@ -7,8 +6,6 @@ import { clearSensitiveData } from '../utils/storage';
  * 负责清理localStorage中的历史记录等初始化工作
  */
 const AppCleanup: React.FC = () => {
-  const { setInput, setOutput } = useEncodingContext();
-
   useEffect(() => {
     // 清理历史记录数据
     localStorage.removeItem('encoderDecoderHistory');
@@ -20,7 +17,6 @@ const AppCleanup: React.FC = () => {
     return () => {
       // 清理逻辑
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return null;

@@ -70,6 +70,7 @@ const ConnectionPanel: React.FC<ConnectionPanelProps> = ({
       {/* URL input + connect/disconnect button */}
       <Space.Compact style={{ width: '100%', marginBottom: 12 }}>
         <Input
+          name="ws-url"
           value={config.url}
           onChange={(e) => updateConfig({ url: e.target.value })}
           placeholder={t(
@@ -114,6 +115,7 @@ const ConnectionPanel: React.FC<ConnectionPanelProps> = ({
           {t('modules.httpDebug.ws.subprotocols', '子协议（多个用逗号分隔）')}
         </div>
         <Input
+          name="ws-protocols"
           value={protocolsValue}
           onChange={(e) => handleProtocolsChange(e.target.value)}
           placeholder={t(

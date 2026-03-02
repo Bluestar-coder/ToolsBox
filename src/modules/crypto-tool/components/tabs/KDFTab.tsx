@@ -156,7 +156,7 @@ const KDFTab: React.FC = () => {
           </Card>
           <Button type="primary" onClick={handlePbkdf2}>派生密钥</Button>
           <TextArea autoSize={{ minRows: 2, maxRows: 20 }} value={derivedKey} readOnly placeholder="派生的密钥 (Hex)" />
-          <Alert type="info" message="PBKDF2 通过多次迭代增加暴力破解难度，推荐迭代次数 >= 10000。" />
+          <Alert type="info" title="PBKDF2 通过多次迭代增加暴力破解难度，推荐迭代次数 >= 10000。" />
         </Space>
       ),
     },
@@ -202,7 +202,7 @@ const KDFTab: React.FC = () => {
               <Button onClick={handleHmacVerify}>验证 HMAC</Button>
             </Space>
           </Card>
-          <Alert type="info" message="HMAC 用于验证消息完整性和真实性，结合密钥和哈希函数。" />
+          <Alert type="info" title="HMAC 用于验证消息完整性和真实性，结合密钥和哈希函数。" />
         </Space>
       ),
     },
@@ -243,7 +243,7 @@ const KDFTab: React.FC = () => {
           </Card>
           <Button type="primary" onClick={handleHkdf}>派生密钥</Button>
           <TextArea autoSize={{ minRows: 2, maxRows: 20 }} value={hkdfResult} readOnly placeholder="派生的密钥 (Hex)" />
-          <Alert type="info" message="HKDF 是基于 HMAC 的密钥派生函数，用于从共享密钥派生多个密钥。" />
+          <Alert type="info" title="HKDF 是基于 HMAC 的密钥派生函数，用于从共享密钥派生多个密钥。" />
         </Space>
       ),
     },

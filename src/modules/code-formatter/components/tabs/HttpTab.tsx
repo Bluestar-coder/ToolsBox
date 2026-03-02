@@ -24,12 +24,29 @@ const HttpTab: React.FC = () => {
       return;
     }
     try {
+      const validationResult = validateHttpMessage(input);
+      setValidation(validationResult);
+      if (!validationResult.valid) {
+        message.error('HTTP 报文格式无效，请先修复后再格式化');
+        return;
+      }
+
       const { type, message: httpMessage } = parseHttpMessage(input);
       const formatted = type === 'request'
         ? formatHttpRequest(httpMessage as HttpRequest)
         : formatHttpResponse(httpMessage as HttpResponse);
       setOutput(formatted);
-      setValidation(validateHttpMessage(input));
+
+      if (formatted === input) {
+        message.info('未检测到可格式化变更');
+        return;
+      }
+
+      if (validationResult.warnings.length > 0) {
+        message.info(`格式化完成，检测到 ${validationResult.warnings.length} 条建议`);
+        return;
+      }
+
       message.success('格式化成功');
     } catch (error) {
       message.error(`格式化失败: ${error instanceof Error ? error.message : '未知错误'}`);
@@ -192,7 +209,7 @@ Accept: application/json`}
             <>
               {validation.errors.length > 0 && (
                 <Alert
-                  message="验证错误"
+                  title="验证错误"
                   description={
                     <ul className={styles.errorList}>
                       {validation.errors.map((err, i) => (
@@ -206,7 +223,7 @@ Accept: application/json`}
               )}
               {validation.warnings.length > 0 && (
                 <Alert
-                  message="建议"
+                  title="建议"
                   description={
                     <ul className={styles.warningList}>
                       {validation.warnings.map((warn, i) => (

@@ -269,7 +269,6 @@ export function useUrlState<T extends Record<string, unknown>>(
       }
     }
     if (hasChanges) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setState(newState);
     }
   }, [searchParams]);

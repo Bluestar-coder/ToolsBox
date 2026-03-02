@@ -1,0 +1,125 @@
+/**
+ * Recipe工具模块样式
+ */
+
+.recipeTool {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--background-color, #f0f2f5);
+}
+
+.recipeToolHeader {
+  padding: 12px 16px;
+  background: var(--background-color, #fff);
+  border-bottom: 1px solid var(--border-color, #f0f0f0);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.recipeToolContent {
+  flex: 1;
+  overflow: hidden;
+}
+
+.saveModalContent {
+  padding: 16px 0;
+  text-align: center;
+  color: var(--text-color-secondary, rgba(0, 0, 0, 0.45));
+}
+
+.loadModalContent {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.noSavedRecipes {
+  padding: 40px 0;
+  text-align: center;
+  color: var(--text-color-secondary, rgba(0, 0, 0, 0.45));
+}
+
+.savedRecipesList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.savedRecipeItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid var(--border-color, #f0f0f0);
+  border-radius: 6px;
+  background-color: var(--background-color, #fff);
+  transition: all 0.2s ease;
+}
+
+.savedRecipeItem:hover {
+  border-color: var(--primary-color, #1890ff);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.savedRecipeInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.savedRecipeName {
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--text-color, rgba(0, 0, 0, 0.85));
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.savedRecipeMeta {
+  font-size: 12px;
+  color: var(--text-color-secondary, rgba(0, 0, 0, 0.45));
+}
+
+.savedRecipeActions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* 暗色主题适配 */
+[data-theme='dark'] .recipeTool {
+  background: var(--background-color-dark, #000);
+}
+
+[data-theme='dark'] .recipeToolHeader {
+  background: var(--component-background-dark, #1f1f1f);
+  border-bottom-color: var(--border-color-dark, #303030);
+}
+
+[data-theme='dark'] .saveModalContent {
+  color: var(--text-color-secondary-dark, rgba(255, 255, 255, 0.45));
+}
+
+[data-theme='dark'] .noSavedRecipes {
+  color: var(--text-color-secondary-dark, rgba(255, 255, 255, 0.45));
+}
+
+[data-theme='dark'] .savedRecipeItem {
+  background-color: var(--component-background-dark, #1f1f1f);
+  border-color: var(--border-color-dark, #303030);
+}
+
+[data-theme='dark'] .savedRecipeItem:hover {
+  border-color: var(--primary-color-dark, #177ddc);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.48);
+}
+
+[data-theme='dark'] .savedRecipeName {
+  color: var(--text-color-dark, rgba(255, 255, 255, 0.85));
+}
+
+[data-theme='dark'] .savedRecipeMeta {
+  color: var(--text-color-secondary-dark, rgba(255, 255, 255, 0.45));
+}

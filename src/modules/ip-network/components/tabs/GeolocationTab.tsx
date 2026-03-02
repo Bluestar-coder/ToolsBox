@@ -130,12 +130,12 @@ const GeolocationTab: React.FC = () => {
               <Alert 
                 type="error" 
                 showIcon 
-                message={t('modules.ipNetwork.geolocation.errorMixedContent')}
+                title={t('modules.ipNetwork.geolocation.errorMixedContent')}
                 description={t('modules.ipNetwork.geolocation.errorMixedContentDesc')}
               />
             );
           }
-          return <Alert type="warning" showIcon message={record.message ?? t('modules.ipNetwork.geolocation.queryFailed')} />;
+          return <Alert type="warning" showIcon title={record.message ?? t('modules.ipNetwork.geolocation.queryFailed')} />;
         }
         return t('modules.ipNetwork.geolocation.statusSuccess');
       },
@@ -143,8 +143,8 @@ const GeolocationTab: React.FC = () => {
   ];
 
   return (
-    <Space direction="vertical" style={{ width: '100%' }} size="middle">
-      <Space direction="vertical" style={{ width: '100%' }} size="small">
+    <Space orientation="vertical" style={{ width: '100%' }} size="middle">
+      <Space orientation="vertical" style={{ width: '100%' }} size="small">
         <Input.TextArea
           value={ipInput}
           onChange={(e) => setIpInput(e.target.value)}
@@ -184,7 +184,7 @@ const GeolocationTab: React.FC = () => {
             </Space>
           }
         >
-          <Space direction="vertical" style={{ width: '100%' }}>
+          <Space orientation="vertical" style={{ width: '100%' }}>
             <div>
               <Tag color="green">国内 IP（真实）</Tag>
               <code>{proxyInfo.realIp.ip}</code>
