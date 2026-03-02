@@ -51,10 +51,9 @@ describe('MainLayout', () => {
     expect(themeButton).toBeInTheDocument();
   });
 
-  it('should render settings and language controls', () => {
+  it('should not render settings control', () => {
     render(<MainLayout />, { wrapper: withRouter });
-    expect(screen.getByTitle(/settings|设置/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /🇨🇳|🇺🇸/ })).toBeInTheDocument();
+    expect(screen.queryByTitle(/settings|设置/i)).not.toBeInTheDocument();
   });
 
   it('should display current module based on route', () => {

@@ -1,12 +1,12 @@
 import React, { useMemo } from 'react';
 import { Menu } from 'antd';
 import type { MenuProps } from 'antd';
-import { AppstoreOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useModules } from '../../hooks/useModules';
 import { moduleIdToPath } from '../../router/constants';
 import styles from '../styles/SideMenu.module.css';
+import { AppIcon } from '../icons/AppIcon';
 
 interface SideMenuProps {
   currentModuleId: string;
@@ -40,6 +40,19 @@ const moduleOrder = [
   'recipe-tool',
 ];
 
+const moduleFallbackIcons: Record<string, React.ReactNode> = {
+  'encoder-decoder': <AppIcon name="encoder" />,
+  'crypto-tool': <AppIcon name="crypto" />,
+  'time-tool': <AppIcon name="time" />,
+  'regex-tool': <AppIcon name="regex" />,
+  'code-formatter': <AppIcon name="formatter" />,
+  'qrcode-tool': <AppIcon name="qrcode" />,
+  'diff-tool': <AppIcon name="diff" />,
+  'http-debug': <AppIcon name="http" />,
+  'ip-network': <AppIcon name="network" />,
+  'recipe-tool': <AppIcon name="recipe" />,
+};
+
 const SideMenu: React.FC<SideMenuProps> = React.memo(({ currentModuleId }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -56,7 +69,7 @@ const SideMenu: React.FC<SideMenuProps> = React.memo(({ currentModuleId }) => {
         return {
           id: module.id,
           name: module.name,
-          icon: module.icon,
+          icon: module.icon ?? moduleFallbackIcons[module.id] ?? null,
           description: module.description,
         };
       }
@@ -64,7 +77,7 @@ const SideMenu: React.FC<SideMenuProps> = React.memo(({ currentModuleId }) => {
       return {
         id,
         name: id,
-        icon: null,
+        icon: moduleFallbackIcons[id] ?? null,
         description: '',
       };
     });
@@ -90,7 +103,7 @@ const SideMenu: React.FC<SideMenuProps> = React.memo(({ currentModuleId }) => {
     // 添加仪表盘/首页入口
     items.unshift({
       key: 'dashboard',
-      icon: <AppstoreOutlined />,
+      icon: <AppIcon name="dashboard" />,
       label: t('home.menu'),
       title: t('home.welcome'),
       onClick: () => navigate('/'),

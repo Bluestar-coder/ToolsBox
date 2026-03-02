@@ -1,8 +1,8 @@
 import React, { useCallback } from 'react';
 import { Card, Button, Typography, Space, Tag } from 'antd';
-import { CloseCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { useErrorContext } from '../hooks/useErrorContext';
 import styles from './styles/ErrorBoundary.module.css';
+import { AppIcon } from './icons/AppIcon';
 
 const { Text } = Typography;
 
@@ -23,7 +23,7 @@ const ErrorDisplay: React.FC = React.memo(() => {
       className={styles.errorDisplayCard}
       title={
         <Space>
-          <ExclamationCircleOutlined className={styles.errorIcon} />
+          <AppIcon name="alert" className={styles.errorIcon} />
           <Text strong>操作错误</Text>
         </Space>
       }
@@ -31,7 +31,7 @@ const ErrorDisplay: React.FC = React.memo(() => {
         <Button
           type="text"
           size="small"
-          icon={<CloseCircleOutlined />}
+          icon={<AppIcon name="close" />}
           onClick={handleClose}
         />
       }

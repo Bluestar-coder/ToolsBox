@@ -8,16 +8,7 @@
  * @packageDocumentation
  */
 
-import prettier from 'prettier/standalone';
 import type { Plugin } from 'prettier';
-import * as parserBabel from 'prettier/plugins/babel';
-import * as parserEstree from 'prettier/plugins/estree';
-import * as parserHtml from 'prettier/plugins/html';
-import * as parserCss from 'prettier/plugins/postcss';
-import * as parserYaml from 'prettier/plugins/yaml';
-import * as parserMarkdown from 'prettier/plugins/markdown';
-import * as parserGraphql from 'prettier/plugins/graphql';
-import * as parserTypescript from 'prettier/plugins/typescript';
 
 import { format as formatSqlLib } from 'sql-formatter';
 
@@ -55,11 +46,87 @@ const defaultOptions: FormatOptions = {
 
 let parserXmlPromise: Promise<Plugin> | null = null;
 let parserPhpPromise: Promise<Plugin> | null = null;
+let prettierPromise: Promise<typeof import('prettier/standalone')> | null = null;
+let parserBabelPromise: Promise<Plugin> | null = null;
+let parserEstreePromise: Promise<Plugin> | null = null;
+let parserHtmlPromise: Promise<Plugin> | null = null;
+let parserCssPromise: Promise<Plugin> | null = null;
+let parserYamlPromise: Promise<Plugin> | null = null;
+let parserMarkdownPromise: Promise<Plugin> | null = null;
+let parserGraphqlPromise: Promise<Plugin> | null = null;
+let parserTypescriptPromise: Promise<Plugin> | null = null;
+
+const toPlugin = (mod: unknown): Plugin => {
+  return (mod as { default?: Plugin }).default ?? (mod as Plugin);
+};
+
+async function loadPrettier(): Promise<typeof import('prettier/standalone')> {
+  if (!prettierPromise) {
+    prettierPromise = import('prettier/standalone');
+  }
+  return prettierPromise;
+}
+
+async function loadBabelPlugin(): Promise<Plugin> {
+  if (!parserBabelPromise) {
+    parserBabelPromise = import('prettier/plugins/babel').then(toPlugin);
+  }
+  return parserBabelPromise;
+}
+
+async function loadEstreePlugin(): Promise<Plugin> {
+  if (!parserEstreePromise) {
+    parserEstreePromise = import('prettier/plugins/estree').then(toPlugin);
+  }
+  return parserEstreePromise;
+}
+
+async function loadHtmlPlugin(): Promise<Plugin> {
+  if (!parserHtmlPromise) {
+    parserHtmlPromise = import('prettier/plugins/html').then(toPlugin);
+  }
+  return parserHtmlPromise;
+}
+
+async function loadCssPlugin(): Promise<Plugin> {
+  if (!parserCssPromise) {
+    parserCssPromise = import('prettier/plugins/postcss').then(toPlugin);
+  }
+  return parserCssPromise;
+}
+
+async function loadYamlPlugin(): Promise<Plugin> {
+  if (!parserYamlPromise) {
+    parserYamlPromise = import('prettier/plugins/yaml').then(toPlugin);
+  }
+  return parserYamlPromise;
+}
+
+async function loadMarkdownPlugin(): Promise<Plugin> {
+  if (!parserMarkdownPromise) {
+    parserMarkdownPromise = import('prettier/plugins/markdown').then(toPlugin);
+  }
+  return parserMarkdownPromise;
+}
+
+async function loadGraphqlPlugin(): Promise<Plugin> {
+  if (!parserGraphqlPromise) {
+    parserGraphqlPromise = import('prettier/plugins/graphql').then(toPlugin);
+  }
+  return parserGraphqlPromise;
+}
+
+async function loadTypescriptPlugin(): Promise<Plugin> {
+  if (!parserTypescriptPromise) {
+    parserTypescriptPromise = import('prettier/plugins/typescript').then(toPlugin);
+  }
+  return parserTypescriptPromise;
+}
 
 async function loadXmlPlugin(): Promise<Plugin> {
   if (!parserXmlPromise) {
     parserXmlPromise = import('@prettier/plugin-xml')
-      .then((mod) => (mod.default ?? mod) as unknown as Plugin);
+      .then(toPlugin);
   }
   return parserXmlPromise;
 }
@@ -67,7 +134,7 @@ async function loadXmlPlugin(): Promise<Plugin> {
 async function loadPhpPlugin(): Promise<Plugin> {
   if (!parserPhpPromise) {
     parserPhpPromise = import('@prettier/plugin-php')
-      .then((mod) => (mod.default ?? mod) as unknown as Plugin);
+      .then(toPlugin);
   }
   return parserPhpPromise;
 }
@@ -82,6 +149,7 @@ async function formatWithPrettier(
   options: FormatOptions
 ): Promise<string> {
   try {
+    const prettier = await loadPrettier();
     return await prettier.format(input, {
       parser,
       plugins,
@@ -102,16 +170,19 @@ async function formatWithPrettier(
 // JSON
 export async function formatJSON(input: string, options: FormatOptions = defaultOptions): Promise<string> {
   // JSON parser is inside babel
-  return formatWithPrettier(input, 'json', [parserBabel, parserEstree], options);
+  const [babel, estree] = await Promise.all([loadBabelPlugin(), loadEstreePlugin()]);
+  return formatWithPrettier(input, 'json', [babel, estree], options);
 }
 
 // HTML
 export async function formatHTML(input: string, options: FormatOptions = defaultOptions): Promise<string> {
+  const parserHtml = await loadHtmlPlugin();
   return formatWithPrettier(input, 'html', [parserHtml], options);
 }
 
 // CSS
 export async function formatCSS(input: string, options: FormatOptions = defaultOptions): Promise<string> {
+  const parserCss = await loadCssPlugin();
   return formatWithPrettier(input, 'css', [parserCss], options);
 }
 
@@ -138,36 +209,43 @@ export function formatSQL(input: string, options: FormatOptions = defaultOptions
 
 // JavaScript
 export async function formatJavaScript(input: string, options: FormatOptions = defaultOptions): Promise<string> {
-  return formatWithPrettier(input, 'babel', [parserBabel, parserEstree], options);
+  const [babel, estree] = await Promise.all([loadBabelPlugin(), loadEstreePlugin()]);
+  return formatWithPrettier(input, 'babel', [babel, estree], options);
 }
 
 // TypeScript
 export async function formatTypeScript(input: string, options: FormatOptions = defaultOptions): Promise<string> {
+  const [parserTypescript, parserEstree] = await Promise.all([loadTypescriptPlugin(), loadEstreePlugin()]);
   return formatWithPrettier(input, 'typescript', [parserTypescript, parserEstree], options);
 }
 
 // SCSS
 export async function formatSCSS(input: string, options: FormatOptions = defaultOptions): Promise<string> {
+  const parserCss = await loadCssPlugin();
   return formatWithPrettier(input, 'scss', [parserCss], options);
 }
 
 // LESS
 export async function formatLESS(input: string, options: FormatOptions = defaultOptions): Promise<string> {
+  const parserCss = await loadCssPlugin();
   return formatWithPrettier(input, 'less', [parserCss], options);
 }
 
 // YAML
 export async function formatYAML(input: string, options: FormatOptions = defaultOptions): Promise<string> {
+  const parserYaml = await loadYamlPlugin();
   return formatWithPrettier(input, 'yaml', [parserYaml], options);
 }
 
 // Markdown
 export async function formatMarkdown(input: string, options: FormatOptions = defaultOptions): Promise<string> {
+  const parserMarkdown = await loadMarkdownPlugin();
   return formatWithPrettier(input, 'markdown', [parserMarkdown], options);
 }
 
 // GraphQL
 export async function formatGraphQL(input: string, options: FormatOptions = defaultOptions): Promise<string> {
+  const parserGraphql = await loadGraphqlPlugin();
   return formatWithPrettier(input, 'graphql', [parserGraphql], options);
 }
 

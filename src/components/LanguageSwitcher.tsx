@@ -1,9 +1,9 @@
 import React from 'react';
 import { Dropdown, Button } from 'antd';
-import { GlobalOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { supportedLanguages, changeLanguage } from '../i18n';
 import type { MenuProps } from 'antd';
+import { AppIcon } from './icons/AppIcon';
 
 const LanguageSwitcher: React.FC = () => {
   const { i18n } = useTranslation();
@@ -24,7 +24,7 @@ const LanguageSwitcher: React.FC = () => {
 
   return (
     <Dropdown menu={{ items, selectedKeys: [currentLang.code] }} placement="bottomRight">
-      <Button type="text" icon={<GlobalOutlined />} size="large">
+      <Button type="text" icon={<AppIcon name="globe" size={16} />} size="large">
         {currentLang.flag}
       </Button>
     </Dropdown>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import CodeFormatter from '../modules/code-formatter/components/CodeFormatter';
+import ModulePageShell from '../components/ModulePageShell';
 
 /**
  * 代码格式化工具页面组件
@@ -11,7 +12,11 @@ const FormatterPage: React.FC = () => {
   // 这里可以根据type参数更新格式化类型状态
   // 目前先简单渲染组件
 
-  return <CodeFormatter />;
+  return (
+    <ModulePageShell moduleId="code-formatter">
+      <CodeFormatter />
+    </ModulePageShell>
+  );
 };
 
 export default FormatterPage;

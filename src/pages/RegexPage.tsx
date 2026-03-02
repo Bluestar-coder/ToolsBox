@@ -1,6 +1,7 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import Regex from '../modules/regex-tool/components/RegexTool';
+import ModulePageShell from '../components/ModulePageShell';
 
 /**
  * 正则表达式工具页面组件
@@ -11,7 +12,11 @@ const RegexPage: React.FC = () => {
   // 这里可以根据type参数更新正则工具类型状态
   // 目前先简单渲染组件
 
-  return <Regex />;
+  return (
+    <ModulePageShell moduleId="regex-tool">
+      <Regex />
+    </ModulePageShell>
+  );
 };
 
 export default RegexPage;

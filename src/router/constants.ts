@@ -51,11 +51,6 @@ export const createNavigation = {
    * Recipe工具路径
    */
   recipe: () => '/recipe',
-
-  /**
-   * 设置路径
-   */
-  settings: () => '/settings',
 };
 
 /**
@@ -88,5 +83,4 @@ export const pathToModuleId: Record<string, string> = {
   '/http-debug': 'http-debug',
   '/ip-network': 'ip-network',
   '/recipe': 'recipe-tool',
-  '/settings': 'settings',
 };

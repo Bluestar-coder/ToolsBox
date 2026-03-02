@@ -11,8 +11,6 @@ import { getOperationIcon } from '../../core/operations/icons';
 import { useTranslation } from 'react-i18next';
 import styles from './OperationList.module.css';
 
-const { Panel } = Collapse;
-
 interface OperationListProps {
   /** 操作列表 */
   operations: Operation[];
@@ -117,24 +115,22 @@ const OperationList: React.FC<OperationListProps> = ({
     </Card>
   );
 
-  // 渲染分类面板
-  const renderCategoryPanel = (category: OperationCategory, ops: Operation[]) => (
-    <Panel 
-      header={
-        <div className={styles.categoryHeader}>
-          <span className={styles.categoryName}>
-            {categoryMap[category] || category}
-          </span>
-          <Badge count={ops.length} className={styles.categoryBadge} />
-        </div>
-      }
-      key={category}
-    >
-      <div className={styles.operationsGrid}>
-        {ops.map(renderOperationCard)}
+  const collapseItems = Object.entries(filteredOperationsByCategory).map(([category, ops]) => ({
+    key: category,
+    label: (
+      <div className={styles.categoryHeader}>
+        <span className={styles.categoryName}>
+          {categoryMap[category as OperationCategory] || category}
+        </span>
+        <Badge count={ops.length} className={styles.categoryBadge} />
       </div>
-    </Panel>
-  );
+    ),
+    children: (
+      <div className={styles.operationsGrid}>
+        {(ops as Operation[]).map(renderOperationCard)}
+      </div>
+    ),
+  }));
 
   if (loading) {
     return (
@@ -149,6 +145,7 @@ const OperationList: React.FC<OperationListProps> = ({
       <div className={styles.searchContainer}>
         <Input
           placeholder={t('operationList.searchPlaceholder', '搜索操作...')}
+          name="operation-search"
           prefix={<SearchOutlined />}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -166,11 +163,8 @@ const OperationList: React.FC<OperationListProps> = ({
           activeKey={activeCategories.length > 0 ? activeCategories : Object.keys(filteredOperationsByCategory)}
           onChange={handleCategoryChange}
           className={styles.categoryCollapse}
-        >
-          {Object.entries(filteredOperationsByCategory).map(([category, ops]) =>
-            renderCategoryPanel(category as OperationCategory, ops)
-          )}
-        </Collapse>
+          items={collapseItems}
+        />
       )}
     </div>
   );

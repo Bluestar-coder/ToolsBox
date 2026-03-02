@@ -1,8 +1,8 @@
 import React, { Suspense, useMemo } from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Layout, theme, Button, Space, Spin } from 'antd';
-import { SunOutlined, MoonOutlined, SettingOutlined } from '@ant-design/icons';
+import { Outlet, useLocation } from 'react-router-dom';
+import { Layout, Button, Space, Spin } from 'antd';
 import { useTranslation } from 'react-i18next';
+import { AppIcon } from '../icons/AppIcon';
 import SideMenu from './SideMenu';
 import LanguageSwitcher from '../LanguageSwitcher';
 import { pathToModuleId } from '../../router/constants';
@@ -21,11 +21,9 @@ const LoadingFallback: React.FC = React.memo(() => (
 LoadingFallback.displayName = 'LoadingFallback';
 
 const MainLayout: React.FC = React.memo(() => {
-  const { token: { colorBgContainer, borderRadiusLG } } = theme.useToken();
   const { isDark, toggleTheme } = useTheme();
   const { t } = useTranslation();
   const location = useLocation();
-  const navigate = useNavigate();
   const [siderCollapsed, setSiderCollapsed] = React.useState(false);
 
   // 根据当前路径确定当前模块ID
@@ -60,21 +58,25 @@ const MainLayout: React.FC = React.memo(() => {
   return (
     <Layout className={layoutClass}>
       {/* 顶部导航栏 */}
-      <Header className={headerClass} style={{ background: colorBgContainer }}>
-        <div className={styles.headerSpacer} />
-        <h1 className={styles.headerTitle}>
-          {t('app.title')}
-        </h1>
-        <Space>
+      <Header className={headerClass}>
+        <div className={styles.brandZone}>
+          <span className={styles.brandSignal} aria-hidden="true" />
+          <h1 className={styles.headerTitle}>
+            {t('app.title')}
+          </h1>
+        </div>
+        <Space size={8} className={styles.headerActions}>
+          <div className={styles.languageSlot}>
+            <LanguageSwitcher />
+          </div>
           <Button
             type="text"
-            icon={<SettingOutlined />}
+            icon={<AppIcon name={isDark ? 'sun' : 'moon'} size={18} />}
             size="large"
-            onClick={() => navigate('/settings')}
-            title={t('app.settings')}
+            className={styles.headerAction}
+            onClick={toggleTheme}
+            title={isDark ? t('app.switchToLight') : t('app.switchToDark')}
           />
-          <LanguageSwitcher />
-          <Button type="text" icon={isDark ? <SunOutlined /> : <MoonOutlined />} size="large" onClick={toggleTheme} title={isDark ? t('app.switchToLight') : t('app.switchToDark')} />
         </Space>
       </Header>
 
@@ -83,18 +85,28 @@ const MainLayout: React.FC = React.memo(() => {
         <Sider
           width={200}
           collapsedWidth={60}
-          collapsible
           collapsed={siderCollapsed}
           onCollapse={setSiderCollapsed}
           breakpoint="md"
           className={styles.sider}
-          style={{ background: colorBgContainer }}
+          trigger={null}
         >
-          <SideMenu currentModuleId={currentModuleId} />
+          <div className={styles.siderGlow} aria-hidden="true" />
+          <div className={styles.siderMenuWrap}>
+            <SideMenu currentModuleId={currentModuleId} />
+          </div>
+          <Button
+            type="text"
+            className={styles.siderFloatTrigger}
+            icon={<AppIcon name={siderCollapsed ? 'menuUnfold' : 'menuFold'} size={18} />}
+            onClick={() => setSiderCollapsed(prev => !prev)}
+            title={siderCollapsed ? t('common.expand', '展开侧边栏') : t('common.collapse', '收起侧边栏')}
+            aria-label={siderCollapsed ? t('common.expand', '展开侧边栏') : t('common.collapse', '收起侧边栏')}
+          />
         </Sider>
 
         {/* 主内容区 - 使用Outlet渲染子路由 */}
-        <Content className={styles.mainContent} style={{ background: colorBgContainer, borderRadius: borderRadiusLG }}>
+        <Content className={styles.mainContent}>
           <Suspense fallback={<LoadingFallback />}>
             <Outlet />
           </Suspense>

@@ -1,127 +1,264 @@
-/* MainLayout styles - CSS Module */
-/* Modern Developer Tool Layout */
+/* MainLayout styles - Tech UI shell */
 
 .mainLayout {
   min-height: 100vh;
-  transition: background-color var(--transition-normal);
+  background: var(--shell-gradient);
+  position: relative;
+  overflow: hidden;
+}
+
+.mainLayout::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.28;
+  background-image:
+    linear-gradient(to right, var(--grid-line-color) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line-color) 1px, transparent 1px);
+  background-size: 40px 40px;
 }
 
 .mainLayoutLight {
-  background: var(--bg-color);
+  color: var(--text-color);
 }
 
 .mainLayoutDark {
-  background: var(--bg-color);
+  color: var(--text-color);
 }
 
-/* Header Styles */
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--spacing-lg);
   padding: 0 var(--spacing-lg);
-  height: 64px;
+  height: 68px;
   position: sticky;
   top: 0;
-  z-index: 100;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border-color);
-  transition: all var(--transition-normal);
+  z-index: 110;
+  backdrop-filter: blur(18px) saturate(130%);
+  -webkit-backdrop-filter: blur(18px) saturate(130%);
+  background: var(--glass-header-bg);
+  border-bottom: 1px solid var(--header-border);
+}
+
+.header::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--glow-line-color), transparent);
+  opacity: 0.8;
 }
 
 .headerShadowLight {
-  background: rgba(255, 255, 255, 0.85);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 32px rgba(11, 37, 58, 0.08);
 }
 
 .headerShadowDark {
-  background: rgba(15, 23, 42, 0.85);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 36px rgba(0, 8, 15, 0.55);
 }
 
-.headerSpacer {
-  width: 120px;
+.brandZone {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  min-width: 0;
+}
+
+.brandSignal {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--accent-color);
+  box-shadow:
+    0 0 0 6px color-mix(in srgb, var(--accent-color) 25%, transparent),
+    0 0 18px color-mix(in srgb, var(--accent-color) 50%, transparent);
+  animation: pulseSignal 2.8s ease-in-out infinite;
 }
 
 .headerTitle {
   margin: 0;
   font-family: var(--font-heading);
-  font-size: 22px;
+  font-size: 19px;
   font-weight: 700;
-  letter-spacing: -0.02em;
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-color);
+  text-shadow: 0 0 18px color-mix(in srgb, var(--primary-color) 32%, transparent);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* Content Layout */
+.headerActions {
+  align-items: center;
+}
+
+.headerAction {
+  border: 1px solid color-mix(in srgb, var(--primary-color) 26%, var(--border-color));
+  border-radius: 12px !important;
+  background: color-mix(in srgb, var(--card-bg) 74%, transparent) !important;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-color) 14%, transparent);
+  color: var(--text-color) !important;
+}
+
+.headerAction:hover {
+  color: var(--primary-color) !important;
+  border-color: color-mix(in srgb, var(--primary-color) 60%, var(--border-color));
+  transform: translateY(-1px);
+}
+
+.languageSlot :global(.ant-btn) {
+  border: 1px solid color-mix(in srgb, var(--primary-color) 24%, var(--border-color));
+  border-radius: 12px !important;
+  background: color-mix(in srgb, var(--card-bg) 78%, transparent) !important;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-color) 10%, transparent);
+}
+
 .contentLayout {
-  background: var(--bg-color);
-  transition: background-color var(--transition-normal);
+  background: transparent;
+  position: relative;
 }
 
 .contentLayoutDark {
-  background: var(--bg-color);
+  background: transparent;
 }
 
-/* Sider Styles */
 .sider {
   position: sticky !important;
-  top: 64px;
-  height: calc(100vh - 64px);
-  overflow-y: auto;
+  top: 68px;
+  height: calc(100vh - 68px);
+  display: flex !important;
+  flex-direction: column;
+  overflow: hidden;
   border-right: 1px solid var(--border-color);
-  transition: all var(--transition-normal);
+  background: var(--glass-panel-bg) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.siderMenuWrap {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-bottom: 64px;
+  position: relative;
+  z-index: 1;
+}
+
+.siderGlow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at top left, color-mix(in srgb, var(--primary-color) 14%, transparent), transparent 52%),
+    linear-gradient(180deg, color-mix(in srgb, var(--accent-color) 10%, transparent), transparent 40%);
 }
 
 .sider::-webkit-scrollbar {
-  width: 4px;
+  width: 6px;
 }
 
 .sider::-webkit-scrollbar-thumb {
-  background: var(--border-color);
-  border-radius: 2px;
+  background: color-mix(in srgb, var(--primary-color) 44%, transparent);
+  border-radius: 999px;
 }
 
-/* Main Content Area */
+.siderMenuWrap::-webkit-scrollbar {
+  width: 6px;
+}
+
+.siderMenuWrap::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--primary-color) 44%, transparent);
+  border-radius: 999px;
+}
+
+.siderFloatTrigger {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 2;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px !important;
+  border: 1px solid color-mix(in srgb, var(--primary-color) 38%, var(--border-color));
+  background:
+    radial-gradient(circle at 30% 30%, color-mix(in srgb, var(--accent-color) 20%, transparent), transparent 70%),
+    color-mix(in srgb, var(--card-bg) 78%, transparent) !important;
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--accent-color) 18%, transparent),
+    0 12px 22px color-mix(in srgb, var(--primary-color) 22%, transparent);
+  color: var(--text-secondary) !important;
+}
+
+.siderFloatTrigger:hover {
+  color: var(--primary-color) !important;
+  border-color: color-mix(in srgb, var(--primary-color) 56%, var(--border-color));
+  transform: translateY(-2px) scale(1.03);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--accent-color) 24%, transparent),
+    0 14px 26px color-mix(in srgb, var(--primary-color) 28%, transparent);
+}
+
 .mainContent {
   margin: var(--spacing-lg);
   padding: var(--spacing-lg);
-  min-height: calc(100vh - 64px - 48px);
+  min-height: calc(100vh - 68px - 48px);
   overflow: auto;
   border-radius: var(--radius-xl);
   border: 1px solid var(--border-color);
-  box-shadow: 0 1px 3px var(--shadow-color);
-  transition: all var(--transition-normal);
+  background: var(--content-surface);
+  box-shadow: var(--panel-shadow);
+  position: relative;
 }
 
-/* Loading Fallback */
+.mainContent::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--primary-color) 9%, transparent),
+    transparent 42%,
+    color-mix(in srgb, var(--accent-color) 11%, transparent)
+  );
+  opacity: 0.65;
+}
+
 .loadingContainer {
   display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 100%;
-  min-height: 400px;
-  gap: var(--spacing-md);
+  min-height: 380px;
 }
 
-/* Responsive Design */
+@keyframes pulseSignal {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.75;
+  }
+}
+
 @media (max-width: 992px) {
   .header {
     padding: 0 var(--spacing-md);
   }
-  
-  .headerSpacer {
-    width: 60px;
-  }
-  
+
   .headerTitle {
-    font-size: 18px;
+    font-size: 17px;
+    letter-spacing: 0.08em;
   }
-  
+
   .mainContent {
     margin: var(--spacing-md);
     padding: var(--spacing-md);
@@ -129,13 +266,10 @@
 }
 
 @media (max-width: 768px) {
-  .sider {
-    display: none;
-  }
-  
   .mainContent {
     margin: var(--spacing-sm);
     padding: var(--spacing-md);
+    min-height: calc(100vh - 68px - 24px);
     border-radius: var(--radius-lg);
   }
 }

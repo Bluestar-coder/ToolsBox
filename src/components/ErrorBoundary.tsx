@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
 import type { ReactNode } from 'react';
 import { Card, Button, Typography, Space, Tag } from 'antd';
-import { CloseCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { useErrorContext } from '../hooks/useErrorContext';
 import * as Sentry from '@sentry/react';
 import { logger } from '../utils/logger';
 import i18n from '../i18n';
 import styles from './styles/ErrorBoundary.module.css';
+import { AppIcon } from './icons/AppIcon';
 
 const { Title, Text } = Typography;
 
@@ -67,7 +67,7 @@ export class ErrorBoundaryClass extends Component<ErrorBoundaryProps, ErrorBound
           <Card
             title={
               <Space>
-                <ExclamationCircleOutlined className={styles.errorIcon} />
+                <AppIcon name="alert" className={styles.errorIcon} />
                 <Title level={4} className={styles.errorTitle}>{i18n.t('errorBoundary.title')}</Title>
               </Space>
             }
@@ -77,7 +77,7 @@ export class ErrorBoundaryClass extends Component<ErrorBoundaryProps, ErrorBound
               <Button
                 type="primary"
                 onClick={this.handleReset}
-                icon={<CloseCircleOutlined />}
+                icon={<AppIcon name="close" />}
               >
                 {i18n.t('errorBoundary.retry')}
               </Button>
@@ -122,7 +122,7 @@ export const ErrorDisplay: React.FC = () => {
       className={styles.errorDisplayCard}
       title={
         <Space>
-          <ExclamationCircleOutlined className={styles.errorIcon} />
+          <AppIcon name="alert" className={styles.errorIcon} />
           <Text strong>操作错误</Text>
         </Space>
       }
@@ -130,7 +130,7 @@ export const ErrorDisplay: React.FC = () => {
         <Button
           type="text"
           size="small"
-          icon={<CloseCircleOutlined />}
+          icon={<AppIcon name="close" />}
           onClick={clearError}
         />
       }

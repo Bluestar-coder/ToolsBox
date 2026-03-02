@@ -25,7 +25,6 @@ export default {
     output: 'Output',
     result: 'Result',
     options: 'Options',
-    settings: 'Settings',
     success: 'Success',
     error: 'Error',
     warning: 'Warning',
@@ -41,7 +40,6 @@ export default {
     title: '🔧 ToolsBox',
     switchToLight: 'Switch to light mode',
     switchToDark: 'Switch to dark mode',
-    settings: 'Settings',
   },
   modules: {
     encoder: {

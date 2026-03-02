@@ -3,6 +3,7 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import EncoderDecoder from '../modules/encoder-decoder/components/EncoderDecoder';
 import { useEncodingContext } from '../hooks/useEncodingContext';
 import type { EncoderType, OperationType } from '../modules/encoder-decoder/utils/encoders';
+import ModulePageShell from '../components/ModulePageShell';
 
 /**
  * 编码/解码工具页面组件
@@ -46,7 +47,11 @@ const EncoderPage: React.FC = () => {
     }
   }, [searchParams, state.currentInput, setInput]);
 
-  return <EncoderDecoder />;
+  return (
+    <ModulePageShell moduleId="encoder-decoder">
+      <EncoderDecoder />
+    </ModulePageShell>
+  );
 };
 
 export default EncoderPage;

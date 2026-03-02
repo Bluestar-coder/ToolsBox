@@ -25,7 +25,6 @@ export default {
     output: '输出',
     result: '结果',
     options: '选项',
-    settings: '设置',
     success: '成功',
     error: '错误',
     warning: '警告',
@@ -41,7 +40,6 @@ export default {
     title: '🔧 效率工具箱',
     switchToLight: '切换到浅色模式',
     switchToDark: '切换到深色模式',
-    settings: '设置',
   },
   home: {
     menu: '首页',

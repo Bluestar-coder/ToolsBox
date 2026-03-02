@@ -1,5 +1,6 @@
 import React from 'react';
 import type { ComponentType } from 'react';
+import { AppIcon } from '../components/icons/AppIcon';
 
 // 模块接口定义
 export interface ToolModule {
@@ -104,18 +105,14 @@ class ModuleManager {
 // 创建模块管理器实例
 export const moduleManager = new ModuleManager();
 
-// 动态导入和注册模块的辅助函数（直接导入组件）
-async function registerLazyComponentModule(
-  moduleImport: Promise<{ default: ToolModule }>,
-  componentImport: Promise<{ default: ComponentType<Record<string, unknown>> }>
-): Promise<void> {
-  const module = await moduleImport;
+// 动态导入和注册模块的辅助函数（组件保持真正懒加载）
+function registerLazyComponentModule(
+  moduleMeta: Omit<LazyToolModule, 'component'>,
+  componentImport: () => Promise<{ default: ComponentType<Record<string, unknown>> }>
+): void {
   moduleManager.registerLazyModule({
-    id: module.default.id,
-    name: module.default.name,
-    icon: module.default.icon,
-    component: React.lazy(() => componentImport),
-    description: module.default.description,
+    ...moduleMeta,
+    component: React.lazy(componentImport),
   });
 }
 
@@ -128,52 +125,104 @@ const shouldRegisterModules = !(
   (typeof process !== 'undefined' && process.env.NODE_ENV === 'test')
 );
 
-// 1. 编码/解码模块
 if (shouldRegisterModules) {
-  void registerLazyComponentModule(import('./encoder-decoder'), import('./encoder-decoder/components/EncoderDecoder'));
-}
+  registerLazyComponentModule(
+    {
+      id: 'encoder-decoder',
+      name: '编码/解码',
+      icon: React.createElement(AppIcon, { name: 'encoder' }),
+      description: '支持多种编码格式的编码和解码工具',
+    },
+    () => import('./encoder-decoder/components/EncoderDecoder')
+  );
 
-// 2. 加密/解密工具模块
-if (shouldRegisterModules) {
-  void registerLazyComponentModule(import('./crypto-tool'), import('./crypto-tool/components/CryptoTool'));
-}
+  registerLazyComponentModule(
+    {
+      id: 'crypto-tool',
+      name: '加密/解密',
+      icon: React.createElement(AppIcon, { name: 'crypto' }),
+      description: '支持AES、DES、3DES等多种加密算法的加密解密工具',
+    },
+    () => import('./crypto-tool/components/CryptoTool')
+  );
 
-// 3. 时间处理工具模块
-if (shouldRegisterModules) {
-  void registerLazyComponentModule(import('./time-tool'), import('./time-tool/components/TimeTool'));
-}
+  registerLazyComponentModule(
+    {
+      id: 'time-tool',
+      name: '时间工具',
+      icon: React.createElement(AppIcon, { name: 'time' }),
+      description: '时间格式转换、时间戳获取、UTC与本地时间转换等功能',
+    },
+    () => import('./time-tool/components/TimeTool')
+  );
 
-// 4. 正则表达式工具模块
-if (shouldRegisterModules) {
-  void registerLazyComponentModule(import('./regex-tool'), import('./regex-tool/components/RegexTool'));
-}
+  registerLazyComponentModule(
+    {
+      id: 'regex-tool',
+      name: '正则工具',
+      icon: React.createElement(AppIcon, { name: 'regex' }),
+      description: '正则表达式测试、替换和分割工具',
+    },
+    () => import('./regex-tool/components/RegexTool')
+  );
 
-// 5. 代码格式化模块
-if (shouldRegisterModules) {
-  void registerLazyComponentModule(import('./code-formatter'), import('./code-formatter/components/CodeFormatter'));
-}
+  registerLazyComponentModule(
+    {
+      id: 'code-formatter',
+      name: '代码格式化',
+      icon: React.createElement(AppIcon, { name: 'formatter' }),
+      description: '支持多种语言的代码格式化和压缩工具',
+    },
+    () => import('./code-formatter/components/CodeFormatter')
+  );
 
-// 6. 二维码工具模块
-if (shouldRegisterModules) {
-  void registerLazyComponentModule(import('./qrcode-tool'), import('./qrcode-tool/components/QRCodeTool'));
-}
+  registerLazyComponentModule(
+    {
+      id: 'qrcode-tool',
+      name: '二维码工具',
+      icon: React.createElement(AppIcon, { name: 'qrcode' }),
+      description: '二维码生成与识别工具',
+    },
+    () => import('./qrcode-tool/components/QRCodeTool')
+  );
 
-// 7. 差异对比工具模块
-if (shouldRegisterModules) {
-  void registerLazyComponentModule(import('./diff-tool'), import('./diff-tool/components/DiffTool'));
-}
+  registerLazyComponentModule(
+    {
+      id: 'diff-tool',
+      name: 'Diff Tool',
+      icon: React.createElement(AppIcon, { name: 'diff' }),
+      description: 'Compare text, code, or JSON files to find differences.',
+    },
+    () => import('./diff-tool/components/DiffTool')
+  );
 
-// 8. HTTP 调试模块
-if (shouldRegisterModules) {
-  void registerLazyComponentModule(import('./http-debug'), import('./http-debug/components/HttpDebugTool'));
-}
+  registerLazyComponentModule(
+    {
+      id: 'http-debug',
+      name: '网络调试',
+      icon: React.createElement(AppIcon, { name: 'http' }),
+      description: 'HTTP 接口调试与 WebSocket 调试工具',
+    },
+    () => import('./http-debug/components/HttpDebugTool')
+  );
 
-// 9. IP/网络工具模块
-if (shouldRegisterModules) {
-  void registerLazyComponentModule(import('./ip-network'), import('./ip-network/components/IpNetworkTool'));
-}
+  registerLazyComponentModule(
+    {
+      id: 'ip-network',
+      name: 'IP/网络工具',
+      icon: React.createElement(AppIcon, { name: 'network' }),
+      description: 'IP 地址转换、CIDR 计算、子网划分、归属地查询、端口速查',
+    },
+    () => import('./ip-network/components/IpNetworkTool')
+  );
 
-// 10. Recipe工具模块
-if (shouldRegisterModules) {
-  void registerLazyComponentModule(import('./recipe-tool'), import('./recipe-tool/components/RecipeTool'));
+  registerLazyComponentModule(
+    {
+      id: 'recipe-tool',
+      name: 'Recipe工具',
+      icon: React.createElement(AppIcon, { name: 'recipe' }),
+      description: '基于CyberChef设计理念的操作链式处理工具',
+    },
+    () => import('./recipe-tool/components/RecipeTool')
+  );
 }

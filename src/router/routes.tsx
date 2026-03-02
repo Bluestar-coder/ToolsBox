@@ -15,7 +15,6 @@ const DiffPage = lazy(() => import('../pages/DiffPage'));
 const HttpDebugPage = lazy(() => import('../pages/HttpDebugPage'));
 const IpNetworkPage = lazy(() => import('../pages/IpNetworkPage'));
 const RecipePage = lazy(() => import('../pages/RecipePage'));
-const SettingsPage = lazy(() => import('../pages/SettingsPage'));
 
 // 路由配置
 export const routes: RouteObject[] = [
@@ -100,11 +99,6 @@ export const routes: RouteObject[] = [
       {
         path: 'recipe',
         element: <RecipePage />,
-      },
-      // 设置
-      {
-        path: 'settings',
-        element: <SettingsPage />,
       },
       // 404页面
       {

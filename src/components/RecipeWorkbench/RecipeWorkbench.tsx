@@ -106,17 +106,15 @@ const RecipeWorkbench: React.FC<RecipeWorkbenchProps> = ({
       enabled: true,
     };
 
-    setRecipe(previousRecipe => {
-      const updatedRecipe = {
-        ...previousRecipe,
-        steps: [...previousRecipe.steps, newStep],
-        updatedAt: new Date(),
-      };
-      onRecipeChange?.(updatedRecipe);
-      return updatedRecipe;
-    });
+    const updatedRecipe = {
+      ...recipe,
+      steps: [...recipe.steps, newStep],
+      updatedAt: new Date(),
+    };
+    setRecipe(updatedRecipe);
+    onRecipeChange?.(updatedRecipe);
     setExecutionResult(null);
-  }, [onRecipeChange]);
+  }, [onRecipeChange, recipe]);
 
   // 执行Recipe
   const handleExecute = useCallback(async (execRecipe: Recipe) => {
@@ -386,6 +384,7 @@ const RecipeWorkbench: React.FC<RecipeWorkbenchProps> = ({
               >
                 <TextArea
                   placeholder={t('recipeWorkbench.inputPlaceholder', '请输入要处理的数据...')}
+                  name="recipe-input-data"
                   value={inputData}
                   onChange={(e) => setInputData(e.target.value)}
                   rows={8}

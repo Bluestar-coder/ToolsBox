@@ -1,0 +1,161 @@
+.pageShell {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.pageHeader {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border-radius: 16px;
+  border: 1px solid var(--border-color);
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--primary-color) 17%, transparent), transparent 55%),
+    linear-gradient(-145deg, color-mix(in srgb, var(--accent-color) 14%, transparent), transparent 48%),
+    var(--content-surface);
+  box-shadow: var(--panel-shadow);
+}
+
+.iconWrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--primary-color) 45%, var(--border-color));
+  background: color-mix(in srgb, var(--card-bg) 68%, transparent);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--accent-color) 22%, transparent),
+    0 8px 18px color-mix(in srgb, var(--primary-color) 20%, transparent);
+  font-size: 20px;
+  color: var(--primary-color);
+}
+
+.headerContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.headerTitle {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: clamp(18px, 3vw, 22px);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-color);
+}
+
+.headerDesc {
+  margin: 3px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.moduleBadge {
+  flex-shrink: 0;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent-color) 36%, var(--border-color));
+  background: color-mix(in srgb, var(--accent-color) 16%, transparent);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+  color: var(--text-color);
+}
+
+.operationSurface {
+  border-radius: 16px;
+  border: 1px solid var(--border-color);
+  background: var(--content-surface);
+  box-shadow: var(--panel-shadow);
+  padding: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.operationSurface::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--primary-color) 12%, transparent),
+    transparent 42%,
+    color-mix(in srgb, var(--accent-color) 10%, transparent)
+  );
+  opacity: 0.6;
+}
+
+.operationSurface > * {
+  position: relative;
+  z-index: 1;
+}
+
+.operationSurface :global(.ant-card) {
+  background: color-mix(in srgb, var(--card-bg) 78%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--primary-color) 24%, var(--border-color)) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 12px 24px color-mix(in srgb, var(--primary-color) 10%, transparent) !important;
+}
+
+.operationSurface :global(.ant-card-head) {
+  border-bottom: 1px solid color-mix(in srgb, var(--primary-color) 22%, var(--border-color)) !important;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--primary-color) 14%, transparent),
+    color-mix(in srgb, var(--accent-color) 10%, transparent)
+  );
+}
+
+.operationSurface :global(.ant-card-head-title) {
+  font-family: var(--font-heading);
+  letter-spacing: 0.04em;
+}
+
+.operationSurface :global(.ant-tabs-tab-active .ant-tabs-tab-btn) {
+  text-shadow: 0 0 8px color-mix(in srgb, var(--primary-color) 40%, transparent);
+}
+
+.operationSurface :global(.ant-input:focus),
+.operationSurface :global(.ant-input-affix-wrapper-focused),
+.operationSurface :global(.ant-select-focused .ant-select-selector),
+.operationSurface :global(.ant-input-number-focused) {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 18%, transparent) !important;
+}
+
+@media (max-width: 768px) {
+  .pageHeader {
+    padding: 12px 14px;
+    border-radius: 14px;
+  }
+
+  .iconWrap {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+
+  .headerTitle {
+    font-size: 16px;
+    letter-spacing: 0.04em;
+  }
+
+  .headerDesc {
+    font-size: 12px;
+  }
+
+  .moduleBadge {
+    display: none;
+  }
+
+  .operationSurface {
+    padding: 10px;
+    border-radius: 14px;
+  }
+}
