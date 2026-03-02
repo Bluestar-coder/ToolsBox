@@ -5,6 +5,8 @@
 
 import { operationRegistry } from '../registry';
 import { Base64DecodeOperation, Base64EncodeOperation } from './base64';
+import { createContextOperations } from './context-operations';
+import { createExtendedEncodingOperations } from './extended-encoding';
 import { URLDecodeOperation, URLEncodeOperation } from './url';
 
 /**
@@ -16,13 +18,14 @@ export function registerAllOperations(): void {
   operationRegistry.register(new Base64EncodeOperation());
   operationRegistry.register(new URLDecodeOperation());
   operationRegistry.register(new URLEncodeOperation());
-  
-  // TODO: 添加更多操作
-  // operationRegistry.register(new JSONFormatOperation());
-  // operationRegistry.register(new HexDecodeOperation());
-  // operationRegistry.register(new AESEncryptOperation());
-  // operationRegistry.register(new AESDecryptOperation());
-  // operationRegistry.register(new MD5HashOperation());
-  // operationRegistry.register(new SHA256HashOperation());
-  // ...
+
+  // 注册扩展编码/解码操作
+  createExtendedEncodingOperations().forEach(operation => {
+    operationRegistry.register(operation);
+  });
+
+  // 注册上下文解析操作（时间/JWT/IP/MAC/UUID）
+  createContextOperations().forEach(operation => {
+    operationRegistry.register(operation);
+  });
 }

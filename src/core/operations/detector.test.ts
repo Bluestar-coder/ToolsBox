@@ -23,4 +23,11 @@ describe('DataTypeDetector', () => {
     expect(mapped.some(result => result.type === 'ipv6')).toBe(true);
     expect(mixed.some(result => result.type === 'ipv6')).toBe(true);
   });
+
+  it('detects spaced binary payloads', () => {
+    const detector = new DataTypeDetector();
+    const results = detector.detectDataTypes('01001000 01101001');
+
+    expect(results.some(result => result.type === 'binary')).toBe(true);
+  });
 });

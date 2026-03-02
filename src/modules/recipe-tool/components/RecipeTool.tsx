@@ -10,7 +10,6 @@ import { operationRegistry, type Recipe } from '../../../core/operations';
 import { useTranslation } from 'react-i18next';
 import {
   deserializeRecipe,
-  deserializeRecipes,
   serializeRecipe,
   serializeRecipes,
 } from '../utils/recipe-serialization';
@@ -36,7 +35,24 @@ function loadSavedRecipesFromStorage(): Recipe[] {
     const raw = localStorage.getItem(SAVED_RECIPES_STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
-    return deserializeRecipes(parsed, operationId => operationRegistry.get(operationId));
+
+    if (!Array.isArray(parsed)) {
+      console.warn('Saved recipes payload is not an array, ignored.');
+      return [];
+    }
+
+    const loadedRecipes: Recipe[] = [];
+    parsed.forEach((item, index) => {
+      try {
+        loadedRecipes.push(
+          deserializeRecipe(item, operationId => operationRegistry.get(operationId))
+        );
+      } catch (error) {
+        console.warn(`Skipped invalid saved recipe at index ${index}:`, error);
+      }
+    });
+
+    return loadedRecipes;
   } catch (error) {
     console.warn('Failed to load saved recipes from localStorage:', error);
     return [];

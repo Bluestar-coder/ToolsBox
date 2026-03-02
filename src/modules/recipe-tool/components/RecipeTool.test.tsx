@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { message } from 'antd';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { operationRegistry, type OperationInput } from '../../../core/operations';
 import type { Recipe } from '../../../core/operations';
 import RecipeTool from './RecipeTool';
 
@@ -34,6 +35,24 @@ describe('RecipeTool', () => {
   });
 
   beforeEach(() => {
+    operationRegistry.clear();
+    operationRegistry.register({
+      id: 'mock_op',
+      name: 'Mock Operation',
+      description: 'mock',
+      category: 'encoding',
+      inputType: 'text',
+      outputType: 'text',
+      getParameters: () => [],
+      execute: async (input: OperationInput) => ({
+        success: true,
+        output: {
+          data: input.data,
+          dataType: input.dataType,
+        },
+      }),
+      validateInput: () => ({ valid: true }),
+    });
     localStorage.clear();
     vi.spyOn(message, 'success').mockImplementation(() => ({}) as never);
     vi.spyOn(message, 'warning').mockImplementation(() => ({}) as never);
@@ -58,5 +77,44 @@ describe('RecipeTool', () => {
     const savedRecipes = JSON.parse(rawSavedRecipes as string) as Array<{ name: string }>;
     expect(savedRecipes).toHaveLength(1);
     expect(savedRecipes[0].name).toBe('Mock Recipe');
+  });
+
+  it('loads valid recipes even when storage contains invalid entries', () => {
+    localStorage.setItem(
+      'recipe-tool-saved-recipes',
+      JSON.stringify([
+        {
+          id: 'recipe_valid',
+          name: 'Valid Recipe',
+          steps: [
+            {
+              id: 'step_1',
+              operationId: 'mock_op',
+              params: {},
+              enabled: true,
+            },
+          ],
+          createdAt: '2026-01-01T00:00:00.000Z',
+          updatedAt: '2026-01-01T00:00:00.000Z',
+        },
+        {
+          id: 'recipe_invalid',
+          name: 'Invalid Recipe',
+          steps: [
+            {
+              id: 'step_bad',
+              operationId: 'unknown_op',
+              params: {},
+              enabled: true,
+            },
+          ],
+          createdAt: '2026-01-01T00:00:00.000Z',
+          updatedAt: '2026-01-01T00:00:00.000Z',
+        },
+      ])
+    );
+
+    render(<RecipeTool />);
+    expect(screen.getByRole('button', { name: '加载 (1)' })).toBeEnabled();
   });
 });

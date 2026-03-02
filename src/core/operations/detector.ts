@@ -126,8 +126,9 @@ export class DataTypeDetector {
     const results: DataTypeDetection[] = [];
     
     // 二进制检测
+    const cleanData = data.replace(/\s+/g, '');
     const binaryRegex = /^[01]+$/;
-    if (binaryRegex.test(data) && data.length > 0 && data.length % 8 === 0) {
+    if (binaryRegex.test(cleanData) && cleanData.length > 0 && cleanData.length % 8 === 0) {
       results.push({
         type: 'binary',
         confidence: 0.8,

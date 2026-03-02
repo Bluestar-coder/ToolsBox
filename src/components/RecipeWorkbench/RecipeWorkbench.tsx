@@ -52,11 +52,9 @@ const RecipeWorkbench: React.FC<RecipeWorkbenchProps> = ({
 
   // 加载操作列表
   useEffect(() => {
-    const loadOperations = async () => {
+    const syncOperations = () => {
       try {
-        // 这里应该从操作注册表获取操作
-        const ops = operationRegistry.getAll();
-        setOperations(ops);
+        setOperations(operationRegistry.getAll());
       } catch (error) {
         console.error('加载操作失败:', error);
       } finally {
@@ -64,7 +62,9 @@ const RecipeWorkbench: React.FC<RecipeWorkbenchProps> = ({
       }
     };
 
-    loadOperations();
+    syncOperations();
+    const unsubscribe = operationRegistry.subscribe(syncOperations);
+    return unsubscribe;
   }, []);
 
   // 检测输入数据类型

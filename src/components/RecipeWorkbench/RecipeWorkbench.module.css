@@ -3,7 +3,8 @@
  */
 
 .recipeWorkbench {
-  height: 100vh;
+  height: 100%;
+  min-height: 0;
   background: var(--background-color, #f0f2f5);
 }
 
@@ -13,6 +14,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  min-height: 0;
 }
 
 .siderHeader {
@@ -30,6 +32,7 @@
 .siderContent {
   flex: 1;
   overflow: hidden;
+  min-height: 0;
 }
 
 .mainLayout {

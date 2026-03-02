@@ -152,20 +152,22 @@ const OperationList: React.FC<OperationListProps> = ({
           allowClear
         />
       </div>
-      
-      {Object.keys(filteredOperationsByCategory).length === 0 ? (
-        <Empty 
-          description={t('operationList.noOperations', '没有找到匹配的操作')}
-          className={styles.emptyContainer}
-        />
-      ) : (
-        <Collapse
-          activeKey={activeCategories.length > 0 ? activeCategories : Object.keys(filteredOperationsByCategory)}
-          onChange={handleCategoryChange}
-          className={styles.categoryCollapse}
-          items={collapseItems}
-        />
-      )}
+
+      <div className={styles.scrollArea}>
+        {Object.keys(filteredOperationsByCategory).length === 0 ? (
+          <Empty
+            description={t('operationList.noOperations', '没有找到匹配的操作')}
+            className={styles.emptyContainer}
+          />
+        ) : (
+          <Collapse
+            activeKey={activeCategories.length > 0 ? activeCategories : Object.keys(filteredOperationsByCategory)}
+            onChange={handleCategoryChange}
+            className={styles.categoryCollapse}
+            items={collapseItems}
+          />
+        )}
+      </div>
     </div>
   );
 };
