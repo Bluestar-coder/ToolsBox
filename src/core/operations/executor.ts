@@ -27,7 +27,8 @@ export class RecipeExecutor {
     recipe: Recipe, 
     inputData: string, 
     startFrom = 0,
-    inputDataType?: string
+    inputDataType?: string,
+    ignoreBreakpointOnStart = false
   ): Promise<RecipeExecutionResult> {
     const startTime = Date.now();
     let currentData: string = inputData;
@@ -70,7 +71,7 @@ export class RecipeExecutor {
 
       try {
         // 检查是否是断点
-        if (step.isBreakpoint) {
+        if (step.isBreakpoint && !(ignoreBreakpointOnStart && i === safeStartFrom)) {
           return {
             isComplete: false,
             isBreakpoint: true,
@@ -105,6 +106,8 @@ export class RecipeExecutor {
           // 如果执行失败，停止执行
           return {
             isComplete: false,
+            error: result.error ?? `${step.operation.name} execution failed`,
+            failedStep: step,
             data: currentData,
             dataType: currentDataType,
             stepResults,
@@ -124,6 +127,8 @@ export class RecipeExecutor {
         
         return {
           isComplete: false,
+          error: error instanceof Error ? error.message : String(error),
+          failedStep: step,
           data: currentData,
           dataType: currentDataType,
           stepResults,

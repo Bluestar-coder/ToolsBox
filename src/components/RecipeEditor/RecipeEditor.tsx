@@ -380,12 +380,16 @@ const RecipeEditor: React.FC<RecipeEditorProps> = ({
                     <Switch
                       size="small"
                       checked={step.enabled}
+                      aria-label={t('recipeEditor.toggleStepEnabled', '切换步骤启用状态')}
                       onChange={(checked) => handleToggleStep(step.id, checked)}
                     />
                     <Button
                       type="text"
                       size="small"
                       icon={step.isBreakpoint ? <PauseCircleOutlined /> : <BugOutlined />}
+                      aria-label={step.isBreakpoint
+                        ? t('recipeEditor.removeBreakpoint', '移除断点')
+                        : t('recipeEditor.addBreakpoint', '添加断点')}
                       onClick={() => handleToggleBreakpoint(step.id, !step.isBreakpoint)}
                       className={step.isBreakpoint ? styles.breakpointButton : ''}
                     />
@@ -429,7 +433,12 @@ const RecipeEditor: React.FC<RecipeEditorProps> = ({
                         },
                       ]
                     }} trigger={['click']}>
-                      <Button type="text" size="small" icon={<SettingOutlined />} />
+                      <Button
+                        type="text"
+                        size="small"
+                        icon={<SettingOutlined />}
+                        aria-label={t('recipeEditor.stepActions', '步骤操作')}
+                      />
                     </Dropdown>
                   </div>
                 </div>

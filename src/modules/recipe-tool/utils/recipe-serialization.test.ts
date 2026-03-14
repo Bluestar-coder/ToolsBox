@@ -54,6 +54,7 @@ describe('recipe serialization', () => {
     };
 
     const serialized = serializeRecipe(recipe);
+    expect(serialized.version).toBe(2);
     expect(serialized.steps[0].operationId).toBe('base64_decode');
 
     const restored = deserializeRecipe(serialized, lookupOperation);

@@ -12,107 +12,20 @@ import { useTranslation } from 'react-i18next';
 import {
   deserializeRecipe,
   serializeRecipe,
-  serializeRecipes,
 } from '../utils/recipe-serialization';
+import {
+  getInitialRecipeState,
+  loadSavedRecipesFromStorage,
+  loadActiveRecipeId,
+  saveActiveRecipeId,
+  saveSavedRecipesToStorage,
+  upsertRecipe,
+} from '../utils/recipe-storage';
 import styles from './RecipeTool.module.css';
 
 interface RecipeToolProps {
   /** 工具ID */
   toolId?: string;
-}
-
-const SAVED_RECIPES_STORAGE_KEY = 'recipe-tool-saved-recipes';
-const ACTIVE_RECIPE_ID_STORAGE_KEY = 'recipe-tool-active-recipe-id';
-
-function getInitialRecipeState(operationsReady: boolean): {
-  savedRecipes: Recipe[];
-  activeRecipe: Recipe | null;
-} {
-  if (!operationsReady) {
-    return {
-      savedRecipes: [],
-      activeRecipe: null,
-    };
-  }
-
-  const savedRecipes = loadSavedRecipesFromStorage();
-  const activeRecipeId = loadActiveRecipeId();
-
-  return {
-    savedRecipes,
-    activeRecipe: activeRecipeId
-      ? savedRecipes.find(saved => saved.id === activeRecipeId) ?? null
-      : null,
-  };
-}
-
-function saveSavedRecipesToStorage(recipes: Recipe[]): void {
-  localStorage.setItem(
-    SAVED_RECIPES_STORAGE_KEY,
-    JSON.stringify(serializeRecipes(recipes))
-  );
-}
-
-function loadSavedRecipesFromStorage(): Recipe[] {
-  try {
-    const raw = localStorage.getItem(SAVED_RECIPES_STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-
-    if (!Array.isArray(parsed)) {
-      console.warn('Saved recipes payload is not an array, ignored.');
-      return [];
-    }
-
-    const loadedRecipes: Recipe[] = [];
-    parsed.forEach((item, index) => {
-      try {
-        loadedRecipes.push(
-          deserializeRecipe(item, operationId => operationRegistry.get(operationId))
-        );
-      } catch (error) {
-        console.warn(`Skipped invalid saved recipe at index ${index}:`, error);
-      }
-    });
-
-    return loadedRecipes;
-  } catch (error) {
-    console.warn('Failed to load saved recipes from localStorage:', error);
-    return [];
-  }
-}
-
-function saveActiveRecipeId(recipeId: string | null): void {
-  if (recipeId === null) {
-    localStorage.removeItem(ACTIVE_RECIPE_ID_STORAGE_KEY);
-  } else {
-    localStorage.setItem(ACTIVE_RECIPE_ID_STORAGE_KEY, recipeId);
-  }
-}
-
-function loadActiveRecipeId(): string | null {
-  return localStorage.getItem(ACTIVE_RECIPE_ID_STORAGE_KEY);
-}
-
-function upsertRecipe(recipes: Recipe[], targetRecipe: Recipe): { updatedRecipes: Recipe[]; updated: boolean } {
-  const byIdIndex = recipes.findIndex(saved => saved.id === targetRecipe.id);
-  if (byIdIndex >= 0) {
-    const updatedRecipes = [...recipes];
-    updatedRecipes[byIdIndex] = targetRecipe;
-    return { updatedRecipes, updated: true };
-  }
-
-  const byNameIndex = recipes.findIndex(saved => saved.name === targetRecipe.name);
-  if (byNameIndex >= 0) {
-    const updatedRecipes = [...recipes];
-    updatedRecipes[byNameIndex] = targetRecipe;
-    return { updatedRecipes, updated: true };
-  }
-
-  return {
-    updatedRecipes: [...recipes, targetRecipe],
-    updated: false,
-  };
 }
 
 /**
@@ -124,7 +37,7 @@ const RecipeTool: React.FC<RecipeToolProps> = ({ toolId }) => {
     import.meta.vitest || import.meta.env.MODE === 'test'
   );
   const [{ savedRecipes: initialSavedRecipes, activeRecipe: initialRecipe }] = useState(() =>
-    getInitialRecipeState(operationsReady)
+    getInitialRecipeState(operationsReady, (operationId) => operationRegistry.get(operationId))
   );
   const [savedRecipes, setSavedRecipes] = useState<Recipe[]>(initialSavedRecipes);
   const [recipe, setRecipe] = useState<Recipe | null>(initialRecipe);
@@ -137,15 +50,15 @@ const RecipeTool: React.FC<RecipeToolProps> = ({ toolId }) => {
 
     let active = true;
 
-    void ensureOperationsInitialized().then(() => {
-      if (!active) {
-        return;
-      }
+      void ensureOperationsInitialized().then(() => {
+        if (!active) {
+          return;
+        }
 
-      const loadedRecipes = loadSavedRecipesFromStorage();
-      setSavedRecipes(loadedRecipes);
+        const loadedRecipes = loadSavedRecipesFromStorage((operationId) => operationRegistry.get(operationId));
+        setSavedRecipes(loadedRecipes);
 
-      const activeRecipeId = loadActiveRecipeId();
+        const activeRecipeId = loadActiveRecipeId();
       setRecipe(
         activeRecipeId
           ? loadedRecipes.find(saved => saved.id === activeRecipeId) ?? null
@@ -180,12 +93,18 @@ const RecipeTool: React.FC<RecipeToolProps> = ({ toolId }) => {
       updatedAt: new Date(),
     };
 
-    const { updatedRecipes, updated } = upsertRecipe(savedRecipes, recipeToSave);
+    const { updatedRecipes, updated, nameConflictResolved, resolvedRecipe } = upsertRecipe(savedRecipes, recipeToSave);
     setSavedRecipes(updatedRecipes);
-    setRecipe(recipeToSave);
-    message.success(updated
-      ? t('recipeTool.recipeUpdated', 'Recipe已更新')
-      : t('recipeTool.recipeSaved', 'Recipe已保存'));
+    setRecipe(resolvedRecipe);
+    message.success(nameConflictResolved
+      ? t(
+          'recipeTool.recipeSavedRenamed',
+          'Recipe已保存，名称冲突，已自动重命名为 "{{name}}"',
+          { name: resolvedRecipe.name }
+        )
+      : updated
+        ? t('recipeTool.recipeUpdated', 'Recipe已更新')
+        : t('recipeTool.recipeSaved', 'Recipe已保存'));
   }, [savedRecipes, t]);
 
   // 加载Recipe
@@ -260,10 +179,19 @@ const RecipeTool: React.FC<RecipeToolProps> = ({ toolId }) => {
             ...importedRecipe,
             updatedAt: new Date(),
           };
-          
-          setSavedRecipes(previousRecipes => upsertRecipe(previousRecipes, normalizedImportedRecipe).updatedRecipes);
-          setRecipe(normalizedImportedRecipe);
-          message.success(t('recipeTool.recipeImported', 'Recipe已导入'));
+
+          setSavedRecipes((previousRecipes) => {
+            const result = upsertRecipe(previousRecipes, normalizedImportedRecipe);
+            setRecipe(result.resolvedRecipe);
+            message.success(result.nameConflictResolved
+              ? t(
+                  'recipeTool.recipeImportedRenamed',
+                  'Recipe已导入，名称冲突，已自动重命名为 "{{name}}"',
+                  { name: result.resolvedRecipe.name }
+                )
+              : t('recipeTool.recipeImported', 'Recipe已导入'));
+            return result.updatedRecipes;
+          });
         } catch (error) {
           message.error(t('recipeTool.importFailed', '导入失败: {{error}}', { 
             error: error instanceof Error ? error.message : String(error) 

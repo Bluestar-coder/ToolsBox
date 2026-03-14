@@ -147,4 +147,60 @@ describe('RecipeExecutor.executeRecipe', () => {
     expect(result.stepResults[0].step.id).toBe('step_2');
     expect(result.stepResults[0].input.dataType).toBe('url');
   });
+
+  it('returns failedStep and error when an operation reports failure', async () => {
+    const executor = new RecipeExecutor();
+    const operation: Operation = {
+      ...createOperation({
+        id: 'fail_step',
+        inputType: 'text',
+        outputType: 'text',
+      }),
+      execute: async () => ({
+        success: false,
+        output: {
+          data: '',
+          dataType: 'text',
+        },
+        error: 'step failed',
+      }),
+    };
+
+    const recipe = createRecipe(operation);
+    const result = await executor.executeRecipe(recipe, 'payload');
+
+    expect(result.isComplete).toBe(false);
+    expect(result.failedStep?.id).toBe('step_1');
+    expect(result.error).toBe('step failed');
+  });
+
+  it('can ignore the starting breakpoint when resuming execution', async () => {
+    const executor = new RecipeExecutor();
+    const recipe: Recipe = {
+      id: 'recipe-breakpoint',
+      name: 'breakpoint recipe',
+      steps: [
+        {
+          id: 'step_1',
+          operation: createOperation({
+            id: 'noop',
+            inputType: 'text',
+            outputType: 'text',
+          }),
+          params: {},
+          enabled: true,
+          isBreakpoint: true,
+        },
+      ],
+      createdAt: new Date('2026-01-01T00:00:00.000Z'),
+      updatedAt: new Date('2026-01-01T00:00:00.000Z'),
+    };
+
+    const paused = await executor.executeRecipe(recipe, 'payload');
+    expect(paused.isBreakpoint).toBe(true);
+
+    const resumed = await executor.executeRecipe(recipe, 'payload', 0, undefined, true);
+    expect(resumed.isComplete).toBe(true);
+    expect(resumed.stepResults).toHaveLength(1);
+  });
 });

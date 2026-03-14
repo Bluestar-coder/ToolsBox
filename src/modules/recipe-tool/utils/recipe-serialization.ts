@@ -1,5 +1,7 @@
 import type { Operation, OperationStep, Recipe } from '../../../core/operations';
 
+export const SERIALIZED_RECIPE_VERSION = 2;
+
 export interface SerializedRecipeStep {
   id: string;
   operationId: string;
@@ -9,6 +11,7 @@ export interface SerializedRecipeStep {
 }
 
 export interface SerializedRecipe {
+  version: number;
   id: string;
   name: string;
   description?: string;
@@ -47,6 +50,7 @@ function resolveOperationId(step: Record<string, unknown>, stepIndex: number): s
 
 export function serializeRecipe(recipe: Recipe): SerializedRecipe {
   return {
+    version: SERIALIZED_RECIPE_VERSION,
     id: recipe.id,
     name: recipe.name,
     description: recipe.description,
@@ -66,6 +70,30 @@ export function serializeRecipes(recipes: Recipe[]): SerializedRecipe[] {
   return recipes.map(serializeRecipe);
 }
 
+function normalizeSerializedRecipe(payload: Record<string, unknown>): SerializedRecipe {
+  const version = typeof payload.version === 'number' && Number.isFinite(payload.version)
+    ? Math.trunc(payload.version)
+    : 1;
+
+  switch (version) {
+    case 1:
+    case SERIALIZED_RECIPE_VERSION:
+      return {
+        version: SERIALIZED_RECIPE_VERSION,
+        id: typeof payload.id === 'string' ? payload.id : '',
+        name: typeof payload.name === 'string' ? payload.name : '',
+        description: typeof payload.description === 'string' ? payload.description : undefined,
+        steps: Array.isArray(payload.steps)
+          ? payload.steps.map((step) => step as SerializedRecipeStep)
+          : [],
+        createdAt: typeof payload.createdAt === 'string' ? payload.createdAt : '',
+        updatedAt: typeof payload.updatedAt === 'string' ? payload.updatedAt : '',
+      };
+    default:
+      throw new Error(`Unsupported recipe version: ${version}`);
+  }
+}
+
 export function deserializeRecipe(
   payload: unknown,
   lookupOperation: (operationId: string) => Operation | undefined
@@ -74,20 +102,21 @@ export function deserializeRecipe(
     throw new Error('Invalid recipe payload');
   }
 
-  const id = payload.id;
-  const name = payload.name;
+  const normalizedPayload = normalizeSerializedRecipe(payload);
+  const id = normalizedPayload.id;
+  const name = normalizedPayload.name;
   if (typeof id !== 'string' || !id.trim()) {
     throw new Error('Invalid recipe id');
   }
   if (typeof name !== 'string' || !name.trim()) {
     throw new Error('Invalid recipe name');
   }
-  if (!Array.isArray(payload.steps)) {
+  if (!Array.isArray(normalizedPayload.steps)) {
     throw new Error('Invalid recipe steps');
   }
 
   const now = new Date();
-  const steps: OperationStep[] = payload.steps.map((rawStep, index) => {
+  const steps: OperationStep[] = normalizedPayload.steps.map((rawStep, index) => {
     if (!isRecord(rawStep)) {
       throw new Error(`Step ${index + 1} is invalid`);
     }
@@ -112,10 +141,10 @@ export function deserializeRecipe(
   return {
     id,
     name,
-    description: typeof payload.description === 'string' ? payload.description : undefined,
+    description: normalizedPayload.description,
     steps,
-    createdAt: parseDate(payload.createdAt, now),
-    updatedAt: parseDate(payload.updatedAt, now),
+    createdAt: parseDate(normalizedPayload.createdAt, now),
+    updatedAt: parseDate(normalizedPayload.updatedAt, now),
   };
 }
 

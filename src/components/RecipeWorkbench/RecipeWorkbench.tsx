@@ -6,11 +6,12 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Layout, Card, Input, Button, Space, Alert, Spin, Empty } from 'antd';
 import { PlayCircleOutlined, BugOutlined, ClearOutlined, SaveOutlined } from '@ant-design/icons';
-import type { Operation, OperationStep, Recipe, RecipeExecutionResult, DataTypeDetection } from '../../core/operations';
-import { operationRegistry, recipeExecutor, dataTypeDetector } from '../../core/operations';
+import type { Operation, OperationStep, Recipe } from '../../core/operations';
+import { operationRegistry } from '../../core/operations';
 import OperationList from '../OperationList/OperationList';
 import RecipeEditor from '../RecipeEditor/RecipeEditor';
 import { useTranslation } from 'react-i18next';
+import { useRecipeExecution } from '../../modules/recipe-tool/hooks/useRecipeExecution';
 import styles from './RecipeWorkbench.module.css';
 
 const { Sider, Content } = Layout;
@@ -45,10 +46,18 @@ const RecipeWorkbench: React.FC<RecipeWorkbenchProps> = ({
   const [operations, setOperations] = useState<Operation[]>([]);
   const [loading, setLoading] = useState(true);
   const [recipe, setRecipe] = useState<Recipe>(initialRecipe || createEmptyRecipe());
-  const [inputData, setInputData] = useState('');
-  const [executionResult, setExecutionResult] = useState<RecipeExecutionResult | null>(null);
-  const [executing, setExecuting] = useState(false);
-  const [dataTypes, setDataTypes] = useState<DataTypeDetection[]>([]);
+  const {
+    inputData,
+    setInputData,
+    executionResult,
+    executing,
+    dataTypes,
+    clearInput,
+    resetExecutionResult,
+    executeRecipe,
+    debugRecipe,
+    continueExecution,
+  } = useRecipeExecution();
 
   // 加载操作列表
   useEffect(() => {
@@ -67,16 +76,6 @@ const RecipeWorkbench: React.FC<RecipeWorkbenchProps> = ({
     return unsubscribe;
   }, []);
 
-  // 检测输入数据类型
-  useEffect(() => {
-    if (inputData) {
-      const types = dataTypeDetector.detectDataTypes(inputData);
-      setDataTypes(types);
-    } else {
-      setDataTypes([]);
-    }
-  }, [inputData]);
-
   // 同步父组件传入的初始Recipe（加载、导入、清空等场景）
   useEffect(() => {
     if (initialRecipe) {
@@ -84,15 +83,15 @@ const RecipeWorkbench: React.FC<RecipeWorkbenchProps> = ({
     } else {
       setRecipe(createEmptyRecipe());
     }
-    setExecutionResult(null);
-  }, [initialRecipe, createEmptyRecipe]);
+    resetExecutionResult();
+  }, [initialRecipe, createEmptyRecipe, resetExecutionResult]);
 
   // 处理Recipe更新
   const handleRecipeChange = useCallback((newRecipe: Recipe) => {
     setRecipe(newRecipe);
-    setExecutionResult(null); // 清除之前的执行结果
+    resetExecutionResult();
     onRecipeChange?.(newRecipe);
-  }, [onRecipeChange]);
+  }, [onRecipeChange, resetExecutionResult]);
 
   // 从左侧操作列表快速添加步骤
   const handleAddOperationFromList = useCallback((operation: Operation) => {
@@ -113,80 +112,8 @@ const RecipeWorkbench: React.FC<RecipeWorkbenchProps> = ({
     };
     setRecipe(updatedRecipe);
     onRecipeChange?.(updatedRecipe);
-    setExecutionResult(null);
-  }, [onRecipeChange, recipe]);
-
-  // 执行Recipe
-  const handleExecute = useCallback(async (execRecipe: Recipe) => {
-    if (!inputData.trim()) {
-      return;
-    }
-
-    setExecuting(true);
-    setExecutionResult(null);
-
-    try {
-      const result = await recipeExecutor.executeRecipe(execRecipe, inputData);
-      setExecutionResult(result);
-    } catch (error) {
-      console.error('执行Recipe失败:', error);
-      setExecutionResult({
-        isComplete: false,
-        data: inputData,
-        dataType: 'text',
-        stepResults: [],
-      });
-    } finally {
-      setExecuting(false);
-    }
-  }, [inputData]);
-
-  // 调试Recipe
-  const handleDebug = useCallback(async (
-    execRecipe: Recipe,
-    stepId?: string,
-    startData?: string,
-    startDataType?: string
-  ) => {
-    const executionInput = startData ?? inputData;
-    if (!executionInput.trim()) {
-      return;
-    }
-
-    setExecuting(true);
-    setExecutionResult(null);
-
-    try {
-      // 使用启用步骤的索引，避免禁用步骤导致的索引错位
-      const enabledSteps = execRecipe.steps.filter(step => step.enabled);
-      const stepIndex = stepId ? enabledSteps.findIndex(step => step.id === stepId) : 0;
-      const safeStepIndex = stepIndex >= 0 ? stepIndex : 0;
-      const result = await recipeExecutor.executeRecipe(
-        execRecipe,
-        executionInput,
-        safeStepIndex,
-        startDataType
-      );
-      setExecutionResult(result);
-    } catch (error) {
-      console.error('调试Recipe失败:', error);
-      setExecutionResult({
-        isComplete: false,
-        data: executionInput,
-        dataType: 'text',
-        stepResults: [],
-      });
-    } finally {
-      setExecuting(false);
-    }
-  }, [inputData]);
-
-  // 清空输入
-  const handleClearInput = useCallback(() => {
-    setInputData('');
-    setExecutionResult(null);
-    setDataTypes([]);
-  }, []);
+    resetExecutionResult();
+  }, [onRecipeChange, recipe, resetExecutionResult]);
 
   // 保存Recipe
   const handleSave = useCallback(() => {
@@ -229,10 +156,24 @@ const RecipeWorkbench: React.FC<RecipeWorkbenchProps> = ({
     if (!executionResult) return null;
 
     if (!executionResult.isComplete && !executionResult.isBreakpoint) {
-      return (
+          return (
         <Alert
           title={t('recipeWorkbench.executionFailed', '执行失败')}
-          description={t('recipeWorkbench.executionFailedDesc', 'Recipe执行过程中发生错误，请检查步骤配置')}
+          description={
+            <div>
+              <div>{t('recipeWorkbench.executionFailedDesc', 'Recipe执行过程中发生错误，请检查步骤配置')}</div>
+              {executionResult.failedStep && (
+                <div>
+                  {t('recipeWorkbench.failedStep', '失败步骤')}: {executionResult.failedStep.operation.name}
+                </div>
+              )}
+              {executionResult.error && (
+                <div>
+                  {t('recipeWorkbench.errorDetail', '错误详情')}: {executionResult.error}
+                </div>
+              )}
+            </div>
+          }
           type="error"
           showIcon
           className={styles.executionAlert}
@@ -255,35 +196,7 @@ const RecipeWorkbench: React.FC<RecipeWorkbenchProps> = ({
               type="primary"
               icon={<PlayCircleOutlined />}
               onClick={() => {
-                if (executionResult.nextStep) {
-                  const enabledSteps = recipe.steps.filter(step => step.enabled);
-                  const currentStepIndex = enabledSteps.findIndex(
-                    step => step.id === executionResult.nextStep?.id
-                  );
-                  const nextStepId = currentStepIndex >= 0
-                    ? enabledSteps[currentStepIndex + 1]?.id
-                    : undefined;
-
-                  if (nextStepId) {
-                    void handleDebug(
-                      recipe,
-                      nextStepId,
-                      executionResult.data,
-                      executionResult.dataType
-                    );
-                    return;
-                  }
-
-                  setExecutionResult(previousResult => {
-                    if (!previousResult) return previousResult;
-                    return {
-                      ...previousResult,
-                      isBreakpoint: false,
-                      isComplete: true,
-                      nextStep: undefined,
-                    };
-                  });
-                }
+                void continueExecution(recipe);
               }}
             >
               {t('recipeWorkbench.continueExecution', '继续执行')}
@@ -351,8 +264,8 @@ const RecipeWorkbench: React.FC<RecipeWorkbenchProps> = ({
             <RecipeEditor
               recipe={recipe}
               onRecipeChange={handleRecipeChange}
-              onExecute={handleExecute}
-              onDebug={handleDebug}
+              onExecute={executeRecipe}
+              onDebug={debugRecipe}
               operations={operations}
             />
           </div>
@@ -373,7 +286,7 @@ const RecipeWorkbench: React.FC<RecipeWorkbenchProps> = ({
                       </Button>
                       <Button
                         icon={<ClearOutlined />}
-                        onClick={handleClearInput}
+                        onClick={clearInput}
                       >
                         {t('recipeWorkbench.clear', '清空')}
                       </Button>
@@ -403,7 +316,9 @@ const RecipeWorkbench: React.FC<RecipeWorkbenchProps> = ({
                       <Button
                         type="primary"
                         icon={<PlayCircleOutlined />}
-                        onClick={() => handleExecute(recipe)}
+                        onClick={() => {
+                          void executeRecipe(recipe);
+                        }}
                         loading={executing}
                         disabled={!inputData.trim() || !hasEnabledSteps}
                       >
@@ -413,7 +328,7 @@ const RecipeWorkbench: React.FC<RecipeWorkbenchProps> = ({
                         icon={<BugOutlined />}
                         onClick={() => {
                           const firstEnabledStep = recipe.steps.find(step => step.enabled);
-                          void handleDebug(recipe, firstEnabledStep?.id);
+                          void debugRecipe(recipe, firstEnabledStep?.id);
                         }}
                         disabled={!inputData.trim() || !hasEnabledSteps}
                       >

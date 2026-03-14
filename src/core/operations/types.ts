@@ -132,6 +132,10 @@ export interface RecipeExecutionResult {
   isComplete: boolean;
   /** 是否在断点处停止 */
   isBreakpoint?: boolean;
+  /** 全局错误信息 */
+  error?: string;
+  /** 失败步骤 */
+  failedStep?: OperationStep;
   /** 当前数据 */
   data: string;
   /** 当前数据类型 */

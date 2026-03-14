@@ -130,7 +130,7 @@ describe('RecipeTool', () => {
     expect(screen.getByRole('button', { name: '加载 (1)' })).toBeEnabled();
   });
 
-  it('updates existing saved recipe by name to avoid duplicate entries', async () => {
+  it('creates a uniquely named recipe instead of silently overwriting by name', async () => {
     render(<RecipeTool />);
 
     const saveButton = screen.getByRole('button', { name: /保存/ });
@@ -147,8 +147,10 @@ describe('RecipeTool', () => {
     const rawSavedRecipes = localStorage.getItem('recipe-tool-saved-recipes');
     expect(rawSavedRecipes).not.toBeNull();
     const savedRecipes = JSON.parse(rawSavedRecipes as string) as Array<{ id: string; name: string }>;
-    expect(savedRecipes).toHaveLength(1);
+    expect(savedRecipes).toHaveLength(2);
     expect(savedRecipes[0].name).toBe('Mock Recipe');
-    expect(savedRecipes[0].id).toBe('recipe_test_v2');
+    expect(savedRecipes[0].id).toBe('recipe_test');
+    expect(savedRecipes[1].id).toBe('recipe_test_v2');
+    expect(savedRecipes[1].name).toBe('Mock Recipe (2)');
   });
 });
