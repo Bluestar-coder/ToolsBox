@@ -199,9 +199,9 @@ This makes the quality model more resilient for a modular product and reduces th
 ### CI and Desktop Automation
 
 - CI workflow: `.github/workflows/ci.yml`
-- Tauri desktop smoke can be triggered manually through `workflow_dispatch`
+- Tauri desktop smoke is wired into CI and runs on a macOS runner
 - Desktop smoke script: `scripts/tauri-desktop-smoke.mjs`
-- Current smoke scope includes `tauri dev` boot, port cleanup, macOS window activation, screenshot analysis, blank-screen detection, and artifact upload
+- Current smoke scope includes `tauri dev` boot, port cleanup, macOS window activation, built-in window capture, luminance analysis, blank-screen detection, and artifact upload
 
 ## Security and Privacy
 
@@ -260,6 +260,14 @@ Run the desktop smoke test:
 ```bash
 npm run test:e2e:tauri
 ```
+
+Notes:
+
+- The script starts `npm run tauri dev` by default
+- The current smoke flow targets macOS desktop verification
+- Local runs no longer depend on an external screenshot helper and use the built-in macOS window capture path
+- Reuse an existing Vite/Tauri environment with `TOOLSBOX_TAURI_SKIP_START=1`
+- Use `TOOLSBOX_TAURI_ARTIFACT_DIR` to persist the screenshot, luminance analysis, and Tauri log output
 
 Build the desktop application:
 

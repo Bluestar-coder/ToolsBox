@@ -199,9 +199,9 @@ npm run security:tauri:check
 ### CI 与桌面自动化
 
 - CI 工作流位于 `.github/workflows/ci.yml`
-- Tauri 桌面烟测支持通过 `workflow_dispatch` 手动触发
+- Tauri 桌面烟测已接入 CI，并在 macOS runner 上执行
 - 桌面 smoke 脚本位于 `scripts/tauri-desktop-smoke.mjs`
-- 当前 smoke 能力包括：启动 `tauri dev`、自动清理端口冲突、激活 macOS 桌面窗口、截图分析与白屏检测、上传测试产物
+- 当前 smoke 能力包括：启动 `tauri dev`、自动清理端口冲突、激活 macOS 桌面窗口、内建窗口截图、亮度分析与白屏检测、上传测试产物
 
 ## 安全与隐私
 
@@ -260,6 +260,14 @@ npm run tauri dev
 ```bash
 npm run test:e2e:tauri
 ```
+
+说明：
+
+- 该脚本默认启动 `npm run tauri dev`
+- 当前 smoke 流程面向 macOS 桌面验证
+- 本地运行不再依赖外部截图 helper，直接使用 macOS 内建窗口截图
+- 若要复用已运行的 Vite/Tauri 环境，可设置 `TOOLSBOX_TAURI_SKIP_START=1`
+- 可通过 `TOOLSBOX_TAURI_ARTIFACT_DIR` 持久化截图、亮度分析结果与 Tauri 日志
 
 构建桌面应用：
 

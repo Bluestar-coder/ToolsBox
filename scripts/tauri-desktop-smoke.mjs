@@ -7,9 +7,6 @@ import process from 'node:process';
 
 const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 const BASE_URL = process.env.TOOLSBOX_TAURI_DEV_URL || 'http://127.0.0.1:5173';
-const SCREENSHOT_HELPER =
-  process.env.TOOLSBOX_SCREENSHOT_HELPER ||
-  path.join(os.homedir(), '.codex', 'skills', 'screenshot', 'scripts', 'take_screenshot.py');
 const ANALYZER = path.resolve('scripts/analyze_png_whiteness.py');
 const SKIP_START = process.env.TOOLSBOX_TAURI_SKIP_START === '1';
 const APP_NAME = process.env.TOOLSBOX_TAURI_APP_NAME || 'ToolsBox';
@@ -88,6 +85,61 @@ function writeArtifacts(screenshotPath, analysis, tauriLogs) {
     'utf8'
   );
   fs.writeFileSync(path.join(artifactDir, 'tauri-dev.log'), tauriLogs, 'utf8');
+}
+
+function createTempScreenshotPath() {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'toolsbox-tauri-smoke-'));
+  return path.join(tmpDir, 'window.png');
+}
+
+function parseWindowBounds(output) {
+  const [x, y, width, height] = output
+    .split(',')
+    .map((value) => Number.parseInt(value.trim(), 10));
+
+  if ([x, y, width, height].some((value) => Number.isNaN(value))) {
+    throw new Error(`Invalid window bounds returned by osascript: ${output}`);
+  }
+
+  return { x, y, width, height };
+}
+
+function getWindowBoundsByPid(pid) {
+  const appScript = `
+    tell application id "${APP_ID}"
+      set {leftPos, topPos, rightPos, bottomPos} to bounds of front window
+      return (leftPos as text) & "," & (topPos as text) & "," & ((rightPos - leftPos) as text) & "," & ((bottomPos - topPos) as text)
+    end tell
+  `;
+
+  try {
+    return parseWindowBounds(runCommand('osascript', ['-e', appScript]));
+  } catch {
+    const systemEventsScript = `
+      tell application "System Events"
+        tell first application process whose unix id is ${pid}
+          tell first window
+            set {xPos, yPos} to position
+            set {windowWidth, windowHeight} to size
+            return (xPos as text) & "," & (yPos as text) & "," & (windowWidth as text) & "," & (windowHeight as text)
+          end tell
+        end tell
+      end tell
+    `;
+
+    return parseWindowBounds(runCommand('osascript', ['-e', systemEventsScript]));
+  }
+}
+
+function takeWindowScreenshot(pid) {
+  const { x, y, width, height } = getWindowBoundsByPid(pid);
+  if (width <= 0 || height <= 0) {
+    throw new Error(`Invalid Tauri window size: ${width}x${height}`);
+  }
+
+  const screenshotPath = createTempScreenshotPath();
+  runCommand('screencapture', ['-x', '-R', `${x},${y},${width},${height}`, screenshotPath]);
+  return screenshotPath;
 }
 
 function activateMacApp() {
@@ -223,7 +275,7 @@ async function main() {
       throw new Error(`Tauri app is not frontmost (expected pid ${tauriPid}, got ${frontmostPid})`);
     }
 
-    const screenshotPath = runCommand('python3', [SCREENSHOT_HELPER, '--mode', 'temp', '--active-window']);
+    const screenshotPath = takeWindowScreenshot(tauriPid);
     const analysis = JSON.parse(runCommand('python3', [ANALYZER, screenshotPath]));
     writeArtifacts(screenshotPath, analysis, tauriLogs);
 

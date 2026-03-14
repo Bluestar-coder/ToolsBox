@@ -84,8 +84,10 @@ jobs:
 
   tauri-desktop-smoke:
     name: Tauri Desktop Smoke
-    if: github.event_name == 'workflow_dispatch'
-    runs-on: [self-hosted, macOS]
+    runs-on: macos-latest
+    needs:
+      - frontend
+      - tauri-check
     timeout-minutes: 15
     steps:
       - name: Checkout
@@ -96,6 +98,14 @@ jobs:
         with:
           node-version: 24
           cache: npm
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust artifacts
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
 
       - name: Install dependencies
         run: npm ci
