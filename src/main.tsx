@@ -7,13 +7,14 @@ import BootstrapFallback from './components/BootstrapFallback'
 import { installRuntimeWarningFilter } from './utils/runtime-warnings'
 
 const AppShell = lazy(() => import('./AppShell'))
+const sentryEnabled = import.meta.env.PROD && !!import.meta.env.VITE_SENTRY_DSN
 
 installRuntimeWarningFilter()
 
 async function bootstrap() {
   await i18nReady
 
-  if (import.meta.env.PROD) {
+  if (sentryEnabled) {
     void import('./utils/sentry').then(({ initSentry }) => {
       initSentry()
     })

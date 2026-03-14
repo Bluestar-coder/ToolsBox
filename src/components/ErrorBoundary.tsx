@@ -6,6 +6,8 @@ import i18n from '../i18n';
 import styles from './styles/ErrorBoundary.module.css';
 import { AppIcon } from './icons/AppIcon';
 
+const sentryEnabled = import.meta.env.PROD && !!import.meta.env.VITE_SENTRY_DSN;
+
 interface ErrorBoundaryProps {
   children: ReactNode;
 }
@@ -37,13 +39,15 @@ export class ErrorBoundaryClass extends Component<ErrorBoundaryProps, ErrorBound
     this.setState({ errorInfo });
     logger.error('ErrorBoundary caught an error:', error, errorInfo);
 
-    void import('../utils/sentry').then(({ captureError }) => {
-      captureError(error, {
-        react: {
-          componentStack: errorInfo.componentStack,
-        },
+    if (sentryEnabled) {
+      void import('../utils/sentry').then(({ captureError }) => {
+        captureError(error, {
+          react: {
+            componentStack: errorInfo.componentStack,
+          },
+        });
       });
-    });
+    }
   }
 
   // 重置错误状态
