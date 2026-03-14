@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import PluginManager from './PluginManager';
-import type { PluginConfig, PluginEvent } from './types';
+import type { Plugin, PluginConfig, PluginEvent, PluginMetadata } from './types';
 
 type FixtureState = {
   initializeCount: number;
@@ -32,6 +32,11 @@ function readFixtureState(): FixtureState {
     registerCount: 0,
     unregisterCount: 0,
   };
+}
+
+function seedPlugin(manager: PluginManager, metadata: PluginMetadata): void {
+  const pluginStore = (manager as unknown as { plugins: Map<string, PluginMetadata> }).plugins;
+  pluginStore.set(metadata.id, metadata);
 }
 
 describe('PluginManager', () => {
@@ -102,5 +107,132 @@ describe('PluginManager', () => {
       error: 'fixture initialize failed',
     });
     expect(manager.getPluginById('failing-plugin-1.0.0')?.status).toBe('error');
+  });
+
+  it('rejects duplicate loads and supports listener removal', async () => {
+    const manager = new PluginManager();
+    const listener = vi.fn();
+    manager.onEvent(listener);
+    manager.offEvent(listener);
+
+    const firstLoad = await manager.loadPlugin(successConfig);
+    const secondLoad = await manager.loadPlugin(successConfig);
+
+    expect(firstLoad.success).toBe(true);
+    expect(secondLoad).toMatchObject({
+      success: false,
+      error: '插件已加载',
+    });
+    expect(listener).not.toHaveBeenCalled();
+    expect(manager.getPlugins()).toHaveLength(1);
+  });
+
+  it('returns false when enabling, disabling or unloading an unknown plugin', async () => {
+    const manager = new PluginManager();
+
+    await expect(manager.enablePlugin('missing-plugin')).resolves.toBe(false);
+    await expect(manager.disablePlugin('missing-plugin')).resolves.toBe(false);
+    await expect(manager.unloadPlugin('missing-plugin')).resolves.toBe(false);
+  });
+
+  it('re-initializes seeded metadata and rejects unsafe enable entry points', async () => {
+    const manager = new PluginManager();
+    const events: PluginEvent['type'][] = [];
+    manager.onEvent((event) => events.push(event.type));
+
+    seedPlugin(manager, {
+      id: 'lazy-plugin-1.0.0',
+      config: {
+        ...successConfig,
+        name: 'lazy-plugin',
+      },
+      status: 'disabled',
+    });
+
+    await expect(manager.enablePlugin('lazy-plugin-1.0.0')).resolves.toBe(true);
+    expect(manager.getPluginById('lazy-plugin-1.0.0')).toMatchObject({
+      status: 'enabled',
+    });
+    expect(readFixtureState()).toMatchObject({
+      initializeCount: 1,
+      registerCount: 1,
+    });
+    expect(events).toEqual(['PLUGIN_ENABLED']);
+
+    seedPlugin(manager, {
+      id: 'unsafe-plugin-1.0.0',
+      config: {
+        ...successConfig,
+        name: 'unsafe-plugin',
+        entryPoint: 'data:text/javascript,evil',
+      },
+      status: 'disabled',
+    });
+
+    await expect(manager.enablePlugin('unsafe-plugin-1.0.0')).resolves.toBe(false);
+    expect(manager.getPluginById('unsafe-plugin-1.0.0')).toMatchObject({
+      status: 'error',
+      error: expect.stringContaining('不安全的插件入口点路径'),
+    });
+  });
+
+  it('surfaces plugin errors when unregister or destroy fails', async () => {
+    const manager = new PluginManager();
+    const events: PluginEvent[] = [];
+    manager.onEvent((event) => events.push(event));
+
+    const unregisterFailurePlugin: Plugin = {
+      initialize: vi.fn().mockResolvedValue(undefined),
+      destroy: vi.fn().mockResolvedValue(undefined),
+      unregisterModules: vi.fn(() => {
+        throw new Error('unregister failed');
+      }),
+    };
+
+    seedPlugin(manager, {
+      id: 'broken-disable-1.0.0',
+      config: {
+        ...successConfig,
+        name: 'broken-disable',
+      },
+      status: 'enabled',
+      instance: unregisterFailurePlugin,
+    });
+
+    await expect(manager.disablePlugin('broken-disable-1.0.0')).resolves.toBe(false);
+    expect(manager.getPluginById('broken-disable-1.0.0')).toMatchObject({
+      status: 'error',
+      error: 'unregister failed',
+    });
+    expect(events.at(-1)).toMatchObject({
+      type: 'PLUGIN_ERROR',
+      error: 'unregister failed',
+    });
+
+    const destroyFailurePlugin: Plugin = {
+      initialize: vi.fn().mockResolvedValue(undefined),
+      destroy: vi.fn().mockRejectedValue(new Error('destroy failed')),
+      unregisterModules: vi.fn(),
+    };
+
+    seedPlugin(manager, {
+      id: 'broken-unload-1.0.0',
+      config: {
+        ...successConfig,
+        name: 'broken-unload',
+      },
+      status: 'enabled',
+      instance: destroyFailurePlugin,
+    });
+
+    await expect(manager.unloadPlugin('broken-unload-1.0.0')).resolves.toBe(false);
+    expect(manager.getPluginById('broken-unload-1.0.0')).toMatchObject({
+      status: 'error',
+      error: 'destroy failed',
+    });
+    expect(events.at(-1)).toMatchObject({
+      type: 'PLUGIN_ERROR',
+      error: 'destroy failed',
+    });
   });
 });
