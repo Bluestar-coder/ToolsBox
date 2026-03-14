@@ -159,6 +159,9 @@ export default defineConfig({
           if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/')) {
             return 'react-vendor';
           }
+          if (id.includes('node_modules/react-router/') || id.includes('node_modules/react-router-dom/')) {
+            return 'router-vendor';
+          }
 
           if (id.includes('node_modules/@ant-design/icons/')) {
             return 'antd-icons';
