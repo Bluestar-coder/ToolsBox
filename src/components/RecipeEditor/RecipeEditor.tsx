@@ -338,7 +338,7 @@ const RecipeEditor: React.FC<RecipeEditorProps> = ({
               icon: typeof operation.icon === 'string' ? getOperationIcon(operation.icon) : operation.icon,
               label: operation.name,
               onClick: () => handleAddOperation(operation),
-            })) }} placement="bottomCenter">
+            })) }} placement="bottom">
               <Button type="primary" icon={<PlusOutlined />}>
                 {t('recipeEditor.addFirstOperation', '添加第一个操作')}
               </Button>
