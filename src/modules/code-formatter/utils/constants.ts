@@ -1,4 +1,4 @@
-import type { SupportedLanguage } from './formatters';
+import type { SupportedLanguage } from './formatter-types';
 
 export interface LanguageOption {
   value: SupportedLanguage;

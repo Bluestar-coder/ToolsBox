@@ -7,9 +7,9 @@ import {
   ApartmentOutlined, SearchOutlined, SwapOutlined, UnlockOutlined, LockOutlined, CheckCircleOutlined,
 } from '@ant-design/icons';
 import type { DataNode } from 'antd/es/tree';
-import { formatJSON, minifyJSON } from '../../utils/formatters';
 import {
   parseJsonToTree, getJsonDepth, expandToDepth, unescapeJson, escapeJson,
+  formatJsonDocument, minifyJsonDocument,
   getJsonStats, queryJsonPath, compareJson, type JsonNode, type JsonStats,
 } from '../../utils/json-utils';
 import { checkJsonSyntax, type SyntaxCheckResult } from '../../utils/syntax-checker';
@@ -73,7 +73,7 @@ const JsonTab: React.FC = () => {
     }
     
     try {
-      const result = await formatJSON(input, { indentSize, useTabs: false });
+      const result = formatJsonDocument(input, indentSize);
       setOutput(result);
       setStats(getJsonStats(input));
       message.success('格式化成功');
@@ -102,7 +102,7 @@ const JsonTab: React.FC = () => {
       return;
     }
     try {
-      const result = minifyJSON(input);
+      const result = minifyJsonDocument(input);
       setOutput(result);
       message.success('压缩成功');
     } catch (error) {

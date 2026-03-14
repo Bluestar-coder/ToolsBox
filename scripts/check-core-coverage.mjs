@@ -23,7 +23,7 @@ const GROUP_RULES = [
   {
     name: 'formatter',
     prefixes: ['src/modules/code-formatter/'],
-    thresholds: { statements: 35, functions: 35, branches: 30, lines: 35 },
+    thresholds: { statements: 40, functions: 40, branches: 35, lines: 40 },
   },
   {
     name: 'http-debug',
@@ -67,7 +67,21 @@ const GROUP_RULES = [
   {
     name: 'time',
     prefixes: ['src/modules/time-tool/'],
-    thresholds: { statements: 55, functions: 45, branches: 25, lines: 55 },
+    thresholds: { statements: 58, functions: 47, branches: 25, lines: 58 },
+  },
+  {
+    name: 'plugins',
+    prefixes: ['src/plugins/PluginManager.ts'],
+    thresholds: { statements: 70, functions: 90, branches: 40, lines: 70 },
+  },
+  {
+    name: 'infrastructure',
+    prefixes: [
+      'src/hooks/useModules.ts',
+      'src/router/constants.ts',
+      'src/utils/runtime-info.ts',
+    ],
+    thresholds: { statements: 75, functions: 65, branches: 80, lines: 75 },
   },
 ];
 

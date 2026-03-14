@@ -10,37 +10,34 @@ import {
 } from '../../utils/barcode-detector';
 
 const { TextArea } = Input;
-type Html5QrcodeInstance = {
-  start: (
-    cameraConfig: { facingMode: string },
-    config: { fps: number; qrbox: { width: number; height: number } },
-    onSuccess: (decodedText: string) => void,
-    onError: (errorMessage: string) => void
-  ) => Promise<void>;
+type JsQrScannerInstance = {
+  start: (onDetected: (decodedText: string) => void, onError?: (error: Error) => void) => Promise<void>;
   stop: () => Promise<void>;
-  scanFile: (file: File, showImage?: boolean) => Promise<string>;
 };
 
-let html5QrcodeCtorPromise: Promise<new (elementId: string) => Html5QrcodeInstance> | null = null;
+let jsQrFallbackPromise:
+  | Promise<{
+      createJsQrScanner: (videoElement: HTMLVideoElement) => JsQrScannerInstance;
+      scanQrCodeFileWithJsQr: (file: Blob) => Promise<string>;
+    }>
+  | null = null;
 
-async function getHtml5QrcodeCtor(): Promise<new (elementId: string) => Html5QrcodeInstance> {
-  if (!html5QrcodeCtorPromise) {
-    html5QrcodeCtorPromise = import('html5-qrcode').then((mod) => mod.Html5Qrcode);
+async function loadJsQrFallback() {
+  if (!jsQrFallbackPromise) {
+    jsQrFallbackPromise = import('../../utils/jsqr-fallback');
   }
-  return html5QrcodeCtorPromise;
+  return jsQrFallbackPromise;
 }
 
 const ScanTab: React.FC = () => {
   const { t } = useTranslation();
   const [result, setResult] = useState('');
   const [scanning, setScanning] = useState(false);
-  const [nativeScanning, setNativeScanning] = useState(false);
   const [cameraError, setCameraError] = useState<string>('');
   const [pasteLoading, setPasteLoading] = useState(false);
-  const html5QrCodeRef = useRef<Html5QrcodeInstance | null>(null);
+  const jsQrScannerRef = useRef<JsQrScannerInstance | null>(null);
   const nativeSessionRef = useRef<{ stop: () => Promise<void> } | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const scannerContainerId = 'qr-scanner-container';
 
   const stopScanning = useCallback(async () => {
     if (nativeSessionRef.current) {
@@ -51,15 +48,14 @@ const ScanTab: React.FC = () => {
       }
       nativeSessionRef.current = null;
     }
-    if (html5QrCodeRef.current) {
+    if (jsQrScannerRef.current) {
       try {
-        await html5QrCodeRef.current.stop();
+        await jsQrScannerRef.current.stop();
       } catch {
         // ignore
       }
-      html5QrCodeRef.current = null;
+      jsQrScannerRef.current = null;
     }
-    setNativeScanning(false);
     setScanning(false);
   }, []);
 
@@ -71,9 +67,8 @@ const ScanTab: React.FC = () => {
       }
     }
 
-    const Html5Qrcode = await getHtml5QrcodeCtor();
-    const html5QrCode = new Html5Qrcode('qr-file-scanner');
-    return html5QrCode.scanFile(file as File, true);
+    const { scanQrCodeFileWithJsQr } = await loadJsQrFallback();
+    return scanQrCodeFileWithJsQr(file);
   }, []);
 
   // 从剪贴板粘贴图片识别
@@ -148,29 +143,27 @@ const ScanTab: React.FC = () => {
 
         if (nativeSession) {
           nativeSessionRef.current = nativeSession;
-          setNativeScanning(true);
           setScanning(true);
           return;
         }
       }
 
-      const Html5Qrcode = await getHtml5QrcodeCtor();
-      const html5QrCode = new Html5Qrcode(scannerContainerId);
-      html5QrCodeRef.current = html5QrCode;
+      if (!nativeVideo) {
+        throw new Error('Video element missing');
+      }
 
-      await html5QrCode.start(
-        { facingMode: 'environment' },
-        {
-          fps: 10,
-          qrbox: { width: 250, height: 250 },
-        },
+      const { createJsQrScanner } = await loadJsQrFallback();
+      const scanner = createJsQrScanner(nativeVideo);
+      jsQrScannerRef.current = scanner;
+
+      await scanner.start(
         (decodedText) => {
           setResult(decodedText);
           message.success(t('modules.qrcode.scanSuccess'));
-          stopScanning();
+          void stopScanning();
         },
-        () => {
-          // ignore scan errors
+        (error) => {
+          logger.warn('Fallback QR scan warning:', error);
         }
       );
       setScanning(true);
@@ -210,27 +203,17 @@ const ScanTab: React.FC = () => {
             {cameraError && (
               <Alert title={cameraError} type="error" showIcon closable />
             )}
-            
-            <div
-              id={scannerContainerId}
-              style={{
-                width: '100%',
-                minHeight: scanning ? 300 : 0,
-                display: scanning && !nativeScanning ? 'block' : 'none',
-              }}
-            />
             <video
               ref={videoRef}
               style={{
                 width: '100%',
-                minHeight: nativeScanning ? 300 : 0,
-                display: nativeScanning ? 'block' : 'none',
+                minHeight: scanning ? 300 : 0,
+                display: scanning ? 'block' : 'none',
                 borderRadius: 12,
                 background: '#000',
               }}
             />
-            <div id="qr-file-scanner" style={{ display: 'none' }} />
-            
+
             <Space wrap>
               {!scanning ? (
                 <Button

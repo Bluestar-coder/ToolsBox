@@ -154,7 +154,7 @@ export default defineConfig({
           if (id.includes('node_modules/qrcode')) {
             return 'qrcode';
           }
-          if (id.includes('node_modules/html5-qrcode/')) {
+          if (id.includes('node_modules/jsqr/')) {
             return 'qrcode-scanner';
           }
           // 代码高亮相关库

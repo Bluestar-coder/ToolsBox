@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { Button, Space, message, Select, Row, Col, Tooltip, Switch, Alert, List } from 'antd';
 import { CopyOutlined, ClearOutlined, FormatPainterOutlined, CompressOutlined, CheckCircleOutlined } from '@ant-design/icons';
-import { formatCode, minifyCode, type SupportedLanguage, type FormatOptions } from '../../utils/formatters';
+import type { GeneralFormatterLanguage, FormatOptions } from '../../utils/formatter-types';
 import { languageOptions, indentSizeOptions } from '../../utils/constants';
 import { checkSyntax, type SyntaxCheckResult } from '../../utils/syntax-checker';
 import CodeEditor from '../CodeEditor';
@@ -12,13 +12,13 @@ const generalLanguages = languageOptions.filter(
 );
 
 interface GeneralTabProps {
-  defaultLanguage?: SupportedLanguage;
+  defaultLanguage?: GeneralFormatterLanguage;
 }
 
 const GeneralTab: React.FC<GeneralTabProps> = ({ defaultLanguage = 'javascript' }) => {
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
-  const [language, setLanguage] = useState<SupportedLanguage>(defaultLanguage);
+  const [language, setLanguage] = useState<GeneralFormatterLanguage>(defaultLanguage);
   const [indentSize, setIndentSize] = useState(2);
   const [useTabs, setUseTabs] = useState(false);
   const [syntaxResult, setSyntaxResult] = useState<SyntaxCheckResult | null>(null);
@@ -35,7 +35,8 @@ const GeneralTab: React.FC<GeneralTabProps> = ({ defaultLanguage = 'javascript' 
       setSyntaxResult(syntax);
 
       const options: FormatOptions = { indentSize, useTabs };
-      const result = await formatCode(input, language, options);
+      const { formatGeneralCode } = await import('../../utils/general-formatters');
+      const result = await formatGeneralCode(input, language, options);
       setOutput(result);
 
       if (!syntax.valid) {
@@ -59,13 +60,14 @@ const GeneralTab: React.FC<GeneralTabProps> = ({ defaultLanguage = 'javascript' 
     }
   }, [input, language, indentSize, useTabs]);
 
-  const handleMinify = useCallback(() => {
+  const handleMinify = useCallback(async () => {
     if (!input.trim()) {
       message.warning('请输入代码');
       return;
     }
     try {
-      const result = minifyCode(input, language);
+      const { minifyGeneralCode } = await import('../../utils/general-formatters');
+      const result = await minifyGeneralCode(input, language);
       setOutput(result);
       message.success('压缩成功');
     } catch (error) {

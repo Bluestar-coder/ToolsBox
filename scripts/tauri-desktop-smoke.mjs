@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { spawn, spawnSync } from 'node:child_process';
+import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import process from 'node:process';
@@ -15,6 +16,9 @@ const APP_NAME = process.env.TOOLSBOX_TAURI_APP_NAME || 'ToolsBox';
 const APP_ID = process.env.TOOLSBOX_TAURI_APP_ID || 'com.toolsbox.desktop';
 const DEV_PORT = new URL(BASE_URL).port || '80';
 const PROJECT_ROOT = process.cwd();
+const ARTIFACT_DIR = process.env.TOOLSBOX_TAURI_ARTIFACT_DIR
+  ? path.resolve(process.env.TOOLSBOX_TAURI_ARTIFACT_DIR)
+  : null;
 
 function runCommand(command, args, options = {}) {
   const result = spawnSync(command, args, {
@@ -59,6 +63,31 @@ function cleanupPortConflicts() {
   for (const pid of pids) {
     spawnSync('kill', [pid], { stdio: 'ignore' });
   }
+}
+
+function ensureArtifactDir() {
+  if (!ARTIFACT_DIR) {
+    return null;
+  }
+
+  fs.mkdirSync(ARTIFACT_DIR, { recursive: true });
+  return ARTIFACT_DIR;
+}
+
+function writeArtifacts(screenshotPath, analysis, tauriLogs) {
+  const artifactDir = ensureArtifactDir();
+  if (!artifactDir) {
+    return;
+  }
+
+  const screenshotName = path.basename(screenshotPath);
+  fs.copyFileSync(screenshotPath, path.join(artifactDir, screenshotName));
+  fs.writeFileSync(
+    path.join(artifactDir, 'analysis.json'),
+    JSON.stringify({ ...analysis, screenshot: screenshotName }, null, 2),
+    'utf8'
+  );
+  fs.writeFileSync(path.join(artifactDir, 'tauri-dev.log'), tauriLogs, 'utf8');
 }
 
 function activateMacApp() {
@@ -196,6 +225,7 @@ async function main() {
 
     const screenshotPath = runCommand('python3', [SCREENSHOT_HELPER, '--mode', 'temp', '--active-window']);
     const analysis = JSON.parse(runCommand('python3', [ANALYZER, screenshotPath]));
+    writeArtifacts(screenshotPath, analysis, tauriLogs);
 
     if (analysis.blank_like) {
       throw new Error(

@@ -9,6 +9,14 @@ export interface JsonNode {
   children?: JsonNode[];
 }
 
+export function formatJsonDocument(input: string, indentSize: number = 2): string {
+  return JSON.stringify(JSON.parse(input), null, indentSize);
+}
+
+export function minifyJsonDocument(input: string): string {
+  return JSON.stringify(JSON.parse(input));
+}
+
 // 解析 JSON 为树结构
 export function parseJsonToTree(json: string): JsonNode {
   const parsed = JSON.parse(json);

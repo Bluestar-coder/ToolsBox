@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
@@ -80,3 +81,34 @@ jobs:
 
       - name: Cargo check
         run: cargo check --manifest-path src-tauri/Cargo.toml
+
+  tauri-desktop-smoke:
+    name: Tauri Desktop Smoke
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: [self-hosted, macOS]
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run desktop smoke
+        env:
+          TOOLSBOX_TAURI_ARTIFACT_DIR: output/tauri-smoke
+        run: npm run test:e2e:tauri
+
+      - name: Upload desktop smoke artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tauri-desktop-smoke
+          path: output/tauri-smoke
+          if-no-files-found: ignore

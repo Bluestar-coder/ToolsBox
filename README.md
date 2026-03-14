@@ -155,6 +155,9 @@ npm run test:coverage:core
 # 浏览器烟测（本地 E2E）
 npm run test:e2e:smoke
 
+# Tauri 桌面烟测（macOS 本地）
+npm run test:e2e:tauri
+
 # Tauri 安全基线（CSP 非空 + 关键指令校验）
 npm run security:tauri:check
 ```
@@ -203,6 +206,9 @@ npm install
 
 # 启动 Tauri 开发模式
 npm run tauri dev
+
+# 运行桌面自动化烟测（需要桌面截图权限）
+npm run test:e2e:tauri
 
 # 构建桌面应用
 npm run tauri build

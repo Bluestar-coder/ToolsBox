@@ -4,7 +4,6 @@ import {
   CopyOutlined, ClearOutlined, FormatPainterOutlined, CompressOutlined,
   FontSizeOutlined, CheckCircleOutlined, TableOutlined,
 } from '@ant-design/icons';
-import { formatSQL, minifySQL } from '../../utils/formatters';
 import {
   uppercaseKeywords, lowercaseKeywords, removeComments, extractTables,
   validateSql, parseSqlStatements, type SqlStatement, type SqlValidationResult,
@@ -25,6 +24,7 @@ const SqlTab: React.FC = () => {
     }
     try {
       const validationResult = validateSql(input);
+      const { formatSQL } = await import('../../utils/sql-formatters');
       const result = await formatSQL(input, { indentSize: 2, useTabs: false });
       setOutput(result);
       setValidation(validationResult);
@@ -57,9 +57,11 @@ const SqlTab: React.FC = () => {
       message.warning('请输入 SQL');
       return;
     }
-    const result = minifySQL(input);
-    setOutput(result);
-    message.success('压缩成功');
+    void import('../../utils/sql-formatters').then(({ minifySQL }) => {
+      const result = minifySQL(input);
+      setOutput(result);
+      message.success('压缩成功');
+    });
   }, [input]);
 
   const handleUppercase = useCallback(() => {

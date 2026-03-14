@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { useParams } from 'react-router-dom';
-import CodeFormatter, { type CodeFormatterTabKey } from '../modules/code-formatter/components/CodeFormatter';
+import type { CodeFormatterTabKey } from '../modules/code-formatter/components/CodeFormatter';
 import ModulePageShell from '../components/ModulePageShell';
 import { getValidatedModuleType } from '../modules/catalog';
+
+const LazyCodeFormatter = lazy(() => import('../modules/code-formatter/components/CodeFormatter'));
 
 /**
  * 代码格式化工具页面组件
@@ -13,7 +15,9 @@ const FormatterPage: React.FC = () => {
 
   return (
     <ModulePageShell moduleId="code-formatter">
-      <CodeFormatter key={initialTab ?? 'formatter-default'} initialTab={initialTab} />
+      <Suspense fallback={null}>
+        <LazyCodeFormatter key={initialTab ?? 'formatter-default'} initialTab={initialTab} />
+      </Suspense>
     </ModulePageShell>
   );
 };

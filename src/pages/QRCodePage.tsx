@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { useParams } from 'react-router-dom';
-import QRCode, { type QRCodeToolTabKey } from '../modules/qrcode-tool/components/QRCodeTool';
+import type { QRCodeToolTabKey } from '../modules/qrcode-tool/components/QRCodeTool';
 import ModulePageShell from '../components/ModulePageShell';
 import { getValidatedModuleType } from '../modules/catalog';
+
+const LazyQRCodeTool = lazy(() => import('../modules/qrcode-tool/components/QRCodeTool'));
 
 /**
  * 二维码工具页面组件
@@ -13,7 +15,9 @@ const QRCodePage: React.FC = () => {
 
   return (
     <ModulePageShell moduleId="qrcode-tool">
-      <QRCode key={initialTab ?? 'qrcode-default'} initialTab={initialTab} />
+      <Suspense fallback={null}>
+        <LazyQRCodeTool key={initialTab ?? 'qrcode-default'} initialTab={initialTab} />
+      </Suspense>
     </ModulePageShell>
   );
 };
