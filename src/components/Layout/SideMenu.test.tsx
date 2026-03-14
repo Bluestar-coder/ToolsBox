@@ -6,7 +6,7 @@ import { MemoryRouter } from 'react-router-dom';
 
 // 包装SideMenu组件的Router wrapper
 const withRouter = ({ children }: { children: React.ReactNode }) => {
-  return <MemoryRouter initialEntries={['/encode']}>{children}</MemoryRouter>;
+  return <MemoryRouter initialEntries={['/encoder']}>{children}</MemoryRouter>;
 };
 
 describe('SideMenu', () => {
@@ -47,7 +47,8 @@ describe('SideMenu', () => {
   it('should highlight current module', () => {
     render(<SideMenu currentModuleId="encoder-decoder" />, { wrapper: withRouter });
 
-    const encoderItem = screen.getByText(/编码\/解码/i).closest('.ant-menu-item-selected');
+    const encoderItem = screen.getByText(/编码\/解码/i).closest('button');
+    expect(encoderItem).toHaveClass('menuButtonActive');
     expect(encoderItem).toBeInTheDocument();
   });
 

@@ -1,14 +1,10 @@
 import React, { Component } from 'react';
 import type { ReactNode } from 'react';
-import { Card, Button, Typography, Space, Tag } from 'antd';
 import { useErrorContext } from '../hooks/useErrorContext';
-import * as Sentry from '@sentry/react';
 import { logger } from '../utils/logger';
 import i18n from '../i18n';
 import styles from './styles/ErrorBoundary.module.css';
 import { AppIcon } from './icons/AppIcon';
-
-const { Title, Text } = Typography;
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -41,13 +37,12 @@ export class ErrorBoundaryClass extends Component<ErrorBoundaryProps, ErrorBound
     this.setState({ errorInfo });
     logger.error('ErrorBoundary caught an error:', error, errorInfo);
 
-    // 发送到Sentry
-    Sentry.captureException(error, {
-      contexts: {
+    void import('../utils/sentry').then(({ captureError }) => {
+      captureError(error, {
         react: {
           componentStack: errorInfo.componentStack,
         },
-      },
+      });
     });
   }
 
@@ -64,33 +59,21 @@ export class ErrorBoundaryClass extends Component<ErrorBoundaryProps, ErrorBound
     if (this.state.hasError) {
       return (
         <div className={styles.errorBoundaryContainer}>
-          <Card
-            title={
-              <Space>
+          <div className={styles.errorCard}>
+            <div className={styles.errorCardHeader}>
+              <div className={styles.errorCardTitle}>
                 <AppIcon name="alert" className={styles.errorIcon} />
-                <Title level={4} className={styles.errorTitle}>{i18n.t('errorBoundary.title')}</Title>
-              </Space>
-            }
-            variant="borderless"
-            className={styles.errorCard}
-            actions={[
-              <Button
-                type="primary"
-                onClick={this.handleReset}
-                icon={<AppIcon name="close" />}
-              >
-                {i18n.t('errorBoundary.retry')}
-              </Button>
-            ]}
-          >
+                <h2 className={styles.errorTitle}>{i18n.t('errorBoundary.title')}</h2>
+              </div>
+            </div>
             <div className={styles.errorInfo}>
-              <Text strong>{i18n.t('errorBoundary.errorMessage')}</Text>
-              <Text className={styles.errorMessage}>{this.state.error?.message}</Text>
+              <strong>{i18n.t('errorBoundary.errorMessage')}</strong>
+              <p className={styles.errorMessage}>{this.state.error?.message}</p>
             </div>
 
             {this.state.errorInfo && (
               <div>
-                <Text strong>{i18n.t('errorBoundary.componentStack')}</Text>
+                <strong>{i18n.t('errorBoundary.componentStack')}</strong>
                 <pre className={styles.componentStack}>
                   {this.state.errorInfo.componentStack}
                 </pre>
@@ -98,11 +81,18 @@ export class ErrorBoundaryClass extends Component<ErrorBoundaryProps, ErrorBound
             )}
 
             <div className={styles.errorHint}>
-              <Text type="danger">
-                {i18n.t('errorBoundary.hint')}
-              </Text>
+              {i18n.t('errorBoundary.hint')}
             </div>
-          </Card>
+
+            <button
+              type="button"
+              className={styles.errorPrimaryButton}
+              onClick={this.handleReset}
+            >
+              <AppIcon name="close" />
+              <span>{i18n.t('errorBoundary.retry')}</span>
+            </button>
+          </div>
         </div>
       );
     }
@@ -118,33 +108,26 @@ export const ErrorDisplay: React.FC = () => {
   if (!state.error) return null;
 
   return (
-    <Card
-      className={styles.errorDisplayCard}
-      title={
-        <Space>
+    <div className={styles.errorDisplayCard} role="alert">
+      <div className={styles.errorCardHeader}>
+        <div className={styles.errorCardTitle}>
           <AppIcon name="alert" className={styles.errorIcon} />
-          <Text strong>操作错误</Text>
-        </Space>
-      }
-      extra={
-        <Button
-          type="text"
-          size="small"
-          icon={<AppIcon name="close" />}
-          onClick={clearError}
-        />
-      }
-    >
-      <div className={styles.errorTypeTag}>
-        <Tag color="error">{state.error.type}</Tag>
+          <strong>操作错误</strong>
+        </div>
+        <button type="button" className={styles.errorCloseButton} onClick={clearError}>
+          <AppIcon name="close" />
+        </button>
       </div>
-      <Text>{state.error.message}</Text>
+      <div className={styles.errorTypeTag}>
+        <span className={styles.errorBadge}>{state.error.type}</span>
+      </div>
+      <p className={styles.errorMessage}>{state.error.message}</p>
 
       {state.error.stack && (
         <pre className={styles.errorStack}>
           {state.error.stack}
         </pre>
       )}
-    </Card>
+    </div>
   );
 };

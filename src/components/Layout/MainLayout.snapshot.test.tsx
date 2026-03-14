@@ -6,7 +6,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 // 包装MainLayout组件的Router wrapper
 const withRouter = ({ children }: { children: React.ReactNode }) => {
   return (
-    <MemoryRouter initialEntries={['/encode']}>
+    <MemoryRouter initialEntries={['/encoder']}>
       <Routes>
         <Route path="/*" element={children} />
       </Routes>

@@ -1,20 +1,27 @@
-/**
- * 操作系统初始化文件
- * 在应用启动时注册所有操作
- */
-
-import { registerAllOperations } from './operations';
+let operationsInitialized = false;
+let operationsInitPromise: Promise<void> | null = null;
 
 /**
- * 初始化操作系统
+ * 同步初始化操作系统
+ * 仅在明确需要立即注册时使用
  */
-export function initializeOperations(): void {
-  // 注册所有操作
-  registerAllOperations();
-  
-  // TODO: 可以在这里添加更多初始化逻辑
-  // 例如：从本地存储加载自定义操作、注册插件等
+export async function ensureOperationsInitialized(): Promise<void> {
+  if (operationsInitialized) {
+    return;
+  }
+
+  if (import.meta.vitest || import.meta.env.MODE === 'test') {
+    return;
+  }
+
+  if (!operationsInitPromise) {
+    operationsInitPromise = import('./operations').then(({ registerAllOperations }) => {
+      registerAllOperations();
+      operationsInitialized = true;
+    });
+  }
+
+  await operationsInitPromise;
 }
 
-// 导出初始化函数，供应用启动时调用
-export default initializeOperations;
+export default ensureOperationsInitialized;

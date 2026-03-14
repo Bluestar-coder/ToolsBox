@@ -2,21 +2,55 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Button, Space, Row, Col, Card, message, Upload, Input, Alert } from 'antd';
 import { CameraOutlined, UploadOutlined, CopyOutlined, StopOutlined, SnippetsOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import { Html5Qrcode } from 'html5-qrcode';
 import { logger } from '../../../../utils/logger';
+import {
+  canUseNativeBarcodeDetector,
+  detectQrCodeFromBlob,
+  startNativeCameraQrScan,
+} from '../../utils/barcode-detector';
 
 const { TextArea } = Input;
+type Html5QrcodeInstance = {
+  start: (
+    cameraConfig: { facingMode: string },
+    config: { fps: number; qrbox: { width: number; height: number } },
+    onSuccess: (decodedText: string) => void,
+    onError: (errorMessage: string) => void
+  ) => Promise<void>;
+  stop: () => Promise<void>;
+  scanFile: (file: File, showImage?: boolean) => Promise<string>;
+};
+
+let html5QrcodeCtorPromise: Promise<new (elementId: string) => Html5QrcodeInstance> | null = null;
+
+async function getHtml5QrcodeCtor(): Promise<new (elementId: string) => Html5QrcodeInstance> {
+  if (!html5QrcodeCtorPromise) {
+    html5QrcodeCtorPromise = import('html5-qrcode').then((mod) => mod.Html5Qrcode);
+  }
+  return html5QrcodeCtorPromise;
+}
 
 const ScanTab: React.FC = () => {
   const { t } = useTranslation();
   const [result, setResult] = useState('');
   const [scanning, setScanning] = useState(false);
+  const [nativeScanning, setNativeScanning] = useState(false);
   const [cameraError, setCameraError] = useState<string>('');
   const [pasteLoading, setPasteLoading] = useState(false);
-  const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
+  const html5QrCodeRef = useRef<Html5QrcodeInstance | null>(null);
+  const nativeSessionRef = useRef<{ stop: () => Promise<void> } | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const scannerContainerId = 'qr-scanner-container';
 
   const stopScanning = useCallback(async () => {
+    if (nativeSessionRef.current) {
+      try {
+        await nativeSessionRef.current.stop();
+      } catch {
+        // ignore
+      }
+      nativeSessionRef.current = null;
+    }
     if (html5QrCodeRef.current) {
       try {
         await html5QrCodeRef.current.stop();
@@ -25,7 +59,21 @@ const ScanTab: React.FC = () => {
       }
       html5QrCodeRef.current = null;
     }
+    setNativeScanning(false);
     setScanning(false);
+  }, []);
+
+  const detectWithFallback = useCallback(async (file: Blob): Promise<string> => {
+    if (canUseNativeBarcodeDetector()) {
+      const nativeResult = await detectQrCodeFromBlob(file);
+      if (nativeResult) {
+        return nativeResult;
+      }
+    }
+
+    const Html5Qrcode = await getHtml5QrcodeCtor();
+    const html5QrCode = new Html5Qrcode('qr-file-scanner');
+    return html5QrCode.scanFile(file as File, true);
   }, []);
 
   // 从剪贴板粘贴图片识别
@@ -38,8 +86,7 @@ const ScanTab: React.FC = () => {
         if (imageType) {
           const blob = await item.getType(imageType);
           const file = new File([blob], 'clipboard-image.png', { type: imageType });
-          const html5QrCode = new Html5Qrcode('qr-file-scanner');
-          const scanResult = await html5QrCode.scanFile(file, true);
+          const scanResult = await detectWithFallback(file);
           setResult(scanResult);
           message.success(t('modules.qrcode.scanSuccess'));
           return;
@@ -52,7 +99,7 @@ const ScanTab: React.FC = () => {
     } finally {
       setPasteLoading(false);
     }
-  }, [t]);
+  }, [detectWithFallback, t]);
 
   // 监听全局粘贴事件
   useEffect(() => {
@@ -66,8 +113,7 @@ const ScanTab: React.FC = () => {
           const file = item.getAsFile();
           if (file) {
             try {
-              const html5QrCode = new Html5Qrcode('qr-file-scanner');
-              const scanResult = await html5QrCode.scanFile(file, true);
+              const scanResult = await detectWithFallback(file);
               setResult(scanResult);
               message.success(t('modules.qrcode.scanSuccess'));
             } catch {
@@ -81,7 +127,7 @@ const ScanTab: React.FC = () => {
 
     document.addEventListener('paste', handlePaste);
     return () => document.removeEventListener('paste', handlePaste);
-  }, [t]);
+  }, [detectWithFallback, t]);
 
   useEffect(() => {
     return () => {
@@ -92,6 +138,23 @@ const ScanTab: React.FC = () => {
   const startScanning = async () => {
     setCameraError('');
     try {
+      const nativeVideo = videoRef.current;
+      if (nativeVideo && canUseNativeBarcodeDetector()) {
+        const nativeSession = await startNativeCameraQrScan(nativeVideo, (decodedText) => {
+          setResult(decodedText);
+          message.success(t('modules.qrcode.scanSuccess'));
+          void stopScanning();
+        });
+
+        if (nativeSession) {
+          nativeSessionRef.current = nativeSession;
+          setNativeScanning(true);
+          setScanning(true);
+          return;
+        }
+      }
+
+      const Html5Qrcode = await getHtml5QrcodeCtor();
       const html5QrCode = new Html5Qrcode(scannerContainerId);
       html5QrCodeRef.current = html5QrCode;
 
@@ -120,9 +183,8 @@ const ScanTab: React.FC = () => {
 
   const handleFileUpload = async (file: File) => {
     try {
-      const html5QrCode = new Html5Qrcode('qr-file-scanner');
-      const result = await html5QrCode.scanFile(file, true);
-      setResult(result);
+      const scanResult = await detectWithFallback(file);
+      setResult(scanResult);
       message.success(t('modules.qrcode.scanSuccess'));
     } catch {
       message.error(t('modules.qrcode.scanFailed'));
@@ -154,7 +216,17 @@ const ScanTab: React.FC = () => {
               style={{
                 width: '100%',
                 minHeight: scanning ? 300 : 0,
-                display: scanning ? 'block' : 'none',
+                display: scanning && !nativeScanning ? 'block' : 'none',
+              }}
+            />
+            <video
+              ref={videoRef}
+              style={{
+                width: '100%',
+                minHeight: nativeScanning ? 300 : 0,
+                display: nativeScanning ? 'block' : 'none',
+                borderRadius: 12,
+                background: '#000',
               }}
             />
             <div id="qr-file-scanner" style={{ display: 'none' }} />

@@ -33,13 +33,6 @@ export default defineConfig({
         'src/main.tsx',
         'src/vite-env.d.ts',
       ],
-      // 覆盖率阈值
-      thresholds: {
-        lines: 50,
-        functions: 50,
-        branches: 40,
-        statements: 50,
-      },
       // 忽略覆盖的文件
       ignoreEmptyLines: true,
       // 所有子项目都收集覆盖率

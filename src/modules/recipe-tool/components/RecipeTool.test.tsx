@@ -5,13 +5,20 @@ import { operationRegistry, type OperationInput } from '../../../core/operations
 import type { Recipe } from '../../../core/operations';
 import RecipeTool from './RecipeTool';
 
-const { mockRecipe } = vi.hoisted(() => ({
+const { mockRecipe, mockRecipeRenameSameName } = vi.hoisted(() => ({
   mockRecipe: {
     id: 'recipe_test',
     name: 'Mock Recipe',
     steps: [],
     createdAt: new Date('2026-01-01T00:00:00.000Z'),
     updatedAt: new Date('2026-01-01T00:00:00.000Z'),
+  } as Recipe,
+  mockRecipeRenameSameName: {
+    id: 'recipe_test_v2',
+    name: 'Mock Recipe',
+    steps: [],
+    createdAt: new Date('2026-01-02T00:00:00.000Z'),
+    updatedAt: new Date('2026-01-02T00:00:00.000Z'),
   } as Recipe,
 }));
 
@@ -23,9 +30,14 @@ vi.mock('react-i18next', () => ({
 
 vi.mock('../../../components/RecipeWorkbench/RecipeWorkbench', () => ({
   default: ({ onRecipeChange }: { onRecipeChange?: (recipe: Recipe) => void }) => (
-    <button type="button" onClick={() => onRecipeChange?.(mockRecipe)}>
-      emit recipe
-    </button>
+    <div>
+      <button type="button" onClick={() => onRecipeChange?.(mockRecipe)}>
+        emit recipe
+      </button>
+      <button type="button" onClick={() => onRecipeChange?.(mockRecipeRenameSameName)}>
+        emit recipe rename id
+      </button>
+    </div>
   ),
 }));
 
@@ -116,5 +128,27 @@ describe('RecipeTool', () => {
 
     render(<RecipeTool />);
     expect(screen.getByRole('button', { name: '加载 (1)' })).toBeEnabled();
+  });
+
+  it('updates existing saved recipe by name to avoid duplicate entries', async () => {
+    render(<RecipeTool />);
+
+    const saveButton = screen.getByRole('button', { name: /保存/ });
+
+    fireEvent.click(screen.getByRole('button', { name: 'emit recipe' }));
+    await waitFor(() => {
+      expect(saveButton).toBeEnabled();
+    });
+    fireEvent.click(saveButton);
+
+    fireEvent.click(screen.getByRole('button', { name: 'emit recipe rename id' }));
+    fireEvent.click(saveButton);
+
+    const rawSavedRecipes = localStorage.getItem('recipe-tool-saved-recipes');
+    expect(rawSavedRecipes).not.toBeNull();
+    const savedRecipes = JSON.parse(rawSavedRecipes as string) as Array<{ id: string; name: string }>;
+    expect(savedRecipes).toHaveLength(1);
+    expect(savedRecipes[0].name).toBe('Mock Recipe');
+    expect(savedRecipes[0].id).toBe('recipe_test_v2');
   });
 });

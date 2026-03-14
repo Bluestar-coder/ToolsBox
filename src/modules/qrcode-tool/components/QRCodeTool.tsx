@@ -1,13 +1,22 @@
-import React, { useState } from 'react';
+import React, { Suspense, lazy, useState } from 'react';
 import { Card, Tabs } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { GenerateTab, ScanTab } from './tabs';
+import type { TabsProps } from 'antd';
 
-const QRCodeTool: React.FC = () => {
+const GenerateTab = lazy(() => import('./tabs/GenerateTab'));
+const ScanTab = lazy(() => import('./tabs/ScanTab'));
+
+export type QRCodeToolTabKey = 'generate' | 'scan';
+
+interface QRCodeToolProps {
+  initialTab?: QRCodeToolTabKey;
+}
+
+const QRCodeTool: React.FC<QRCodeToolProps> = ({ initialTab = 'generate' }) => {
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState('generate');
+  const [activeTab, setActiveTab] = useState<QRCodeToolTabKey>(initialTab);
 
-  const tabItems = [
+  const tabItems: TabsProps['items'] = [
     { key: 'generate', label: t('modules.qrcode.tabs.generate') },
     { key: 'scan', label: t('modules.qrcode.tabs.scan') },
   ];
@@ -25,13 +34,15 @@ const QRCodeTool: React.FC = () => {
 
   return (
     <Card title={t('modules.qrcode.title')} variant="borderless">
-      <Tabs
-        activeKey={activeTab}
-        onChange={setActiveTab}
-        items={tabItems}
-        style={{ marginBottom: 8 }}
-      />
-      {renderContent()}
+      <Suspense fallback={null}>
+        <Tabs
+          activeKey={activeTab}
+          onChange={(value) => setActiveTab(value as QRCodeToolTabKey)}
+          items={tabItems}
+          style={{ marginBottom: 8 }}
+        />
+        {renderContent()}
+      </Suspense>
     </Card>
   );
 };

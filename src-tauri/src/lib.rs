@@ -1,6 +1,9 @@
+use std::env;
 use tauri::command;
+use tauri::Manager;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::process::Command;
 
 #[derive(Deserialize)]
 struct IpResponse {
@@ -15,6 +18,23 @@ pub struct IpInfo {
     pub proxy_ip: Option<String>,
     /// 是否使用了代理
     pub using_proxy: bool,
+}
+
+#[derive(Serialize)]
+pub struct RuntimeInfo {
+    pub platform: String,
+    pub arch: String,
+    pub app_version: String,
+    pub debug: bool,
+    pub desktop: bool,
+    pub native_http: bool,
+    pub window_state: bool,
+    pub native_fs: bool,
+    pub path_opener: bool,
+    pub hostname: Option<String>,
+    pub app_data_dir: Option<String>,
+    pub app_config_dir: Option<String>,
+    pub temp_dir: Option<String>,
 }
 
 /// 从文本中提取 IP 地址
@@ -132,12 +152,82 @@ async fn get_public_ip() -> Result<IpInfo, String> {
     }
 }
 
+#[command]
+fn get_runtime_info(app: tauri::AppHandle) -> RuntimeInfo {
+    let path_resolver = app.path();
+    let hostname = env::var("HOSTNAME")
+        .ok()
+        .or_else(|| env::var("COMPUTERNAME").ok());
+
+    RuntimeInfo {
+        platform: std::env::consts::OS.to_string(),
+        arch: std::env::consts::ARCH.to_string(),
+        app_version: app.package_info().version.to_string(),
+        debug: cfg!(debug_assertions),
+        desktop: !cfg!(any(target_os = "android", target_os = "ios")),
+        native_http: true,
+        window_state: true,
+        native_fs: true,
+        path_opener: true,
+        hostname,
+        app_data_dir: path_resolver
+            .app_data_dir()
+            .ok()
+            .map(|path| path.display().to_string()),
+        app_config_dir: path_resolver
+            .app_config_dir()
+            .ok()
+            .map(|path| path.display().to_string()),
+        temp_dir: path_resolver
+            .temp_dir()
+            .ok()
+            .map(|path| path.display().to_string()),
+    }
+}
+
+#[command]
+fn open_path_in_system(path: String) -> Result<(), String> {
+    if path.trim().is_empty() {
+        return Err("Path cannot be empty".to_string());
+    }
+
+    #[cfg(target_os = "macos")]
+    let mut command = {
+        let mut cmd = Command::new("open");
+        cmd.arg(&path);
+        cmd
+    };
+
+    #[cfg(target_os = "windows")]
+    let mut command = {
+        let mut cmd = Command::new("explorer");
+        cmd.arg(&path);
+        cmd
+    };
+
+    #[cfg(all(unix, not(target_os = "macos")))]
+    let mut command = {
+        let mut cmd = Command::new("xdg-open");
+        cmd.arg(&path);
+        cmd
+    };
+
+    command
+        .spawn()
+        .map(|_| ())
+        .map_err(|error| format!("Failed to open path: {error}"))
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_window_state::Builder::new().build())
-        .invoke_handler(tauri::generate_handler![get_public_ip])
+        .invoke_handler(tauri::generate_handler![
+            get_public_ip,
+            get_runtime_info,
+            open_path_in_system
+        ])
         .setup(|app| {
             if cfg!(debug_assertions) {
                 app.handle().plugin(

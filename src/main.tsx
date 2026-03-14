@@ -1,43 +1,25 @@
-import { StrictMode } from 'react'
+import { StrictMode, Suspense, lazy } from 'react'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import './styles/modules.css'
 import './i18n'
-import App from './App.tsx'
-import { ThemeProvider } from './context/ThemeContext.tsx'
-import { ErrorProvider } from './context/ErrorContext.tsx'
-import { PluginProvider } from './context/PluginContext.tsx'
-import { EncodingProvider } from './context/EncodingContext.tsx'
-import { ErrorBoundaryClass } from './components/ErrorBoundary.tsx'
-import AntdThemeProvider from './components/AntdThemeProvider.tsx'
-import ErrorDisplay from './components/ErrorDisplayNew.tsx'
-import { initSentry } from './utils/sentry'
-import { initializeOperations } from './core/operations/init'
+import BootstrapFallback from './components/BootstrapFallback'
+import { installRuntimeWarningFilter } from './utils/runtime-warnings'
 
-// 初始化操作系统
-initializeOperations()
+const AppShell = lazy(() => import('./AppShell'))
 
-// 初始化Sentry错误监控
-initSentry()
+installRuntimeWarningFilter()
+
+if (import.meta.env.PROD) {
+  void import('./utils/sentry').then(({ initSentry }) => {
+    initSentry()
+  })
+}
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <BrowserRouter>
-      <ThemeProvider>
-        <AntdThemeProvider>
-          <ErrorBoundaryClass>
-            <EncodingProvider>
-              <PluginProvider>
-                <ErrorProvider>
-                  <App />
-                  <ErrorDisplay />
-                </ErrorProvider>
-              </PluginProvider>
-            </EncodingProvider>
-          </ErrorBoundaryClass>
-        </AntdThemeProvider>
-      </ThemeProvider>
-    </BrowserRouter>
+    <Suspense fallback={<BootstrapFallback />}>
+      <AppShell />
+    </Suspense>
   </StrictMode>,
 )

@@ -201,6 +201,13 @@ describe('Property 5: 子网划分完整性与不重叠', () => {
     };
   }
 
+  function expectRangesNotOverlapping(ranges: Array<{ start: number; end: number }>) {
+    const sortedRanges = [...ranges].sort((a, b) => a.start - b.start);
+    for (let i = 1; i < sortedRanges.length; i++) {
+      expect(sortedRanges[i - 1].end).toBeLessThan(sortedRanges[i].start);
+    }
+  }
+
   /** Helper: compute parent network and broadcast integers from CIDR string */
   function parentRange(cidr: string) {
     const [ipStr, prefixStr] = cidr.split('/');
@@ -222,14 +229,7 @@ describe('Property 5: 子网划分完整性与不重叠', () => {
 
           const result = divideBySubnetCount(cidr, count);
           const ranges = result.subnets.map(subnetRange);
-
-          for (let i = 0; i < ranges.length; i++) {
-            for (let j = i + 1; j < ranges.length; j++) {
-              const overlaps =
-                ranges[i].start <= ranges[j].end && ranges[j].start <= ranges[i].end;
-              expect(overlaps).toBe(false);
-            }
-          }
+          expectRangesNotOverlapping(ranges);
         }),
         { numRuns: 100 },
       );
@@ -296,14 +296,7 @@ describe('Property 5: 子网划分完整性与不重叠', () => {
 
           const result = divideByHostCount(cidr, hostsPerSubnet);
           const ranges = result.subnets.map(subnetRange);
-
-          for (let i = 0; i < ranges.length; i++) {
-            for (let j = i + 1; j < ranges.length; j++) {
-              const overlaps =
-                ranges[i].start <= ranges[j].end && ranges[j].start <= ranges[i].end;
-              expect(overlaps).toBe(false);
-            }
-          }
+          expectRangesNotOverlapping(ranges);
         }),
         { numRuns: 100 },
       );

@@ -233,6 +233,28 @@ describe('sendViaFetch', () => {
     expect(init.body).toContain('password=secret');
     expect(init.body).not.toContain('disabled');
   });
+
+  it('encodes reserved characters in form-urlencoded payload', async () => {
+    const fetchSpy = vi.fn().mockResolvedValue(mockResponse({ body: '' }));
+    globalThis.fetch = fetchSpy;
+
+    const config: HttpRequestConfig = {
+      method: 'POST',
+      url: 'https://example.com/form',
+      headers: [],
+      bodyType: 'form',
+      body: '',
+      formData: [
+        { key: 'note', value: 'a b&c=d+e', enabled: true },
+      ],
+    };
+
+    await sendViaFetch(config);
+
+    const [, init] = fetchSpy.mock.calls[0];
+    expect(init.headers['Content-Type']).toBe('application/x-www-form-urlencoded');
+    expect(init.body).toContain('note=a+b%26c%3Dd%2Be');
+  });
 });
 
 // ─── sendHttpRequest ────────────────────────────────────────────────────────
@@ -321,5 +343,25 @@ describe('sendHttpRequest', () => {
     const [url] = fetchSpy.mock.calls[0];
     // No variables → placeholder stays as-is
     expect(url).toBe('https://{{host}}/api');
+  });
+
+  it('applies variables to formData values before sending', async () => {
+    const fetchSpy = vi.fn().mockResolvedValue(mockFetchResponse('ok'));
+    globalThis.fetch = fetchSpy;
+
+    const config = makeGetConfig({
+      method: 'POST',
+      bodyType: 'form',
+      formData: [
+        { key: 'query', value: '{{keyword}}', enabled: true },
+      ],
+      body: '',
+    });
+    const variables = [{ key: 'keyword', value: 'ip scanner', enabled: true }];
+
+    await sendHttpRequest(config, variables);
+
+    const [, init] = fetchSpy.mock.calls[0];
+    expect(init.body).toContain('query=ip+scanner');
   });
 });

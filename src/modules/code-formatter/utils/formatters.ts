@@ -10,8 +10,6 @@
 
 import type { Plugin } from 'prettier';
 
-import { format as formatSqlLib } from 'sql-formatter';
-
 /**
  * 支持的编程语言列表
  */
@@ -54,7 +52,7 @@ let parserCssPromise: Promise<Plugin> | null = null;
 let parserYamlPromise: Promise<Plugin> | null = null;
 let parserMarkdownPromise: Promise<Plugin> | null = null;
 let parserGraphqlPromise: Promise<Plugin> | null = null;
-let parserTypescriptPromise: Promise<Plugin> | null = null;
+let sqlFormatterPromise: Promise<typeof import('sql-formatter')> | null = null;
 
 const toPlugin = (mod: unknown): Plugin => {
   return (mod as { default?: Plugin }).default ?? (mod as Plugin);
@@ -116,13 +114,6 @@ async function loadGraphqlPlugin(): Promise<Plugin> {
   return parserGraphqlPromise;
 }
 
-async function loadTypescriptPlugin(): Promise<Plugin> {
-  if (!parserTypescriptPromise) {
-    parserTypescriptPromise = import('prettier/plugins/typescript').then(toPlugin);
-  }
-  return parserTypescriptPromise;
-}
-
 async function loadXmlPlugin(): Promise<Plugin> {
   if (!parserXmlPromise) {
     parserXmlPromise = import('@prettier/plugin-xml')
@@ -137,6 +128,13 @@ async function loadPhpPlugin(): Promise<Plugin> {
       .then(toPlugin);
   }
   return parserPhpPromise;
+}
+
+async function loadSqlFormatter(): Promise<typeof import('sql-formatter')> {
+  if (!sqlFormatterPromise) {
+    sqlFormatterPromise = import('sql-formatter');
+  }
+  return sqlFormatterPromise;
 }
 
 /**
@@ -193,9 +191,10 @@ export async function formatXML(input: string, options: FormatOptions = defaultO
 }
 
 // SQL (使用 sql-formatter)
-export function formatSQL(input: string, options: FormatOptions = defaultOptions): string {
+export async function formatSQL(input: string, options: FormatOptions = defaultOptions): Promise<string> {
   try {
-    return formatSqlLib(input, {
+    const { format } = await loadSqlFormatter();
+    return format(input, {
       language: 'sql',
       tabWidth: options.indentSize,
       useTabs: options.useTabs,
@@ -215,8 +214,8 @@ export async function formatJavaScript(input: string, options: FormatOptions = d
 
 // TypeScript
 export async function formatTypeScript(input: string, options: FormatOptions = defaultOptions): Promise<string> {
-  const [parserTypescript, parserEstree] = await Promise.all([loadTypescriptPlugin(), loadEstreePlugin()]);
-  return formatWithPrettier(input, 'typescript', [parserTypescript, parserEstree], options);
+  const [babel, estree] = await Promise.all([loadBabelPlugin(), loadEstreePlugin()]);
+  return formatWithPrettier(input, 'babel-ts', [babel, estree], options);
 }
 
 // SCSS

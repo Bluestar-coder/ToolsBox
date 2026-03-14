@@ -1,61 +1,77 @@
-/* SideMenu styles - Futuristic navigation */
-
 .menu {
   height: 100%;
-  border-right: 0 !important;
   padding: 12px 0;
-  background: transparent !important;
+  background: transparent;
 }
 
-.menu :global(.ant-menu-item) {
+.menuList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0 10px;
+}
+
+.menuButton {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   height: 46px;
-  line-height: 46px;
-  margin: 6px 10px !important;
-  padding: 0 14px !important;
-  border-radius: 12px !important;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  text-align: left;
   font-weight: 600;
   letter-spacing: 0.02em;
-  color: var(--text-secondary);
   transition: all var(--transition-fast);
 }
 
-.menu :global(.ant-menu-item .anticon) {
+.menuIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: 17px;
-  margin-right: 10px;
   transition: transform var(--transition-fast), color var(--transition-fast);
 }
 
-.menu :global(.ant-menu-item:hover) {
+.menuLabel {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.menuButton:hover {
   color: var(--text-color);
   background: linear-gradient(
     135deg,
     color-mix(in srgb, var(--primary-color) 18%, transparent),
     color-mix(in srgb, var(--accent-color) 12%, transparent)
-  ) !important;
+  );
 }
 
-.menu :global(.ant-menu-item:hover .anticon) {
+.menuButton:hover .menuIcon {
   transform: translateX(2px) scale(1.04);
   color: var(--primary-color);
 }
 
-.menu :global(.ant-menu-item-selected) {
-  color: var(--text-color) !important;
+.menuButtonActive {
+  color: var(--text-color);
   background: linear-gradient(
     135deg,
     color-mix(in srgb, var(--primary-color) 24%, transparent),
     color-mix(in srgb, var(--accent-color) 18%, transparent)
-  ) !important;
+  );
   box-shadow:
     inset 0 0 0 1px color-mix(in srgb, var(--primary-color) 50%, transparent),
     0 10px 20px color-mix(in srgb, var(--primary-color) 18%, transparent);
 }
 
-.menu :global(.ant-menu-item-selected::after) {
-  display: none;
-}
-
-.menu :global(.ant-menu-item-selected)::before {
+.menuButtonActive::before {
   content: '';
   position: absolute;
   left: -1px;
@@ -68,10 +84,10 @@
   box-shadow: 0 0 12px color-mix(in srgb, var(--primary-color) 55%, transparent);
 }
 
-[data-theme='dark'] .menu :global(.ant-menu-item) {
+[data-theme='dark'] .menuButton {
   color: #a7b6c6;
 }
 
-[data-theme='dark'] .menu :global(.ant-menu-item:hover) {
+[data-theme='dark'] .menuButton:hover {
   color: #f3fbff;
 }

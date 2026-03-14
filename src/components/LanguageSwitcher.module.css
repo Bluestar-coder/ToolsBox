@@ -1,0 +1,76 @@
+.switcher {
+  position: relative;
+}
+
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 42px;
+  padding: 0 14px;
+  border: 1px solid color-mix(in srgb, var(--primary-color) 24%, var(--border-color));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--card-bg) 78%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-color) 10%, transparent);
+  color: var(--text-color);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.trigger:hover {
+  color: var(--primary-color);
+  border-color: color-mix(in srgb, var(--primary-color) 56%, var(--border-color));
+  transform: translateY(-1px);
+}
+
+.triggerText {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 168px;
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  background: var(--content-surface);
+  box-shadow: var(--panel-shadow);
+  z-index: 150;
+}
+
+.menuButton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-color);
+  cursor: pointer;
+  text-align: left;
+  transition: all var(--transition-fast);
+}
+
+.menuButton:hover,
+.menuButtonActive {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--primary-color) 18%, transparent),
+    color-mix(in srgb, var(--accent-color) 12%, transparent)
+  );
+}
+
+.menuButtonFlag {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.menuButtonName {
+  font-size: 13px;
+  font-weight: 600;
+}

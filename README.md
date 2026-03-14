@@ -137,8 +137,34 @@
 
 - 🇨🇳 简体中文
 - 🇺🇸 English
-- 🇰🇷 한국어
-- 🇯🇵 日本語
+
+## 质量门禁与安全基线
+
+本项目的 CI 与本地门禁保持一致，目标是优先保障核心业务模块（`core`、`recipe-tool`、`http-debug`、`ip-network`）的实现逻辑稳定。
+
+```bash
+# 代码质量
+npm run lint
+
+# 核心模块快速回归
+npm run test:core
+
+# 全量测试 + 核心覆盖率门禁
+npm run test:coverage:core
+
+# 浏览器烟测（本地 E2E）
+npm run test:e2e:smoke
+
+# Tauri 安全基线（CSP 非空 + 关键指令校验）
+npm run security:tauri:check
+```
+
+覆盖率门禁脚本位于 `scripts/check-core-coverage.mjs`，采用分组阈值而非全局单阈值，当前覆盖 `encoder`、`core`、`recipe`、`formatter`、`http-debug`、`ip-network`、`qrcode`、`regex`、`diff`、`crypto-core`、`time` 等模块，避免“刷总覆盖率”影响业务演进。
+
+Tauri 安全门禁脚本位于 `scripts/check-tauri-security.mjs`，当前策略是：
+- 禁止 `app.security.csp` 回退为 `null`
+- 强制存在基础安全指令（`default-src`、`script-src`、`base-uri`、`form-action`、`object-src`）
+- 保留 `connect-src` 的 `http/https/ws/wss`，满足 HTTP Debug 跨目标联调场景
 
 ## 技术栈
 

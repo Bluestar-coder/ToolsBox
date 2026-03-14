@@ -1,5 +1,7 @@
 import React from 'react';
-import { ConfigProvider, theme, App } from 'antd';
+import App from 'antd/es/app';
+import ConfigProvider from 'antd/es/config-provider';
+import theme from 'antd/es/theme';
 import { useTheme } from '../hooks/useTheme';
 
 interface AntdThemeProviderProps {
@@ -189,8 +191,22 @@ const AntdThemeProvider: React.FC<AntdThemeProviderProps> = ({ children }) => {
     },
   };
 
+  const activeTheme = isDark ? darkTheme : lightTheme;
+
+  React.useEffect(() => {
+    ConfigProvider.config({
+      holderRender: (node) => (
+        <ConfigProvider theme={activeTheme}>
+          <App message={{ maxCount: 3, duration: 2 }}>
+            {node}
+          </App>
+        </ConfigProvider>
+      ),
+    });
+  }, [activeTheme]);
+
   return (
-    <ConfigProvider theme={isDark ? darkTheme : lightTheme}>
+    <ConfigProvider theme={activeTheme}>
       <App message={{ maxCount: 3, duration: 2 }}>
         {children}
       </App>

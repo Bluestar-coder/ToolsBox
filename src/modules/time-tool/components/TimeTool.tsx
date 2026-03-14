@@ -10,9 +10,15 @@ import {
   UUIDTab,
 } from './tabs';
 
-const TimeTool: React.FC = () => {
+export type TimeToolTabKey = 'smart' | 'code' | 'calc' | 'batch' | 'timezone' | 'uuid';
+
+interface TimeToolProps {
+  initialTab?: TimeToolTabKey;
+}
+
+const TimeTool: React.FC<TimeToolProps> = ({ initialTab = 'smart' }) => {
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState('smart');
+  const [activeTab, setActiveTab] = useState<TimeToolTabKey>(initialTab);
 
   const tabItems = [
     { key: 'smart', label: t('modules.time.tabs.smart') },
@@ -44,7 +50,12 @@ const TimeTool: React.FC = () => {
 
   return (
     <Card title={t('modules.time.title')} variant="borderless">
-      <Tabs activeKey={activeTab} onChange={setActiveTab} items={tabItems} style={{ marginBottom: 16 }} />
+      <Tabs
+        activeKey={activeTab}
+        onChange={(value) => setActiveTab(value as TimeToolTabKey)}
+        items={tabItems}
+        style={{ marginBottom: 16 }}
+      />
       {renderContent()}
     </Card>
   );

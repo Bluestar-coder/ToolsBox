@@ -60,24 +60,154 @@
   color: var(--text-secondary) !important;
 }
 
+.runtimePanel {
+  margin-top: 18px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.desktopPanel {
+  margin-top: 18px;
+  padding: 18px;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--primary-color) 18%, var(--border-color));
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--content-surface) 82%, var(--primary-color) 18%), var(--content-surface));
+  position: relative;
+  z-index: 1;
+}
+
+.desktopPanelHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.desktopPanelTitle {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.desktopPanelHint {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.desktopPathGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.desktopPathCard {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid var(--border-color);
+  background: color-mix(in srgb, var(--content-surface) 88%, var(--primary-color) 12%);
+}
+
+.desktopPathLabel {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.desktopPathValue {
+  min-height: 38px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--bg-primary) 80%, var(--content-surface) 20%);
+  color: var(--text-color);
+  font-size: 12px;
+  line-height: 1.5;
+  word-break: break-all;
+}
+
+.desktopPathButton {
+  appearance: none;
+  border: 1px solid color-mix(in srgb, var(--primary-color) 28%, var(--border-color));
+  background: color-mix(in srgb, var(--primary-color) 12%, var(--content-surface));
+  color: var(--text-color);
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.desktopPathButton:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--primary-color) 48%, var(--border-color));
+  box-shadow: 0 10px 18px color-mix(in srgb, var(--primary-color) 16%, transparent);
+}
+
+.desktopPathButton:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+
+.desktopNotice {
+  margin: 14px 0 0;
+  color: #b42318;
+  font-size: 12px;
+}
+
+.runtimeChip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--primary-color) 26%, var(--border-color));
+  background: color-mix(in srgb, var(--content-surface) 84%, var(--primary-color) 16%);
+  color: var(--text-color);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .sectionTitle {
-  margin-bottom: 18px !important;
-  font-family: var(--font-heading) !important;
+  margin: 0 0 18px;
+  font-family: var(--font-heading);
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 
+.moduleGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 24px;
+}
+
 .moduleCard {
   height: 100%;
+  width: 100%;
   cursor: pointer;
-  border-radius: 16px !important;
-  border: 1px solid var(--border-color) !important;
-  background: var(--content-surface) !important;
+  border-radius: 16px;
+  border: 1px solid var(--border-color);
+  background: var(--content-surface);
   box-shadow: 0 10px 24px color-mix(in srgb, var(--primary-color) 8%, transparent);
   overflow: hidden;
   position: relative;
   animation: revealUp 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
   animation-delay: var(--card-delay, 0ms);
+  padding: 26px 22px;
+  text-align: left;
+  appearance: none;
 }
 
 .moduleCard::before {
@@ -141,17 +271,18 @@
 }
 
 .moduleName {
-  margin-bottom: 8px !important;
-  font-family: var(--font-heading) !important;
+  margin: 0 0 8px;
+  font-family: var(--font-heading);
   letter-spacing: 0.02em;
-  color: var(--text-color) !important;
+  color: var(--text-color);
+  font-size: 18px;
 }
 
 .moduleDescription {
-  margin-bottom: 0 !important;
+  margin: 0;
   font-size: 13px;
   line-height: 1.6;
-  color: var(--text-secondary) !important;
+  color: var(--text-secondary);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -198,5 +329,9 @@
 
   .heroTitle {
     font-size: 24px !important;
+  }
+
+  .desktopPanel {
+    padding: 16px;
   }
 }

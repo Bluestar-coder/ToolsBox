@@ -35,7 +35,7 @@ const DiffTool: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      <Card size="small" bodyStyle={{ padding: '12px' }}>
+      <Card size="small" styles={{ body: { padding: '12px' } }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
           <Space>
             <Radio.Group value={diffMode} onChange={e => setDiffMode(e.target.value)} buttonStyle="solid">

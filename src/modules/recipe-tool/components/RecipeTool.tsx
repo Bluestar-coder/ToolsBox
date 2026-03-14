@@ -2,11 +2,12 @@
  * Recipe工具模块主组件
  */
 
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Button, Space, message, Modal } from 'antd';
 import { SaveOutlined, ImportOutlined, ExportOutlined, ClearOutlined } from '@ant-design/icons';
 import RecipeWorkbench from '../../../components/RecipeWorkbench/RecipeWorkbench';
 import { operationRegistry, type Recipe } from '../../../core/operations';
+import { ensureOperationsInitialized } from '../../../core/operations/init';
 import { useTranslation } from 'react-i18next';
 import {
   deserializeRecipe,
@@ -22,6 +23,28 @@ interface RecipeToolProps {
 
 const SAVED_RECIPES_STORAGE_KEY = 'recipe-tool-saved-recipes';
 const ACTIVE_RECIPE_ID_STORAGE_KEY = 'recipe-tool-active-recipe-id';
+
+function getInitialRecipeState(operationsReady: boolean): {
+  savedRecipes: Recipe[];
+  activeRecipe: Recipe | null;
+} {
+  if (!operationsReady) {
+    return {
+      savedRecipes: [],
+      activeRecipe: null,
+    };
+  }
+
+  const savedRecipes = loadSavedRecipesFromStorage();
+  const activeRecipeId = loadActiveRecipeId();
+
+  return {
+    savedRecipes,
+    activeRecipe: activeRecipeId
+      ? savedRecipes.find(saved => saved.id === activeRecipeId) ?? null
+      : null,
+  };
+}
 
 function saveSavedRecipesToStorage(recipes: Recipe[]): void {
   localStorage.setItem(
@@ -97,22 +120,58 @@ function upsertRecipe(recipes: Recipe[], targetRecipe: Recipe): { updatedRecipes
  */
 const RecipeTool: React.FC<RecipeToolProps> = ({ toolId }) => {
   const { t } = useTranslation();
-  const initialSavedRecipes = useMemo(() => loadSavedRecipesFromStorage(), []);
+  const [operationsReady, setOperationsReady] = useState(
+    import.meta.vitest || import.meta.env.MODE === 'test'
+  );
+  const [{ savedRecipes: initialSavedRecipes, activeRecipe: initialRecipe }] = useState(() =>
+    getInitialRecipeState(operationsReady)
+  );
   const [savedRecipes, setSavedRecipes] = useState<Recipe[]>(initialSavedRecipes);
-  const [recipe, setRecipe] = useState<Recipe | null>(() => {
-    const activeRecipeId = loadActiveRecipeId();
-    if (!activeRecipeId) return null;
-    return initialSavedRecipes.find(saved => saved.id === activeRecipeId) ?? null;
-  });
+  const [recipe, setRecipe] = useState<Recipe | null>(initialRecipe);
   const [loadModalVisible, setLoadModalVisible] = useState(false);
 
   useEffect(() => {
-    saveSavedRecipesToStorage(savedRecipes);
-  }, [savedRecipes]);
+    if (operationsReady) {
+      return;
+    }
+
+    let active = true;
+
+    void ensureOperationsInitialized().then(() => {
+      if (!active) {
+        return;
+      }
+
+      const loadedRecipes = loadSavedRecipesFromStorage();
+      setSavedRecipes(loadedRecipes);
+
+      const activeRecipeId = loadActiveRecipeId();
+      setRecipe(
+        activeRecipeId
+          ? loadedRecipes.find(saved => saved.id === activeRecipeId) ?? null
+          : null
+      );
+      setOperationsReady(true);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [operationsReady]);
 
   useEffect(() => {
+    if (!operationsReady) {
+      return;
+    }
+    saveSavedRecipesToStorage(savedRecipes);
+  }, [operationsReady, savedRecipes]);
+
+  useEffect(() => {
+    if (!operationsReady) {
+      return;
+    }
     saveActiveRecipeId(recipe?.id ?? null);
-  }, [recipe?.id]);
+  }, [operationsReady, recipe?.id]);
 
   // 保存Recipe
   const handleSaveRecipe = useCallback((newRecipe: Recipe) => {
@@ -296,6 +355,16 @@ const RecipeTool: React.FC<RecipeToolProps> = ({ toolId }) => {
       </div>
     </Modal>
   );
+
+  if (!operationsReady) {
+    return (
+      <div className={styles.recipeTool} data-tool-id={toolId ?? 'recipe'}>
+        <div className={styles.recipeToolContent}>
+          正在初始化 Recipe 操作...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.recipeTool} data-tool-id={toolId ?? 'recipe'}>

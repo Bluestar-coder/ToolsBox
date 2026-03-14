@@ -105,17 +105,17 @@ describe('代码格式化工具测试', () => {
   });
 
   describe('SQL格式化', () => {
-    it('应该正确格式化SQL', () => {
+    it('应该正确格式化SQL', async () => {
       const input = 'select * from users where id=1';
-      const result = formatSQL(input);
+      const result = await formatSQL(input);
       expect(result).toContain('\n');
       expect(result).toContain('SELECT');
       expect(result).toContain('FROM');
     });
 
-    it('应该关键字大写', () => {
+    it('应该关键字大写', async () => {
       const input = 'select name from users';
-      const result = formatSQL(input);
+      const result = await formatSQL(input);
       expect(result).toMatch(/SELECT/);
       expect(result).toMatch(/FROM/);
     });

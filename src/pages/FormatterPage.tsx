@@ -1,20 +1,19 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import CodeFormatter from '../modules/code-formatter/components/CodeFormatter';
+import CodeFormatter, { type CodeFormatterTabKey } from '../modules/code-formatter/components/CodeFormatter';
 import ModulePageShell from '../components/ModulePageShell';
+import { getValidatedModuleType } from '../modules/catalog';
 
 /**
  * 代码格式化工具页面组件
  */
 const FormatterPage: React.FC = () => {
-  useParams<{ type?: string }>();
-
-  // 这里可以根据type参数更新格式化类型状态
-  // 目前先简单渲染组件
+  const { type } = useParams<{ type?: string }>();
+  const initialTab = getValidatedModuleType('code-formatter', type) as CodeFormatterTabKey | undefined;
 
   return (
     <ModulePageShell moduleId="code-formatter">
-      <CodeFormatter />
+      <CodeFormatter key={initialTab ?? 'formatter-default'} initialTab={initialTab} />
     </ModulePageShell>
   );
 };

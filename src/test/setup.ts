@@ -2,6 +2,8 @@ import { expect, afterEach, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import * as matchers from '@testing-library/jest-dom/matchers';
 
+(globalThis as typeof globalThis & { __TEST__?: boolean }).__TEST__ = true;
+
 // 扩展 Vitest 的 expect 方法，支持 jest-dom 匹配器
 expect.extend(matchers);
 
@@ -24,6 +26,9 @@ const ignoredConsoleMessages: RegExp[] = [
   /ErrorBoundary caught an error/,
   /invalid value for the .*height.*css style property/i,
   /Not implemented: Window's getComputedStyle\(\) method: with pseudo-elements/,
+  /\[antd: List\] The `List` component is deprecated/,
+  /\[antd: message\] Static function can not consume context/,
+  /\[antd: Input\] `addonBefore` is deprecated/,
 ];
 
 const shouldIgnoreConsoleMessage = (args: unknown[]) => {
@@ -69,6 +74,9 @@ const ignoredStderrMessages: RegExp[] = [
   /Test error/,
   /invalid value for the .*height.*css style property/i,
   /Not implemented: Window's getComputedStyle\(\) method: with pseudo-elements/,
+  /\[antd: List\] The `List` component is deprecated/,
+  /\[antd: message\] Static function can not consume context/,
+  /\[antd: Input\] `addonBefore` is deprecated/,
 ];
 
 const originalStderrWrite = process.stderr.write.bind(process.stderr);
@@ -83,14 +91,25 @@ process.stderr.write = ((chunk: unknown, encoding?: BufferEncoding, callback?: (
   return originalStderrWrite(chunk as string, encoding as BufferEncoding, callback);
 }) as typeof process.stderr.write;
 
-// Mock Sentry
-vi.mock('@sentry/react', () => ({
+vi.mock('@sentry/browser', () => ({
+  init: vi.fn(),
+  addIntegration: vi.fn(),
   captureException: vi.fn(),
   captureMessage: vi.fn(),
-  withScope: vi.fn(),
-  BrowserTracing: vi.fn(),
-  Replay: vi.fn(),
-  init: vi.fn(),
+  setUser: vi.fn(),
+  addBreadcrumb: vi.fn(),
+  withScope: vi.fn((callback) => {
+    const mockScope = {
+      setContext: vi.fn(),
+    };
+    callback(mockScope);
+  }),
+  startSpan: vi.fn((_, fn) => fn()),
+  browserTracingIntegration: vi.fn(() => ({ name: 'BrowserTracing' })),
+}));
+
+vi.mock('@sentry-internal/replay', () => ({
+  replayIntegration: vi.fn(() => ({ name: 'Replay' })),
 }));
 
 // Mock window.matchMedia

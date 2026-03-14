@@ -4,12 +4,13 @@ import EncoderDecoder from '../modules/encoder-decoder/components/EncoderDecoder
 import { useEncodingContext } from '../hooks/useEncodingContext';
 import type { EncoderType, OperationType } from '../modules/encoder-decoder/utils/encoders';
 import ModulePageShell from '../components/ModulePageShell';
+import { EncodingProvider } from '../context/EncodingContext';
 
 /**
  * 编码/解码工具页面组件
  * 负责从URL参数读取状态并同步到Context
  */
-const EncoderPage: React.FC = () => {
+const EncoderPageContent: React.FC = () => {
   const { type } = useParams<{ type?: string }>();
   const [searchParams] = useSearchParams();
   const { state, setType, setOperation, setInput } = useEncodingContext();
@@ -53,5 +54,11 @@ const EncoderPage: React.FC = () => {
     </ModulePageShell>
   );
 };
+
+const EncoderPage: React.FC = () => (
+  <EncodingProvider>
+    <EncoderPageContent />
+  </EncodingProvider>
+);
 
 export default EncoderPage;

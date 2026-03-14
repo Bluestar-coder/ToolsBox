@@ -18,14 +18,14 @@ const SqlTab: React.FC = () => {
   const [statements, setStatements] = useState<SqlStatement[]>([]);
   const [tables, setTables] = useState<string[]>([]);
 
-  const handleFormat = useCallback(() => {
+  const handleFormat = useCallback(async () => {
     if (!input.trim()) {
       message.warning('请输入 SQL');
       return;
     }
     try {
       const validationResult = validateSql(input);
-      const result = formatSQL(input, { indentSize: 2, useTabs: false });
+      const result = await formatSQL(input, { indentSize: 2, useTabs: false });
       setOutput(result);
       setValidation(validationResult);
       setStatements(parseSqlStatements(input));
