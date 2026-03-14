@@ -1,5 +1,17 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { storage, STORAGE_KEYS, clearAllAppData, exportData, importData } from './storage';
+import { logger } from './logger';
+import {
+  batchGet,
+  batchSet,
+  clearAllAppData,
+  clearSensitiveData,
+  createStorageHook,
+  exportData,
+  importData,
+  sessionStorage as sessionStore,
+  STORAGE_KEYS,
+  storage,
+} from './storage';
 
 describe('Storage Service', () => {
   beforeEach(() => {
@@ -9,6 +21,8 @@ describe('Storage Service', () => {
 
   afterEach(() => {
     localStorage.clear();
+    sessionStorage.clear();
+    vi.restoreAllMocks();
   });
 
   describe('Basic storage operations', () => {
@@ -94,6 +108,127 @@ describe('Storage Service', () => {
       Storage.prototype.getItem = originalGetItem;
       consoleErrorSpy.mockRestore();
     });
+
+    it('should handle localStorage remove and clear errors', () => {
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const removeSpy = vi.spyOn(window.localStorage, 'removeItem').mockImplementation(() => {
+        throw new Error('removeItem error');
+      });
+      const clearSpy = vi.spyOn(window.localStorage, 'clear').mockImplementation(() => {
+        throw new Error('clear error');
+      });
+
+      try {
+        expect(() => storage.remove('test_key')).not.toThrow();
+        expect(() => storage.clear()).not.toThrow();
+        expect(removeSpy).toHaveBeenCalled();
+        expect(clearSpy).toHaveBeenCalled();
+        expect(consoleErrorSpy).toHaveBeenCalledTimes(2);
+      } finally {
+        removeSpy.mockRestore();
+        clearSpy.mockRestore();
+        consoleErrorSpy.mockRestore();
+      }
+    });
+  });
+
+  describe('Session storage service', () => {
+    it('should store, read and remove session values', () => {
+      sessionStore.set('temp_key', { step: 1 });
+      expect(sessionStore.get<{ step: number }>('temp_key')).toEqual({ step: 1 });
+
+      sessionStore.remove('temp_key');
+      expect(sessionStore.get('temp_key')).toBeNull();
+    });
+
+    it('should handle session storage errors gracefully', () => {
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const originalSetItem = Storage.prototype.setItem;
+      const originalRemoveItem = Storage.prototype.removeItem;
+      const originalClear = Storage.prototype.clear;
+
+      try {
+        window.sessionStorage.setItem('bad_json', '{bad');
+        expect(sessionStore.get('bad_json')).toBeNull();
+
+        Storage.prototype.setItem = vi.fn(() => {
+          throw new Error('session set error');
+        });
+        Storage.prototype.removeItem = vi.fn(() => {
+          throw new Error('session remove error');
+        });
+        Storage.prototype.clear = vi.fn(() => {
+          throw new Error('session clear error');
+        });
+
+        expect(() => sessionStore.set('temp_key', 'value')).not.toThrow();
+        expect(() => sessionStore.remove('temp_key')).not.toThrow();
+        expect(() => sessionStore.clear()).not.toThrow();
+        expect(consoleErrorSpy).toHaveBeenCalledTimes(3);
+      } finally {
+        Storage.prototype.setItem = originalSetItem;
+        Storage.prototype.removeItem = originalRemoveItem;
+        Storage.prototype.clear = originalClear;
+        consoleErrorSpy.mockRestore();
+      }
+    });
+  });
+
+  describe('Storage helpers', () => {
+    it('should provide typed storage hooks with defaults', () => {
+      const themeHook = createStorageHook(STORAGE_KEYS.THEME, 'light');
+
+      expect(themeHook.get()).toBe('light');
+
+      themeHook.set('dark');
+      expect(themeHook.get()).toBe('dark');
+
+      themeHook.remove();
+      expect(themeHook.get()).toBe('light');
+    });
+
+    it('should support batch reads and writes', () => {
+      batchSet(
+        {
+          theme: 'dark',
+          language: 'zh-CN',
+          currentModule: 'crypto',
+        },
+        {
+          theme: STORAGE_KEYS.THEME,
+          language: STORAGE_KEYS.LANGUAGE,
+          currentModule: STORAGE_KEYS.CURRENT_MODULE,
+        }
+      );
+
+      const result = batchGet<{
+        theme: string;
+        language: string;
+        currentModule: string;
+      }>({
+        theme: STORAGE_KEYS.THEME,
+        language: STORAGE_KEYS.LANGUAGE,
+        currentModule: STORAGE_KEYS.CURRENT_MODULE,
+      });
+
+      expect(result).toEqual({
+        theme: 'dark',
+        language: 'zh-CN',
+        currentModule: 'crypto',
+      });
+    });
+
+    it('should clear only sensitive crypto data', () => {
+      storage.set(STORAGE_KEYS.CRYPTO_INPUT, 'secret');
+      storage.set(STORAGE_KEYS.CRYPTO_OUTPUT, 'cipher');
+      storage.set(STORAGE_KEYS.THEME, 'dark');
+
+      clearSensitiveData();
+
+      expect(storage.get(STORAGE_KEYS.CRYPTO_INPUT)).toBeNull();
+      expect(storage.get(STORAGE_KEYS.CRYPTO_OUTPUT)).toBeNull();
+      expect(storage.get(STORAGE_KEYS.THEME)).toBe('dark');
+    });
   });
 
   describe('clearAllAppData', () => {
@@ -134,6 +269,18 @@ describe('Storage Service', () => {
       expect(data[STORAGE_KEYS.ENCODING_INPUT]).toBe('test input');
     });
 
+    it('should exclude sensitive crypto data from exports', () => {
+      storage.set(STORAGE_KEYS.THEME, 'dark');
+      storage.set(STORAGE_KEYS.CRYPTO_INPUT, 'super-secret');
+      storage.set(STORAGE_KEYS.CRYPTO_OUTPUT, 'cipher-text');
+
+      const exported = JSON.parse(exportData());
+
+      expect(exported[STORAGE_KEYS.THEME]).toBe('dark');
+      expect(exported[STORAGE_KEYS.CRYPTO_INPUT]).toBeUndefined();
+      expect(exported[STORAGE_KEYS.CRYPTO_OUTPUT]).toBeUndefined();
+    });
+
     it('should import data correctly', () => {
       const dataToImport = {
         [STORAGE_KEYS.THEME]: 'light',
@@ -157,9 +304,47 @@ describe('Storage Service', () => {
       consoleErrorSpy.mockRestore();
     });
 
+    it('should reject oversized imports and non-object payloads', () => {
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      expect(importData('x'.repeat(10 * 1024 * 1024 + 1))).toBe(false);
+      expect(importData('"not-an-object"')).toBe(false);
+      expect(consoleErrorSpy).toHaveBeenCalled();
+    });
+
     it('should handle empty import data', () => {
       const result = importData('{}');
       expect(result).toBe(true);
+    });
+
+    it('should skip unknown, sensitive and oversized values during import', () => {
+      const warnSpy = vi.spyOn(logger, 'warn').mockImplementation(() => {});
+      const largeObject = Object.fromEntries(
+        Array.from({ length: 101 }, (_, index) => [`k${index}`, index])
+      );
+
+      const result = importData(JSON.stringify({
+        unknown_key: 'ignored',
+        [STORAGE_KEYS.CRYPTO_INPUT]: 'ignored-sensitive',
+        [STORAGE_KEYS.THEME]: 'light',
+        [STORAGE_KEYS.LANGUAGE]: 'x'.repeat(1024 * 1024 + 1),
+        [STORAGE_KEYS.CURRENT_MODULE]: largeObject,
+        [STORAGE_KEYS.ENCODING_TYPE]: 7,
+        [STORAGE_KEYS.ENCODING_OPERATION]: true,
+        [STORAGE_KEYS.ENCODING_CATEGORY]: { nested: 'ok' },
+        [STORAGE_KEYS.ENCODING_OUTPUT]: null,
+      }));
+
+      expect(result).toBe(true);
+      expect(storage.get<string>(STORAGE_KEYS.THEME)).toBe('light');
+      expect(storage.get<string>(STORAGE_KEYS.LANGUAGE)).toBeNull();
+      expect(storage.get<Record<string, number>>(STORAGE_KEYS.CURRENT_MODULE)).toBeNull();
+      expect(storage.get<number>(STORAGE_KEYS.ENCODING_TYPE)).toBe(7);
+      expect(storage.get<boolean>(STORAGE_KEYS.ENCODING_OPERATION)).toBe(true);
+      expect(storage.get<Record<string, string>>(STORAGE_KEYS.ENCODING_CATEGORY)).toEqual({ nested: 'ok' });
+      expect(storage.get(STORAGE_KEYS.ENCODING_OUTPUT)).toBeNull();
+      expect(storage.get(STORAGE_KEYS.CRYPTO_INPUT)).toBeNull();
+      expect(warnSpy).toHaveBeenCalled();
     });
 
     it('should export and import data roundtrip', () => {
