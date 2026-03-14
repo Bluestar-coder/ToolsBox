@@ -137,12 +137,6 @@ export default defineConfig({
           if (id.includes('node_modules/prettier/standalone')) {
             return 'prettier-standalone';
           }
-          if (id.includes('node_modules/@prettier/plugin-php/')) {
-            return 'prettier-php';
-          }
-          if (id.includes('node_modules/@prettier/plugin-xml/')) {
-            return 'prettier-xml';
-          }
           if (id.includes('node_modules/sql-formatter/')) {
             return 'sql-formatter';
           }

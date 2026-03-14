@@ -3,8 +3,126 @@ import { defaultFormatOptions } from './formatter-types';
 
 type LightweightFormatterLanguage = Exclude<GeneralFormatterLanguage, 'javascript' | 'typescript'>;
 
+function getIndent(options: FormatOptions): string {
+  return options.useTabs ? '\t' : ' '.repeat(options.indentSize);
+}
+
+function formatBraceLanguage(input: string, options: FormatOptions = defaultFormatOptions): string {
+  const indent = getIndent(options);
+  let formatted = '';
+  let indentLevel = 0;
+  let inString = false;
+  let stringChar = '';
+
+  for (let i = 0; i < input.length; i += 1) {
+    const char = input[i];
+    const prevChar = input[i - 1];
+
+    if ((char === '"' || char === "'" || char === '`') && prevChar !== '\\') {
+      if (!inString) {
+        inString = true;
+        stringChar = char;
+      } else if (char === stringChar) {
+        inString = false;
+      }
+
+      formatted += char;
+      continue;
+    }
+
+    if (inString) {
+      formatted += char;
+      continue;
+    }
+
+    if (char === '{') {
+      formatted = formatted.trimEnd();
+      formatted += ` {\n${indent.repeat(++indentLevel)}`;
+      continue;
+    }
+
+    if (char === '}') {
+      indentLevel = Math.max(0, indentLevel - 1);
+      formatted = `${formatted.trimEnd()}\n${indent.repeat(indentLevel)}}`;
+      continue;
+    }
+
+    if (char === ';') {
+      formatted += `;\n${indent.repeat(indentLevel)}`;
+      continue;
+    }
+
+    if (char === '\n' || char === '\r') {
+      continue;
+    }
+
+    formatted += char;
+  }
+
+  return formatted.replace(/\n{3,}/g, '\n\n').trim();
+}
+
+function formatMarkup(input: string, options: FormatOptions = defaultFormatOptions): string {
+  const indent = getIndent(options);
+  const tokens = input
+    .replace(/>\s*</g, '>\n<')
+    .split('\n')
+    .map((token) => token.trim())
+    .filter(Boolean);
+  const output: string[] = [];
+  let indentLevel = 0;
+
+  for (const token of tokens) {
+    const isClosingTag = /^<\//.test(token);
+    const isDeclaration = /^<\?/.test(token) || /^<!/.test(token);
+    const isSelfClosing = /\/>$/.test(token);
+    const isInlineNode = /^<[^/!?][^>]*>.*<\/[^>]+>$/.test(token);
+
+    if (isClosingTag) {
+      indentLevel = Math.max(0, indentLevel - 1);
+    }
+
+    output.push(`${indent.repeat(indentLevel)}${token}`);
+
+    if (!isClosingTag && !isDeclaration && !isSelfClosing && !isInlineNode && /^<[^/][^>]*>$/.test(token)) {
+      indentLevel += 1;
+    }
+  }
+
+  return output.join('\n');
+}
+
+function formatYamlLike(input: string, options: FormatOptions = defaultFormatOptions): string {
+  const indent = getIndent(options);
+
+  return input
+    .split('\n')
+    .map((line) => {
+      const trimmed = line.trimEnd();
+      if (!trimmed.trim()) {
+        return '';
+      }
+
+      const leadingSpaces = line.match(/^(\s*)/)?.[1].length ?? 0;
+      const indentLevel = Math.floor(leadingSpaces / 2);
+      return `${indent.repeat(indentLevel)}${trimmed.trimStart()}`;
+    })
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+function formatMarkdownLike(input: string): string {
+  return input
+    .split('\n')
+    .map((line) => line.trimEnd())
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
 export function formatJava(input: string, options: FormatOptions = defaultFormatOptions): string {
-  const indent = options.useTabs ? '\t' : ' '.repeat(options.indentSize);
+  const indent = getIndent(options);
   let formatted = '';
   let indentLevel = 0;
   let inString = false;
@@ -75,6 +193,42 @@ export function formatGo(input: string, options: FormatOptions = defaultFormatOp
   return formatJava(input, { ...options, useTabs: true });
 }
 
+export function formatHTML(input: string, options: FormatOptions = defaultFormatOptions): string {
+  return formatMarkup(input, options);
+}
+
+export function formatCSS(input: string, options: FormatOptions = defaultFormatOptions): string {
+  return formatBraceLanguage(input, options);
+}
+
+export function formatSCSS(input: string, options: FormatOptions = defaultFormatOptions): string {
+  return formatBraceLanguage(input, options);
+}
+
+export function formatLESS(input: string, options: FormatOptions = defaultFormatOptions): string {
+  return formatBraceLanguage(input, options);
+}
+
+export function formatXML(input: string, options: FormatOptions = defaultFormatOptions): string {
+  return formatMarkup(input, options);
+}
+
+export function formatYAML(input: string, options: FormatOptions = defaultFormatOptions): string {
+  return formatYamlLike(input, options);
+}
+
+export function formatMarkdown(input: string): string {
+  return formatMarkdownLike(input);
+}
+
+export function formatGraphQL(input: string, options: FormatOptions = defaultFormatOptions): string {
+  return formatBraceLanguage(input, options);
+}
+
+export function formatPHP(input: string, options: FormatOptions = defaultFormatOptions): string {
+  return formatBraceLanguage(input, options);
+}
+
 export function formatLightweightLanguage(
   input: string,
   language: LightweightFormatterLanguage,
@@ -89,6 +243,24 @@ export function formatLightweightLanguage(
       return formatCSharp(input, options);
     case 'go':
       return formatGo(input, options);
+    case 'html':
+      return formatHTML(input, options);
+    case 'css':
+      return formatCSS(input, options);
+    case 'scss':
+      return formatSCSS(input, options);
+    case 'less':
+      return formatLESS(input, options);
+    case 'xml':
+      return formatXML(input, options);
+    case 'yaml':
+      return formatYAML(input, options);
+    case 'markdown':
+      return formatMarkdown(input, options);
+    case 'graphql':
+      return formatGraphQL(input, options);
+    case 'php':
+      return formatPHP(input, options);
     default:
       return input;
   }

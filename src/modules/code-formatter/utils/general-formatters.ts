@@ -16,39 +16,39 @@ export async function formatGeneralCode(
       return formatTypeScript(input, options);
     }
     case 'html': {
-      const { formatHTML } = await import('./prettier-formatters');
+      const { formatHTML } = await import('./lightweight-formatters');
       return formatHTML(input, options);
     }
     case 'css': {
-      const { formatCSS } = await import('./prettier-formatters');
+      const { formatCSS } = await import('./lightweight-formatters');
       return formatCSS(input, options);
     }
     case 'scss': {
-      const { formatSCSS } = await import('./prettier-formatters');
+      const { formatSCSS } = await import('./lightweight-formatters');
       return formatSCSS(input, options);
     }
     case 'less': {
-      const { formatLESS } = await import('./prettier-formatters');
+      const { formatLESS } = await import('./lightweight-formatters');
       return formatLESS(input, options);
     }
     case 'xml': {
-      const { formatXML } = await import('./prettier-formatters');
+      const { formatXML } = await import('./lightweight-formatters');
       return formatXML(input, options);
     }
     case 'yaml': {
-      const { formatYAML } = await import('./prettier-formatters');
+      const { formatYAML } = await import('./lightweight-formatters');
       return formatYAML(input, options);
     }
     case 'markdown': {
-      const { formatMarkdown } = await import('./prettier-formatters');
+      const { formatMarkdown } = await import('./lightweight-formatters');
       return formatMarkdown(input, options);
     }
     case 'graphql': {
-      const { formatGraphQL } = await import('./prettier-formatters');
+      const { formatGraphQL } = await import('./lightweight-formatters');
       return formatGraphQL(input, options);
     }
     case 'php': {
-      const { formatPHP } = await import('./prettier-formatters');
+      const { formatPHP } = await import('./lightweight-formatters');
       return formatPHP(input, options);
     }
     case 'java': {

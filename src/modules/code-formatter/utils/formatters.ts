@@ -13,19 +13,19 @@ import type { SupportedLanguage, GeneralFormatterLanguage, FormatOptions } from 
 import { defaultFormatOptions } from './formatter-types';
 import {
   formatJSON,
+  formatJavaScript,
+  formatTypeScript,
+} from './prettier-formatters';
+import {
   formatHTML,
   formatCSS,
   formatXML,
-  formatJavaScript,
-  formatTypeScript,
   formatSCSS,
   formatLESS,
   formatYAML,
   formatMarkdown,
   formatGraphQL,
   formatPHP,
-} from './prettier-formatters';
-import {
   formatJava,
   formatPython,
   formatCSharp,

@@ -10,14 +10,10 @@ type PrettierFormatterLanguage =
   | 'css'
   | 'scss'
   | 'less'
-  | 'xml'
   | 'yaml'
   | 'markdown'
-  | 'graphql'
-  | 'php';
+  | 'graphql';
 
-let parserXmlPromise: Promise<Plugin> | null = null;
-let parserPhpPromise: Promise<Plugin> | null = null;
 let prettierPromise: Promise<typeof import('prettier/standalone')> | null = null;
 let parserBabelPromise: Promise<Plugin> | null = null;
 let parserEstreePromise: Promise<Plugin> | null = null;
@@ -95,22 +91,6 @@ async function loadGraphqlPlugin(): Promise<Plugin> {
   return parserGraphqlPromise;
 }
 
-async function loadXmlPlugin(): Promise<Plugin> {
-  if (!parserXmlPromise) {
-    parserXmlPromise = import('@prettier/plugin-xml').then(toPlugin);
-  }
-
-  return parserXmlPromise;
-}
-
-async function loadPhpPlugin(): Promise<Plugin> {
-  if (!parserPhpPromise) {
-    parserPhpPromise = import('@prettier/plugin-php').then(toPlugin);
-  }
-
-  return parserPhpPromise;
-}
-
 async function formatWithPrettier(
   input: string,
   parser: string,
@@ -145,11 +125,6 @@ export async function formatHTML(input: string, options: FormatOptions = default
 export async function formatCSS(input: string, options: FormatOptions = defaultFormatOptions): Promise<string> {
   const parserCss = await loadCssPlugin();
   return formatWithPrettier(input, 'css', [parserCss], options);
-}
-
-export async function formatXML(input: string, options: FormatOptions = defaultFormatOptions): Promise<string> {
-  const parserXml = await loadXmlPlugin();
-  return formatWithPrettier(input, 'xml', [parserXml], options);
 }
 
 export async function formatJavaScript(input: string, options: FormatOptions = defaultFormatOptions): Promise<string> {
@@ -187,11 +162,6 @@ export async function formatGraphQL(input: string, options: FormatOptions = defa
   return formatWithPrettier(input, 'graphql', [parserGraphql], options);
 }
 
-export async function formatPHP(input: string, options: FormatOptions = defaultFormatOptions): Promise<string> {
-  const parserPhp = await loadPhpPlugin();
-  return formatWithPrettier(input, 'php', [parserPhp], options);
-}
-
 export async function formatPrettierLanguage(
   input: string,
   language: PrettierFormatterLanguage,
@@ -212,16 +182,12 @@ export async function formatPrettierLanguage(
       return formatSCSS(input, options);
     case 'less':
       return formatLESS(input, options);
-    case 'xml':
-      return formatXML(input, options);
     case 'yaml':
       return formatYAML(input, options);
     case 'markdown':
       return formatMarkdown(input, options);
     case 'graphql':
       return formatGraphQL(input, options);
-    case 'php':
-      return formatPHP(input, options);
     default:
       return input;
   }
