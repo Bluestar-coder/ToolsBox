@@ -1,7 +1,7 @@
 import type { FormatOptions, GeneralFormatterLanguage } from './formatter-types';
 import { defaultFormatOptions } from './formatter-types';
 
-type LightweightFormatterLanguage = Exclude<GeneralFormatterLanguage, 'javascript' | 'typescript'>;
+type LightweightFormatterLanguage = GeneralFormatterLanguage;
 
 function getIndent(options: FormatOptions): string {
   return options.useTabs ? '\t' : ' '.repeat(options.indentSize);
@@ -164,6 +164,16 @@ export function formatJava(input: string, options: FormatOptions = defaultFormat
   return formatted.replace(/\n\s*\n/g, '\n').trim();
 }
 
+export function formatJavaScript(input: string, options: FormatOptions = defaultFormatOptions): string {
+  return formatBraceLanguage(input, options);
+}
+
+export function formatTypeScript(input: string, options: FormatOptions = defaultFormatOptions): string {
+  return formatBraceLanguage(input, options)
+    .replace(/:\s*([A-Za-z_$][^)=,{;]*)/g, ': $1')
+    .replace(/\)\s*:/g, '):');
+}
+
 export function formatPython(input: string, options: FormatOptions = defaultFormatOptions): string {
   const indent = options.useTabs ? '\t' : ' '.repeat(options.indentSize);
   const lines = input.split('\n');
@@ -217,7 +227,8 @@ export function formatYAML(input: string, options: FormatOptions = defaultFormat
   return formatYamlLike(input, options);
 }
 
-export function formatMarkdown(input: string): string {
+export function formatMarkdown(input: string, options: FormatOptions = defaultFormatOptions): string {
+  void options;
   return formatMarkdownLike(input);
 }
 
@@ -237,6 +248,10 @@ export function formatLightweightLanguage(
   switch (language) {
     case 'java':
       return formatJava(input, options);
+    case 'javascript':
+      return formatJavaScript(input, options);
+    case 'typescript':
+      return formatTypeScript(input, options);
     case 'python':
       return formatPython(input, options);
     case 'csharp':

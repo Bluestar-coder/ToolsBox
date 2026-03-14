@@ -8,11 +8,11 @@ export async function formatGeneralCode(
 ): Promise<string> {
   switch (language) {
     case 'javascript': {
-      const { formatJavaScript } = await import('./prettier-formatters');
+      const { formatJavaScript } = await import('./lightweight-formatters');
       return formatJavaScript(input, options);
     }
     case 'typescript': {
-      const { formatTypeScript } = await import('./prettier-formatters');
+      const { formatTypeScript } = await import('./lightweight-formatters');
       return formatTypeScript(input, options);
     }
     case 'html': {
