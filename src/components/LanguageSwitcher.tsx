@@ -52,7 +52,7 @@ const LanguageSwitcher: React.FC = () => {
                 aria-checked={active}
                 className={`${styles.menuButton} ${active ? styles.menuButtonActive : ''}`}
                 onClick={() => {
-                  changeLanguage(lang.code);
+                  void changeLanguage(lang.code);
                   setOpen(false);
                 }}
               >

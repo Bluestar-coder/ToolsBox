@@ -38,25 +38,45 @@ const chunkGroups = [
     ],
   },
   {
-    name: 'antd-form',
+    name: 'antd-input',
     patterns: [
       'node_modules/antd/es/input/',
-      'node_modules/antd/es/input-number/',
+      'node_modules/rc-input/',
+      'node_modules/rc-textarea/',
+    ],
+  },
+  {
+    name: 'antd-select',
+    patterns: [
       'node_modules/antd/es/select/',
+      'node_modules/rc-select/',
+    ],
+  },
+  {
+    name: 'antd-form-core',
+    patterns: [
       'node_modules/antd/es/form/',
       'node_modules/antd/es/checkbox/',
       'node_modules/antd/es/radio/',
       'node_modules/antd/es/switch/',
-      'node_modules/antd/es/upload/',
-      'node_modules/antd/es/color-picker/',
-      'node_modules/rc-input/',
-      'node_modules/rc-input-number/',
-      'node_modules/rc-select/',
       'node_modules/rc-field-form/',
       'node_modules/rc-checkbox/',
       'node_modules/rc-switch/',
+    ],
+  },
+  {
+    name: 'antd-input-number',
+    patterns: [
+      'node_modules/antd/es/input-number/',
+      'node_modules/rc-input-number/',
+    ],
+  },
+  {
+    name: 'antd-upload-color',
+    patterns: [
+      'node_modules/antd/es/upload/',
+      'node_modules/antd/es/color-picker/',
       'node_modules/rc-upload/',
-      'node_modules/rc-textarea/',
       'node_modules/@rc-component/color-picker/',
     ],
   },
