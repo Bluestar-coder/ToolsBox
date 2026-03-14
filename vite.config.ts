@@ -17,19 +17,29 @@ const chunkGroups = [
     ],
   },
   {
-    name: 'antd-shell',
+    name: 'antd-button-space',
     patterns: [
-      'node_modules/antd/es/layout/',
       'node_modules/antd/es/button/',
       'node_modules/antd/es/space/',
+    ],
+  },
+  {
+    name: 'antd-layout-card',
+    patterns: [
+      'node_modules/antd/es/layout/',
       'node_modules/antd/es/spin/',
-      'node_modules/antd/es/dropdown/',
-      'node_modules/antd/es/menu/',
       'node_modules/antd/es/card/',
       'node_modules/antd/es/typography/',
       'node_modules/antd/es/grid/',
       'node_modules/antd/es/row/',
       'node_modules/antd/es/col/',
+    ],
+  },
+  {
+    name: 'antd-menu-dropdown',
+    patterns: [
+      'node_modules/antd/es/dropdown/',
+      'node_modules/antd/es/menu/',
       'node_modules/@rc-component/trigger/',
       'node_modules/rc-menu/',
       'node_modules/rc-dropdown/',
@@ -92,19 +102,29 @@ const chunkGroups = [
     ],
   },
   {
-    name: 'antd-data',
+    name: 'antd-table',
     patterns: [
       'node_modules/antd/es/table/',
+      'node_modules/rc-table/',
+    ],
+  },
+  {
+    name: 'antd-tree-list',
+    patterns: [
       'node_modules/antd/es/list/',
       'node_modules/antd/es/tree/',
+      'node_modules/rc-tree/',
+      'node_modules/rc-virtual-list/',
+    ],
+  },
+  {
+    name: 'antd-display',
+    patterns: [
       'node_modules/antd/es/descriptions/',
       'node_modules/antd/es/tag/',
       'node_modules/antd/es/badge/',
       'node_modules/antd/es/empty/',
       'node_modules/antd/es/divider/',
-      'node_modules/rc-table/',
-      'node_modules/rc-tree/',
-      'node_modules/rc-virtual-list/',
     ],
   },
   {
