@@ -142,6 +142,45 @@ const chunkGroups = [
   },
 ]
 
+const sourceChunkGroups = [
+  {
+    name: 'locale-zh',
+    patterns: [
+      '/src/i18n/locales/zh-CN.ts',
+    ],
+  },
+  {
+    name: 'app-icons',
+    patterns: [
+      '/src/components/icons/AppIcon.tsx',
+    ],
+  },
+  {
+    name: 'app-router-core',
+    patterns: [
+      '/src/router/index.tsx',
+      '/src/router/routes.tsx',
+      '/src/modules/catalog.ts',
+      '/src/modules/loaders.ts',
+    ],
+  },
+  {
+    name: 'app-state',
+    patterns: [
+      '/src/components/AppCleanup.tsx',
+      '/src/context/ThemeContext.tsx',
+      '/src/context/ErrorContext.tsx',
+      '/src/context/PluginContext.tsx',
+      '/src/hooks/useModules.ts',
+      '/src/hooks/useTheme.ts',
+      '/src/hooks/useErrorContext.ts',
+      '/src/modules/index.ts',
+      '/src/modules/display.tsx',
+      '/src/utils/storage.ts',
+    ],
+  },
+]
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
@@ -171,6 +210,12 @@ export default defineConfig({
           }
           if (id.includes('node_modules/@ant-design/cssinjs/')) {
             return 'antd-cssinjs';
+          }
+
+          for (const group of sourceChunkGroups) {
+            if (group.patterns.some((pattern) => id.includes(pattern))) {
+              return group.name;
+            }
           }
 
           for (const group of chunkGroups) {
