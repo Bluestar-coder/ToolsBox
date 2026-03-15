@@ -232,8 +232,11 @@ export default defineConfig({
             return 'sql-formatter';
           }
           // 加密相关库
-          if (id.includes('node_modules/crypto-js/') || id.includes('node_modules/sm-crypto/')) {
-            return 'crypto';
+          if (id.includes('node_modules/crypto-js/')) {
+            return 'crypto-js-vendor';
+          }
+          if (id.includes('node_modules/sm-crypto/')) {
+            return 'sm-crypto-vendor';
           }
           // 二维码相关库
           if (id.includes('node_modules/qrcode')) {
