@@ -2,10 +2,9 @@
  * Recipe工具模块主组件
  */
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { Suspense, lazy, useState, useCallback, useEffect } from 'react';
 import { Button, Space, message, Modal } from 'antd';
 import { SaveOutlined, ImportOutlined, ExportOutlined, ClearOutlined } from '@ant-design/icons';
-import RecipeWorkbench from '../../../components/RecipeWorkbench/RecipeWorkbench';
 import { operationRegistry, type Recipe } from '../../../core/operations';
 import { ensureOperationsInitialized } from '../../../core/operations/init';
 import { useTranslation } from 'react-i18next';
@@ -22,6 +21,8 @@ import {
   upsertRecipe,
 } from '../utils/recipe-storage';
 import styles from './RecipeTool.module.css';
+
+const RecipeWorkbench = lazy(() => import('../../../components/RecipeWorkbench/RecipeWorkbench'));
 
 interface RecipeToolProps {
   /** 工具ID */
@@ -335,11 +336,13 @@ const RecipeTool: React.FC<RecipeToolProps> = ({ toolId }) => {
       </div>
       
       <div className={styles.recipeToolContent}>
-        <RecipeWorkbench
-          initialRecipe={recipe || undefined}
-          onSave={handleSaveRecipe}
-          onRecipeChange={handleRecipeStateChange}
-        />
+        <Suspense fallback={null}>
+          <RecipeWorkbench
+            initialRecipe={recipe || undefined}
+            onSave={handleSaveRecipe}
+            onRecipeChange={handleRecipeStateChange}
+          />
+        </Suspense>
       </div>
       
       {renderLoadModal()}

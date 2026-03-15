@@ -80,7 +80,7 @@ describe('RecipeTool', () => {
     const saveButton = screen.getByRole('button', { name: /保存/ });
     expect(saveButton).toBeDisabled();
 
-    fireEvent.click(screen.getByRole('button', { name: 'emit recipe' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'emit recipe' }));
 
     await waitFor(() => {
       expect(saveButton).toBeEnabled();
@@ -139,13 +139,13 @@ describe('RecipeTool', () => {
 
     const saveButton = screen.getByRole('button', { name: /保存/ });
 
-    fireEvent.click(screen.getByRole('button', { name: 'emit recipe' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'emit recipe' }));
     await waitFor(() => {
       expect(saveButton).toBeEnabled();
     });
     fireEvent.click(saveButton);
 
-    fireEvent.click(screen.getByRole('button', { name: 'emit recipe rename id' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'emit recipe rename id' }));
     fireEvent.click(saveButton);
 
     const rawSavedRecipes = localStorage.getItem('recipe-tool-saved-recipes');
@@ -177,7 +177,7 @@ describe('RecipeTool', () => {
     });
 
     render(<RecipeTool />);
-    fireEvent.click(screen.getByRole('button', { name: 'emit recipe' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'emit recipe' }));
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /导出/ })).toBeEnabled();
@@ -199,7 +199,7 @@ describe('RecipeTool', () => {
     });
 
     render(<RecipeTool />);
-    fireEvent.click(screen.getByRole('button', { name: 'emit recipe' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'emit recipe' }));
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /清空/ })).toBeEnabled();
