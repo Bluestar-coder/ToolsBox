@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Card, Input, Select, Button, Space, message, Tabs } from 'antd';
-import { generateRSAKeyPair, generateRSASignKeyPair, rsaEncryptAuto, rsaDecryptAuto, rsaSign, rsaVerify } from '../../utils/asymmetric';
+import { generateRSAKeyPair, generateRSASignKeyPair, rsaEncryptAuto, rsaDecryptAuto, rsaSign, rsaVerify } from '../../utils/asymmetric-rsa';
 
 const { TextArea } = Input;
 

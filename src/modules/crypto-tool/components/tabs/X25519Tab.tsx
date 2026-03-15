@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Input, Button, Space, message, Alert, Card, Typography } from 'antd';
-import { generateX25519KeyPair, x25519GetSharedSecret } from '../../utils/asymmetric';
+import { generateX25519KeyPair, x25519GetSharedSecret } from '../../utils/asymmetric-edwards';
 
 const { TextArea } = Input;
 const { Text } = Typography;

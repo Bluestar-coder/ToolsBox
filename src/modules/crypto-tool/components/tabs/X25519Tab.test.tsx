@@ -10,7 +10,7 @@ const asymmetricMocks = vi.hoisted(() => ({
   x25519GetSharedSecret: vi.fn(() => 'shared-secret-hex'),
 }));
 
-vi.mock('../../utils/asymmetric', () => ({
+vi.mock('../../utils/asymmetric-edwards', () => ({
   generateX25519KeyPair: asymmetricMocks.generateX25519KeyPair,
   x25519GetSharedSecret: asymmetricMocks.x25519GetSharedSecret,
 }));

@@ -91,7 +91,7 @@ const ecdhMocks = vi.hoisted(() => ({
   ecdhGetSharedSecret: vi.fn(() => 'ecdh-shared'),
 }));
 
-vi.mock('../../utils/asymmetric', () => ({
+vi.mock('../../utils/asymmetric-ec', () => ({
   generateECDHKeyPair: ecdhMocks.generateECDHKeyPair,
   ecdhGetSharedSecret: ecdhMocks.ecdhGetSharedSecret,
 }));

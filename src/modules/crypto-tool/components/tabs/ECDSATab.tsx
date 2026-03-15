@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Card, Input, Select, Button, Space, message, Switch } from 'antd';
-import { generateECDSAKeyPair, ecdsaSign, ecdsaVerify, ecdsaSignBytes, ecdsaVerifyBytes, type ECDSACurve } from '../../utils/asymmetric';
+import { generateECDSAKeyPair, ecdsaSign, ecdsaVerify, ecdsaSignBytes, ecdsaVerifyBytes, type ECDSACurve } from '../../utils/asymmetric-ec';
 import { hashMessageToUint8Array } from '../../utils/helpers';
 
 const { TextArea } = Input;

@@ -108,7 +108,7 @@ const ed25519Mocks = vi.hoisted(() => ({
   hashMessageToUint8Array: vi.fn(() => new Uint8Array([1, 2, 3])),
 }));
 
-vi.mock('../../utils/asymmetric', () => ({
+vi.mock('../../utils/asymmetric-edwards', () => ({
   generateEd25519KeyPair: ed25519Mocks.generateEd25519KeyPair,
   ed25519Sign: ed25519Mocks.ed25519Sign,
   ed25519Verify: ed25519Mocks.ed25519Verify,

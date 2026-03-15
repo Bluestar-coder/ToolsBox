@@ -127,7 +127,7 @@ const rsaMocks = vi.hoisted(() => ({
   rsaVerify: vi.fn(async () => true),
 }));
 
-vi.mock('../../utils/asymmetric', () => ({
+vi.mock('../../utils/asymmetric-rsa', () => ({
   generateRSAKeyPair: rsaMocks.generateRSAKeyPair,
   generateRSASignKeyPair: rsaMocks.generateRSASignKeyPair,
   rsaEncryptAuto: rsaMocks.rsaEncryptAuto,

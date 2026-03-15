@@ -110,7 +110,7 @@ const ecdsaMocks = vi.hoisted(() => ({
   hashMessageToUint8Array: vi.fn(() => new Uint8Array([9, 9, 9])),
 }));
 
-vi.mock('../../utils/asymmetric', () => ({
+vi.mock('../../utils/asymmetric-ec', () => ({
   generateECDSAKeyPair: ecdsaMocks.generateECDSAKeyPair,
   ecdsaSign: ecdsaMocks.ecdsaSign,
   ecdsaVerify: ecdsaMocks.ecdsaVerify,

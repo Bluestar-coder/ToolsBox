@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Input, Button, Space, message, Alert, Card, Typography, Select } from 'antd';
-import { generateECDHKeyPair, ecdhGetSharedSecret, type ECDSACurve } from '../../utils/asymmetric';
+import { generateECDHKeyPair, ecdhGetSharedSecret, type ECDSACurve } from '../../utils/asymmetric-ec';
 
 const { TextArea } = Input;
 const { Text } = Typography;
