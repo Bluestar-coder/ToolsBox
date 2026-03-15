@@ -156,8 +156,11 @@ export default defineConfig({
         onlyExplicitManualChunks: true,
         manualChunks: (id) => {
           // React核心库
-          if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/')) {
-            return 'react-vendor';
+          if (id.includes('node_modules/react-dom/') || id.includes('node_modules/scheduler/')) {
+            return 'react-dom-vendor';
+          }
+          if (id.includes('node_modules/react/')) {
+            return 'react-core';
           }
           if (id.includes('node_modules/react-router/') || id.includes('node_modules/react-router-dom/')) {
             return 'router-vendor';
