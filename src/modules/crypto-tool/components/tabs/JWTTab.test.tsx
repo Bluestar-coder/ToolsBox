@@ -173,10 +173,14 @@ describe('JWTTab', () => {
 
     render(<JWTTab />);
 
-    await userEvent.type(screen.getByPlaceholderText(/粘贴 JWT Token/i), 'mock.jwt.token');
-    await userEvent.click(screen.getByRole('switch'));
-    await userEvent.type(screen.getByPlaceholderText(/输入公钥/i), 'public-key');
-    await userEvent.click(screen.getByRole('button', { name: /解析并验证/i }));
+    fireEvent.change(screen.getByPlaceholderText(/粘贴 JWT Token/i), {
+      target: { value: 'mock.jwt.token' },
+    });
+    fireEvent.click(screen.getByRole('switch'));
+    fireEvent.change(screen.getByPlaceholderText(/输入公钥/i), {
+      target: { value: 'public-key' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /解析并验证/i }));
 
     expect(await screen.findByText(/签名验证失败/i)).toBeInTheDocument();
     expect(screen.getByText('ts:1700000000')).toBeInTheDocument();
@@ -187,30 +191,31 @@ describe('JWTTab', () => {
   it('warns on missing generate credentials, handles invalid json, and supports ES key generation plus copy failure', async () => {
     render(<JWTTab />);
 
-    await userEvent.click(screen.getByRole('tab', { name: /^生成$/i }));
-    await userEvent.clear(screen.getByDisplayValue('your-256-bit-secret'));
-    await userEvent.click(screen.getByRole('button', { name: /生成 JWT/i }));
+    fireEvent.click(screen.getByRole('tab', { name: /^生成$/i }));
+    fireEvent.change(screen.getByDisplayValue('your-256-bit-secret'), {
+      target: { value: '' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /生成 JWT/i }));
     expect(message.warning).toHaveBeenCalled();
 
-    await userEvent.click(screen.getByRole('combobox'));
+    fireEvent.mouseDown(screen.getByRole('combobox'));
     await userEvent.click(await screen.findByText(/ES256 \(ECDSA P-256\)/i));
-    await userEvent.click(screen.getByRole('button', { name: /生成密钥对/i }));
+    fireEvent.click(screen.getByRole('button', { name: /生成密钥对/i }));
     expect(jwtMocks.generateECKeyPair).toHaveBeenCalledWith('ES256');
     expect(await screen.findByDisplayValue('ec-priv')).toBeInTheDocument();
     expect(screen.getByDisplayValue('ec-pub')).toBeInTheDocument();
 
     const payloadInput = screen.getByDisplayValue(/John Doe/) as HTMLTextAreaElement;
-    await userEvent.clear(payloadInput);
     fireEvent.change(payloadInput, { target: { value: '{bad-json' } });
-    await userEvent.click(screen.getByRole('button', { name: /生成 JWT/i }));
+    fireEvent.click(screen.getByRole('button', { name: /生成 JWT/i }));
     expect(message.error).toHaveBeenCalled();
 
     fireEvent.change(payloadInput, { target: { value: '{"sub":"42"}' } });
-    await userEvent.click(screen.getByRole('button', { name: /生成 JWT/i }));
+    fireEvent.click(screen.getByRole('button', { name: /生成 JWT/i }));
     expect(await screen.findByDisplayValue('generated.private.jwt')).toBeInTheDocument();
 
     vi.mocked(navigator.clipboard.writeText).mockRejectedValueOnce(new Error('denied'));
-    await userEvent.click(screen.getByRole('button', { name: /复制/i }));
+    fireEvent.click(screen.getByRole('button', { name: /复制/i }));
     expect(message.error).toHaveBeenCalled();
   });
 });

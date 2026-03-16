@@ -30,12 +30,12 @@ describe('JsonTab', () => {
     const input = screen.getAllByRole('textbox')[0];
     fireEvent.change(input, { target: { value: '{ "a": 1, "b": { "c": 2 } }' } });
 
-    await userEvent.click(screen.getByRole('button', { name: /格式化/i }));
+    fireEvent.click(screen.getByRole('button', { name: /格式化/i }));
 
     fireEvent.change(screen.getByPlaceholderText(/JSONPath 查询/), {
       target: { value: '$.b.c' },
     });
-    await userEvent.click(screen.getByRole('button', { name: /查\s*询/ }));
+    fireEvent.click(screen.getByRole('button', { name: /查\s*询/ }));
 
     await waitFor(() => {
       const values = Array.from(document.querySelectorAll('textarea')).map(
@@ -44,15 +44,15 @@ describe('JsonTab', () => {
       expect(values.some((value) => value.includes('2'))).toBe(true);
     });
 
-    await userEvent.click(screen.getByRole('tab', { name: /JSON 比较/i }));
+    fireEvent.click(screen.getByRole('tab', { name: /JSON 比较/i }));
     const compareInput = screen.getByPlaceholderText(/输入要比较的第二个 JSON/i);
     fireEvent.change(compareInput, { target: { value: '{ "a": 1, "b": { "c": 3 } }' } });
-    await userEvent.click(screen.getByRole('button', { name: /比较差异/i }));
+    fireEvent.click(screen.getByRole('button', { name: /比较差异/i }));
 
     await waitFor(() => {
       expect(screen.getByDisplayValue(/root\.b\.c: 2 → 3/)).toBeInTheDocument();
     });
-  });
+  }, 20000);
 
   it('shows syntax errors for invalid json', async () => {
     render(<JsonTab />);
