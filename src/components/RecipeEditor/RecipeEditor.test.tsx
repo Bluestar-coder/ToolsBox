@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import type { Operation, OperationInput, Recipe } from '../../core/operations';
@@ -51,6 +51,16 @@ function createRecipe(): Recipe {
         enabled: true,
       },
     ],
+    createdAt: new Date('2026-01-01T00:00:00.000Z'),
+    updatedAt: new Date('2026-01-01T00:00:00.000Z'),
+  };
+}
+
+function createRecipeWithSteps(steps: Recipe['steps']): Recipe {
+  return {
+    id: 'recipe-multi',
+    name: 'Recipe Multi',
+    steps,
     createdAt: new Date('2026-01-01T00:00:00.000Z'),
     updatedAt: new Date('2026-01-01T00:00:00.000Z'),
   };
@@ -206,5 +216,170 @@ describe('RecipeEditor', () => {
     expect(onRecipeChange).toHaveBeenLastCalledWith(expect.objectContaining({
       steps: [],
     }));
+  });
+
+  it('moves steps through actions and drag-and-drop', async () => {
+    const user = userEvent.setup();
+    const stepOneOperation = createOperation({ id: 'step_one', name: 'Step One' });
+    const stepTwoOperation = createOperation({ id: 'step_two', name: 'Step Two' });
+    const recipe = createRecipeWithSteps([
+      {
+        id: 'step-1',
+        operation: stepOneOperation,
+        params: {},
+        enabled: true,
+      },
+      {
+        id: 'step-2',
+        operation: stepTwoOperation,
+        params: {},
+        enabled: true,
+      },
+    ]);
+    const onRecipeChange = vi.fn();
+
+    render(
+      <RecipeEditor
+        recipe={recipe}
+        onRecipeChange={onRecipeChange}
+        onExecute={vi.fn()}
+        onDebug={vi.fn()}
+        operations={[stepOneOperation, stepTwoOperation]}
+      />
+    );
+
+    await user.click(screen.getAllByRole('button', { name: '步骤操作' })[1]);
+    await user.click(await screen.findByText('上移'));
+
+    expect(onRecipeChange).toHaveBeenLastCalledWith(expect.objectContaining({
+      steps: [
+        expect.objectContaining({ id: 'step-2' }),
+        expect.objectContaining({ id: 'step-1' }),
+      ],
+    }));
+
+    onRecipeChange.mockClear();
+
+    const stepCards = [
+      screen.getByText('Step One').closest('[draggable="true"]') as HTMLElement,
+      screen.getByText('Step Two').closest('[draggable="true"]') as HTMLElement,
+    ];
+    const dataTransfer = {
+      effectAllowed: 'move',
+      setData: vi.fn(),
+      getData: vi.fn(),
+    };
+
+    fireEvent.dragStart(stepCards[0], { dataTransfer });
+    fireEvent.dragEnter(stepCards[1], { preventDefault: vi.fn() });
+    fireEvent.dragEnd(stepCards[0]);
+
+    expect(onRecipeChange).toHaveBeenLastCalledWith(expect.objectContaining({
+      steps: [
+        expect.objectContaining({ id: 'step-2' }),
+        expect.objectContaining({ id: 'step-1' }),
+      ],
+    }));
+  });
+
+  it('shows untitled state, disables debug when empty, and supports adding from header', async () => {
+    const user = userEvent.setup();
+    const operation = createOperation({ id: 'url_encode', name: 'URL Encode' });
+    const onRecipeChange = vi.fn();
+    const emptyRecipe: Recipe = {
+      id: 'recipe-untitled',
+      name: '',
+      steps: [],
+      createdAt: new Date('2026-01-01T00:00:00.000Z'),
+      updatedAt: new Date('2026-01-01T00:00:00.000Z'),
+    };
+
+    render(
+      <RecipeEditor
+        recipe={emptyRecipe}
+        onRecipeChange={onRecipeChange}
+        onExecute={vi.fn()}
+        onDebug={vi.fn()}
+        operations={[operation]}
+      />
+    );
+
+    expect(screen.getByText('未命名Recipe')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /调试/ })).toBeDisabled();
+
+    await user.click(screen.getByRole('button', { name: /添加操作/ }));
+    await user.click(await screen.findByText('URL Encode'));
+
+    expect(onRecipeChange).toHaveBeenCalledWith(expect.objectContaining({
+      steps: [expect.objectContaining({ operation })],
+    }));
+  });
+
+  it('renders no-parameter and typed parameter forms, then closes the modal on cancel', async () => {
+    const user = userEvent.setup();
+    const noParamOperation = createOperation({ id: 'noop', name: 'No Params' });
+    const typedOperation: Operation = {
+      id: 'typed',
+      name: 'Typed Params',
+      description: 'typed params description',
+      category: 'encoding',
+      inputType: 'text',
+      outputType: 'text',
+      getParameters: () => [
+        { name: 'flag', type: 'boolean', defaultValue: false, description: 'Flag' },
+        { name: 'mode', type: 'select', defaultValue: 'fast', description: 'Mode', options: [{ label: 'Fast', value: 'fast' }] },
+        { name: 'tags', type: 'multiselect', defaultValue: ['a'], description: 'Tags', options: [{ label: 'A', value: 'a' }] },
+        { name: 'limit', type: 'number', defaultValue: 2, description: 'Limit' },
+        { name: 'passwordValue', type: 'string', defaultValue: '', description: 'Password' },
+      ],
+      validateInput: () => ({ valid: true }),
+      execute: async (input: OperationInput) => ({
+        success: true,
+        output: { data: input.data, dataType: input.dataType },
+      }),
+    };
+    const recipe = createRecipeWithSteps([
+      {
+        id: 'step-1',
+        operation: noParamOperation,
+        params: {},
+        enabled: true,
+      },
+      {
+        id: 'step-2',
+        operation: typedOperation,
+        params: {},
+        enabled: true,
+      },
+    ]);
+
+    render(
+      <RecipeEditor
+        recipe={recipe}
+        onRecipeChange={vi.fn()}
+        onExecute={vi.fn()}
+        onDebug={vi.fn()}
+        operations={[noParamOperation, typedOperation]}
+      />
+    );
+
+    await user.click(screen.getAllByRole('button', { name: '步骤操作' })[0]);
+    await user.click((await screen.findAllByText('编辑参数')).at(-1)!);
+    const noParamDialog = screen.getByRole('dialog', { name: '编辑步骤参数' });
+    expect(await within(noParamDialog).findByText('该操作没有参数')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /cancel/i }));
+    expect(noParamDialog).not.toBeVisible();
+
+    await user.click(screen.getAllByRole('button', { name: '步骤操作' })[1]);
+    await user.click((await screen.findAllByText('编辑参数')).at(-1)!);
+    const typedDialog = screen.getByRole('dialog', { name: '编辑步骤参数' });
+
+    expect(await within(typedDialog).findByText('Flag')).toBeInTheDocument();
+    expect(within(typedDialog).getByText('Mode')).toBeInTheDocument();
+    expect(within(typedDialog).getByText('Tags')).toBeInTheDocument();
+    expect(within(typedDialog).getByText('Limit')).toBeInTheDocument();
+    expect(within(typedDialog).getByLabelText('Password')).toBeInTheDocument();
+    expect(within(typedDialog).getByRole('switch')).toBeInTheDocument();
+    expect(typedDialog.querySelector('input[type="number"]')).toBeTruthy();
   });
 });
