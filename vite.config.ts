@@ -11,6 +11,11 @@ const chunkGroups = [
       'node_modules/antd/es/style/',
       'node_modules/antd/es/locale/',
       'node_modules/antd/es/app/',
+    ],
+  },
+  {
+    name: 'antd-runtime',
+    patterns: [
       'node_modules/rc-util/',
       'node_modules/@rc-component/util/',
       'node_modules/rc-motion/',
@@ -43,6 +48,11 @@ const chunkGroups = [
       'node_modules/@rc-component/trigger/',
       'node_modules/rc-menu/',
       'node_modules/rc-dropdown/',
+    ],
+  },
+  {
+    name: 'antd-overflow',
+    patterns: [
       'node_modules/rc-overflow/',
       'node_modules/rc-resize-observer/',
     ],

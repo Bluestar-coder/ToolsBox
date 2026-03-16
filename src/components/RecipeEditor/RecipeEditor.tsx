@@ -8,7 +8,6 @@ import {
   Card, 
   Button, 
   Space, 
-  Dropdown, 
   Modal, 
   Form, 
   Input, 
@@ -60,6 +59,8 @@ const RecipeEditor: React.FC<RecipeEditorProps> = ({
   const { t } = useTranslation();
   const [modalVisible, setModalVisible] = useState(false);
   const [currentStep, setCurrentStep] = useState<OperationStep | null>(null);
+  const [operationPickerVisible, setOperationPickerVisible] = useState(false);
+  const [stepActionsOpenId, setStepActionsOpenId] = useState<string | null>(null);
   const [form] = Form.useForm();
   const dragItem = useRef<number | null>(null);
   const dragOverItem = useRef<number | null>(null);
@@ -83,6 +84,7 @@ const RecipeEditor: React.FC<RecipeEditorProps> = ({
     };
 
     onRecipeChange(updatedRecipe);
+    setOperationPickerVisible(false);
   }, [recipe, onRecipeChange]);
 
   // 删除操作步骤
@@ -94,6 +96,7 @@ const RecipeEditor: React.FC<RecipeEditorProps> = ({
     };
 
     onRecipeChange(updatedRecipe);
+    setStepActionsOpenId(null);
   }, [recipe, onRecipeChange]);
 
   // 切换步骤启用状态
@@ -127,6 +130,7 @@ const RecipeEditor: React.FC<RecipeEditorProps> = ({
     setCurrentStep(step);
     form.setFieldsValue(step.params);
     setModalVisible(true);
+    setStepActionsOpenId(null);
   }, [form]);
 
   // 保存步骤参数
@@ -168,6 +172,7 @@ const RecipeEditor: React.FC<RecipeEditorProps> = ({
     };
 
     onRecipeChange(updatedRecipe);
+    setStepActionsOpenId(null);
   }, [recipe, onRecipeChange]);
 
   // 移动步骤
@@ -188,6 +193,7 @@ const RecipeEditor: React.FC<RecipeEditorProps> = ({
     };
 
     onRecipeChange(updatedRecipe);
+    setStepActionsOpenId(null);
   }, [recipe, onRecipeChange]);
 
   // 拖拽开始
@@ -293,6 +299,32 @@ const RecipeEditor: React.FC<RecipeEditorProps> = ({
     });
   };
 
+  const renderOperationPicker = () => (
+    <Modal
+      title={t('recipeEditor.addOperation', '添加操作')}
+      open={operationPickerVisible}
+      onCancel={() => setOperationPickerVisible(false)}
+      footer={null}
+      width={720}
+    >
+      <div style={{ display: 'grid', gap: 8 }}>
+        {operations.map((operation) => (
+          <Button
+            key={operation.id}
+            type="text"
+            style={{ justifyContent: 'flex-start', height: 'auto', padding: '10px 12px' }}
+            onClick={() => handleAddOperation(operation)}
+          >
+            <Space>
+              <span>{typeof operation.icon === 'string' ? getOperationIcon(operation.icon) : operation.icon}</span>
+              <span>{operation.name}</span>
+            </Space>
+          </Button>
+        ))}
+      </div>
+    </Modal>
+  );
+
   return (
     <div className={styles.recipeEditor}>
       <div className={styles.recipeHeader}>
@@ -314,16 +346,9 @@ const RecipeEditor: React.FC<RecipeEditorProps> = ({
           >
             {t('recipeEditor.debug', '调试')}
           </Button>
-          <Dropdown menu={{ items: operations.map(operation => ({
-            key: operation.id,
-            icon: typeof operation.icon === 'string' ? getOperationIcon(operation.icon) : operation.icon,
-            label: operation.name,
-            onClick: () => handleAddOperation(operation),
-          })) }} placement="bottomRight">
-            <Button icon={<PlusOutlined />}>
-              {t('recipeEditor.addOperation', '添加操作')}
-            </Button>
-          </Dropdown>
+          <Button icon={<PlusOutlined />} onClick={() => setOperationPickerVisible(true)}>
+            {t('recipeEditor.addOperation', '添加操作')}
+          </Button>
         </Space>
       </div>
 
@@ -333,16 +358,9 @@ const RecipeEditor: React.FC<RecipeEditorProps> = ({
             description={t('recipeEditor.noSteps', '还没有添加任何操作步骤')}
             image={Empty.PRESENTED_IMAGE_SIMPLE}
           >
-            <Dropdown menu={{ items: operations.map(operation => ({
-              key: operation.id,
-              icon: typeof operation.icon === 'string' ? getOperationIcon(operation.icon) : operation.icon,
-              label: operation.name,
-              onClick: () => handleAddOperation(operation),
-            })) }} placement="bottom">
-              <Button type="primary" icon={<PlusOutlined />}>
-                {t('recipeEditor.addFirstOperation', '添加第一个操作')}
-              </Button>
-            </Dropdown>
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => setOperationPickerVisible(true)}>
+              {t('recipeEditor.addFirstOperation', '添加第一个操作')}
+            </Button>
           </Empty>
         ) : (
           <div className={styles.stepsList}>
@@ -393,55 +411,46 @@ const RecipeEditor: React.FC<RecipeEditorProps> = ({
                       onClick={() => handleToggleBreakpoint(step.id, !step.isBreakpoint)}
                       className={step.isBreakpoint ? styles.breakpointButton : ''}
                     />
-                    <Dropdown menu={{ 
-                      items: [
-                        {
-                          key: 'edit',
-                          icon: <SettingOutlined />,
-                          label: t('recipeEditor.editStep', '编辑参数'),
-                          onClick: () => handleEditStep(step),
-                        },
-                        {
-                          key: 'duplicate',
-                          icon: <CopyOutlined />,
-                          label: t('recipeEditor.duplicateStep', '复制步骤'),
-                          onClick: () => handleDuplicateStep(step),
-                        },
-                        {
-                          key: 'move-up',
-                          icon: <UpOutlined />,
-                          label: t('recipeEditor.moveUp', '上移'),
-                          onClick: () => handleMoveStep(step.id, 'up'),
-                          disabled: recipe.steps[0]?.id === step.id,
-                        },
-                        {
-                          key: 'move-down',
-                          icon: <DownOutlined />,
-                          label: t('recipeEditor.moveDown', '下移'),
-                          onClick: () => handleMoveStep(step.id, 'down'),
-                          disabled: recipe.steps[recipe.steps.length - 1]?.id === step.id,
-                        },
-                        {
-                          type: 'divider',
-                        },
-                        {
-                          key: 'delete',
-                          icon: <DeleteOutlined />,
-                          label: t('recipeEditor.deleteStep', '删除步骤'),
-                          danger: true,
-                          onClick: () => handleDeleteStep(step.id),
-                        },
-                      ]
-                    }} trigger={['click']}>
-                      <Button
-                        type="text"
-                        size="small"
-                        icon={<SettingOutlined />}
-                        aria-label={t('recipeEditor.stepActions', '步骤操作')}
-                      />
-                    </Dropdown>
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<SettingOutlined />}
+                      aria-label={t('recipeEditor.stepActions', '步骤操作')}
+                      onClick={() => setStepActionsOpenId((current) => current === step.id ? null : step.id)}
+                    />
                   </div>
                 </div>
+                {stepActionsOpenId === step.id && (
+                  <div style={{ marginTop: 12 }}>
+                    <Space wrap>
+                      <Button size="small" icon={<SettingOutlined />} onClick={() => handleEditStep(step)}>
+                        {t('recipeEditor.editStep', '编辑参数')}
+                      </Button>
+                      <Button size="small" icon={<CopyOutlined />} onClick={() => handleDuplicateStep(step)}>
+                        {t('recipeEditor.duplicateStep', '复制步骤')}
+                      </Button>
+                      <Button
+                        size="small"
+                        icon={<UpOutlined />}
+                        onClick={() => handleMoveStep(step.id, 'up')}
+                        disabled={recipe.steps[0]?.id === step.id}
+                      >
+                        {t('recipeEditor.moveUp', '上移')}
+                      </Button>
+                      <Button
+                        size="small"
+                        icon={<DownOutlined />}
+                        onClick={() => handleMoveStep(step.id, 'down')}
+                        disabled={recipe.steps[recipe.steps.length - 1]?.id === step.id}
+                      >
+                        {t('recipeEditor.moveDown', '下移')}
+                      </Button>
+                      <Button size="small" danger icon={<DeleteOutlined />} onClick={() => handleDeleteStep(step.id)}>
+                        {t('recipeEditor.deleteStep', '删除步骤')}
+                      </Button>
+                    </Space>
+                  </div>
+                )}
               </Card>
             ))}
           </div>
@@ -481,6 +490,7 @@ const RecipeEditor: React.FC<RecipeEditorProps> = ({
           </div>
         )}
       </Modal>
+      {renderOperationPicker()}
     </div>
   );
 };
