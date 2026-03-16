@@ -1,13 +1,13 @@
-import CryptoJS from 'crypto-js';
-import 'crypto-js/blowfish';
+import CryptoJS from './cryptojs-blowfish';
+import type { CryptoJSWordArray } from './cryptojs-base';
 
 // Blowfish (CryptoJS) - 标准实现，默认使用 ECB + PKCS7
 
-const hexToWordArray = (hex: string): CryptoJS.lib.WordArray => {
+const hexToWordArray = (hex: string): CryptoJSWordArray => {
   return CryptoJS.enc.Hex.parse(hex);
 };
 
-const wordArrayToHex = (wordArray: CryptoJS.lib.WordArray): string => {
+const wordArrayToHex = (wordArray: CryptoJSWordArray): string => {
   return wordArray.toString(CryptoJS.enc.Hex);
 };
 

@@ -118,7 +118,7 @@ vi.mock('../../utils/asymmetric-ec', () => ({
   ecdsaVerifyBytes: ecdsaMocks.ecdsaVerifyBytes,
 }));
 
-vi.mock('../../utils/helpers', () => ({
+vi.mock('../../utils/hash-helpers', () => ({
   hashMessageToUint8Array: ecdsaMocks.hashMessageToUint8Array,
 }));
 

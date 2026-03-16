@@ -1,4 +1,4 @@
-import CryptoJS from 'crypto-js';
+import CryptoJS from './cryptojs-stream';
 
 // ============ RC4 流密码 ============
 

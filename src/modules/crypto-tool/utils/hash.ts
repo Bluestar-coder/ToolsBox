@@ -1,4 +1,4 @@
-import CryptoJS from 'crypto-js';
+import CryptoJS from './cryptojs-hash';
 
 /**
  * 哈希计算结果接口

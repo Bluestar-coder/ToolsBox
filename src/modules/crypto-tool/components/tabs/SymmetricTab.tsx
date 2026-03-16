@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { Card, Input, Select, Button, Space, message } from 'antd';
-import CryptoJS from 'crypto-js';
-import { parseValue, getCryptoMode, getCryptoPadding } from '../../utils/helpers';
+import CryptoJS from '../../utils/cryptojs-symmetric';
+import type { CryptoJSWordArray } from '../../utils/cryptojs-base';
+import { parseValue, getCryptoMode, getCryptoPadding } from '../../utils/symmetric-helpers';
 import styles from './SymmetricTab.module.css';
 
 // Local interface for cipher options to avoid using 'any'
 interface CipherOptions {
   mode: unknown;
   padding: unknown;
-  iv?: CryptoJS.lib.WordArray;
+  iv?: CryptoJSWordArray;
 }
 import {
   aesModeOptions,
@@ -152,7 +153,7 @@ const SymmetricTab: React.FC<SymmetricTabProps> = ({ activeTab }) => {
         options.iv = ivWordArray;
       }
 
-      let ciphertextWordArray: CryptoJS.lib.WordArray;
+      let ciphertextWordArray: CryptoJSWordArray;
       if (ciphertextEncoding === 'Base64') {
         ciphertextWordArray = CryptoJS.enc.Base64.parse(inputText);
       } else {

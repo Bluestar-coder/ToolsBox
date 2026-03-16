@@ -1,5 +1,5 @@
 // 密钥派生函数 (KDF) 实现
-import CryptoJS from 'crypto-js';
+import CryptoJS from './cryptojs-kdf';
 
 // PBKDF2 密钥派生
 export const pbkdf2Derive = (

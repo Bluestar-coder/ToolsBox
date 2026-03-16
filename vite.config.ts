@@ -181,6 +181,77 @@ const sourceChunkGroups = [
   },
 ]
 
+const cryptoJsChunkGroups = [
+  {
+    name: 'cryptojs-core',
+    patterns: [
+      'node_modules/crypto-js/core.js',
+      'node_modules/crypto-js/cipher-core.js',
+      'node_modules/crypto-js/enc-base64.js',
+      'node_modules/crypto-js/enc-hex.js',
+      'node_modules/crypto-js/enc-utf8.js',
+    ],
+  },
+  {
+    name: 'cryptojs-hash',
+    patterns: [
+      'node_modules/crypto-js/md5.js',
+      'node_modules/crypto-js/sha1.js',
+      'node_modules/crypto-js/sha224.js',
+      'node_modules/crypto-js/sha256.js',
+      'node_modules/crypto-js/sha384.js',
+      'node_modules/crypto-js/sha512.js',
+      'node_modules/crypto-js/x64-core.js',
+    ],
+  },
+  {
+    name: 'cryptojs-kdf',
+    patterns: [
+      'node_modules/crypto-js/pbkdf2.js',
+      'node_modules/crypto-js/sha3.js',
+      'node_modules/crypto-js/ripemd160.js',
+      'node_modules/crypto-js/hmac.js',
+      'node_modules/crypto-js/hmac-md5.js',
+      'node_modules/crypto-js/hmac-ripemd160.js',
+      'node_modules/crypto-js/hmac-sha1.js',
+      'node_modules/crypto-js/hmac-sha224.js',
+      'node_modules/crypto-js/hmac-sha256.js',
+      'node_modules/crypto-js/hmac-sha3.js',
+      'node_modules/crypto-js/hmac-sha384.js',
+      'node_modules/crypto-js/hmac-sha512.js',
+    ],
+  },
+  {
+    name: 'cryptojs-symmetric',
+    patterns: [
+      'node_modules/crypto-js/aes.js',
+      'node_modules/crypto-js/tripledes.js',
+      'node_modules/crypto-js/mode-cfb.js',
+      'node_modules/crypto-js/mode-ctr.js',
+      'node_modules/crypto-js/mode-ofb.js',
+      'node_modules/crypto-js/mode-ecb.js',
+      'node_modules/crypto-js/pad-ansix923.js',
+      'node_modules/crypto-js/pad-iso97971.js',
+      'node_modules/crypto-js/pad-iso10126.js',
+      'node_modules/crypto-js/pad-nopadding.js',
+      'node_modules/crypto-js/pad-zeropadding.js',
+    ],
+  },
+  {
+    name: 'cryptojs-stream',
+    patterns: [
+      'node_modules/crypto-js/rc4.js',
+      'node_modules/crypto-js/rabbit.js',
+    ],
+  },
+  {
+    name: 'cryptojs-blowfish',
+    patterns: [
+      'node_modules/crypto-js/blowfish.js',
+    ],
+  },
+]
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
@@ -218,6 +289,12 @@ export default defineConfig({
             }
           }
 
+          for (const group of cryptoJsChunkGroups) {
+            if (group.patterns.some((pattern) => id.includes(pattern))) {
+              return group.name;
+            }
+          }
+
           for (const group of chunkGroups) {
             if (group.patterns.some((pattern) => id.includes(pattern))) {
               return group.name;
@@ -232,9 +309,6 @@ export default defineConfig({
             return 'sql-formatter';
           }
           // 加密相关库
-          if (id.includes('node_modules/crypto-js/')) {
-            return 'crypto-js-vendor';
-          }
           if (id.includes('node_modules/sm-crypto/')) {
             return 'sm-crypto-vendor';
           }

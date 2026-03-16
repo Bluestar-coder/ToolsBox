@@ -1,4 +1,4 @@
-import CryptoJS from 'crypto-js';
+import CryptoJS from './cryptojs-password-ciphers';
 
 // 定义消息类型
 type CryptoMessage = {

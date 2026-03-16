@@ -116,7 +116,7 @@ vi.mock('../../utils/asymmetric-edwards', () => ({
   ed25519VerifyBytes: ed25519Mocks.ed25519VerifyBytes,
 }));
 
-vi.mock('../../utils/helpers', () => ({
+vi.mock('../../utils/hash-helpers', () => ({
   hashMessageToUint8Array: ed25519Mocks.hashMessageToUint8Array,
 }));
 
