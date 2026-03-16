@@ -1,10 +1,27 @@
 import React, { useEffect } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import EncoderDecoder from '../modules/encoder-decoder/components/EncoderDecoder';
+import EncoderDecoder, { type EncoderCategoryKey } from '../modules/encoder-decoder/components/EncoderDecoder';
 import { useEncodingContext } from '../hooks/useEncodingContext';
 import type { EncoderType, OperationType } from '../modules/encoder-decoder/utils/encoders';
+import { baseEncoders, otherEncoders, utfEncoders } from '../modules/encoder-decoder/utils/constants';
 import ModulePageShell from '../components/ModulePageShell';
 import { EncodingProvider } from '../context/EncodingContext';
+
+function resolveEncoderCategory(type?: string): EncoderCategoryKey {
+  if (!type) {
+    return 'smart';
+  }
+  if (baseEncoders.includes(type as EncoderType)) {
+    return 'base';
+  }
+  if (utfEncoders.includes(type as EncoderType)) {
+    return 'utf';
+  }
+  if (otherEncoders.includes(type as EncoderType)) {
+    return 'other';
+  }
+  return 'smart';
+}
 
 /**
  * 编码/解码工具页面组件
@@ -14,6 +31,7 @@ const EncoderPageContent: React.FC = () => {
   const { type } = useParams<{ type?: string }>();
   const [searchParams] = useSearchParams();
   const { state, setType, setOperation, setInput } = useEncodingContext();
+  const initialCategory = resolveEncoderCategory(type);
 
   // 从URL参数同步编码类型
   useEffect(() => {
@@ -50,7 +68,7 @@ const EncoderPageContent: React.FC = () => {
 
   return (
     <ModulePageShell moduleId="encoder-decoder">
-      <EncoderDecoder />
+      <EncoderDecoder initialCategory={initialCategory} />
     </ModulePageShell>
   );
 };

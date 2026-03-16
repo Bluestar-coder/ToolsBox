@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { Suspense, lazy, useState } from 'react';
 import { Card, Tabs } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { TestTab, ReplaceTab, SplitTab } from './tabs';
+
+const TestTab = lazy(() => import('./tabs/TestTab'));
+const ReplaceTab = lazy(() => import('./tabs/ReplaceTab'));
+const SplitTab = lazy(() => import('./tabs/SplitTab'));
 
 export type RegexToolTabKey = 'test' | 'replace' | 'split';
 
@@ -14,10 +17,22 @@ const RegexTool: React.FC<RegexToolProps> = ({ initialTab = 'test' }) => {
   const { t } = useTranslation();
 
   const tabItems = [
-    { key: 'test', label: t('modules.regex.tabs.test'), children: <TestTab /> },
-    { key: 'replace', label: t('modules.regex.tabs.replace'), children: <ReplaceTab /> },
-    { key: 'split', label: t('modules.regex.tabs.split'), children: <SplitTab /> },
+    { key: 'test', label: t('modules.regex.tabs.test') },
+    { key: 'replace', label: t('modules.regex.tabs.replace') },
+    { key: 'split', label: t('modules.regex.tabs.split') },
   ];
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'replace':
+        return <ReplaceTab />;
+      case 'split':
+        return <SplitTab />;
+      case 'test':
+      default:
+        return <TestTab />;
+    }
+  };
 
   return (
     <Card title={t('modules.regex.title')} variant="borderless">
@@ -27,6 +42,9 @@ const RegexTool: React.FC<RegexToolProps> = ({ initialTab = 'test' }) => {
         items={tabItems}
         style={{ marginBottom: 8 }}
       />
+      <Suspense fallback={null}>
+        {renderContent()}
+      </Suspense>
     </Card>
   );
 };

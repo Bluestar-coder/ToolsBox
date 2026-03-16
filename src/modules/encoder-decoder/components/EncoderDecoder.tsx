@@ -1,14 +1,28 @@
-import React, { useState } from 'react';
+import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { Card, Tabs } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useEncodingContext } from '../../../hooks/useEncodingContext';
 import { baseEncoders, utfEncoders, otherEncoders } from '../utils/constants';
-import { EncodingTab, RadixTab, ImageTab, SmartDecodeTab } from './tabs';
 
-const EncoderDecoder: React.FC = () => {
+const EncodingTab = lazy(() => import('./tabs/EncodingTab'));
+const RadixTab = lazy(() => import('./tabs/RadixTab'));
+const ImageTab = lazy(() => import('./tabs/ImageTab'));
+const SmartDecodeTab = lazy(() => import('./tabs/SmartDecodeTab'));
+
+export type EncoderCategoryKey = 'smart' | 'base' | 'utf' | 'other' | 'radix' | 'image';
+
+interface EncoderDecoderProps {
+  initialCategory?: EncoderCategoryKey;
+}
+
+const EncoderDecoder: React.FC<EncoderDecoderProps> = ({ initialCategory = 'smart' }) => {
   const { t } = useTranslation();
   const { dispatch, state } = useEncodingContext();
-  const [activeCategory, setActiveCategory] = useState<string>('smart');
+  const [activeCategory, setActiveCategory] = useState<EncoderCategoryKey>(initialCategory);
+
+  useEffect(() => {
+    setActiveCategory(initialCategory);
+  }, [initialCategory]);
 
   const categoryItems = [
     { key: 'smart', label: t('modules.encoder.categories.smart') },
@@ -20,7 +34,7 @@ const EncoderDecoder: React.FC = () => {
   ];
 
   const handleCategoryChange = (category: string) => {
-    setActiveCategory(category);
+    setActiveCategory(category as EncoderCategoryKey);
     if (category === 'base' || category === 'utf' || category === 'other') {
       const encoders = category === 'base' ? baseEncoders : category === 'utf' ? utfEncoders : otherEncoders;
       if (!encoders.includes(state.currentType as typeof encoders[number])) {
@@ -56,7 +70,9 @@ const EncoderDecoder: React.FC = () => {
         items={categoryItems}
         style={{ marginBottom: 8 }}
       />
-      {renderContent()}
+      <Suspense fallback={null}>
+        {renderContent()}
+      </Suspense>
     </Card>
   );
 };

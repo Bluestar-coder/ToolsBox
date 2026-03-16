@@ -1,14 +1,13 @@
-import React, { useState } from 'react';
+import React, { Suspense, lazy, useState } from 'react';
 import { Card, Tabs } from 'antd';
 import { useTranslation } from 'react-i18next';
-import {
-  SmartParseTab,
-  CodeGenTab,
-  CalcTab,
-  BatchTab,
-  TimezoneTab,
-  UUIDTab,
-} from './tabs';
+
+const SmartParseTab = lazy(() => import('./tabs/SmartParseTab'));
+const CodeGenTab = lazy(() => import('./tabs/CodeGenTab'));
+const CalcTab = lazy(() => import('./tabs/CalcTab'));
+const BatchTab = lazy(() => import('./tabs/BatchTab'));
+const TimezoneTab = lazy(() => import('./tabs/TimezoneTab'));
+const UUIDTab = lazy(() => import('./tabs/UUIDTab'));
 
 export type TimeToolTabKey = 'smart' | 'code' | 'calc' | 'batch' | 'timezone' | 'uuid';
 
@@ -56,7 +55,9 @@ const TimeTool: React.FC<TimeToolProps> = ({ initialTab = 'smart' }) => {
         items={tabItems}
         style={{ marginBottom: 16 }}
       />
-      {renderContent()}
+      <Suspense fallback={null}>
+        {renderContent()}
+      </Suspense>
     </Card>
   );
 };
