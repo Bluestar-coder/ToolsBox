@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Button, Space, message, Row, Col, Tooltip, Tag, Alert, List } from 'antd';
+import { Button, Space, message, Row, Col, Tooltip, Tag, Alert } from 'antd';
 import {
   CopyOutlined, ClearOutlined, FormatPainterOutlined, CompressOutlined,
   FontSizeOutlined, CheckCircleOutlined, TableOutlined,
@@ -210,24 +210,23 @@ const SqlTab: React.FC = () => {
       {statements.length > 0 && (
         <div>
           <div style={{ marginBottom: 8, fontWeight: 500 }}>语句分析</div>
-          <List
-            size="small"
-            bordered
-            dataSource={statements}
-            renderItem={(stmt, index) => (
-              <List.Item>
-                <Space>
-                  <Tag color={getStatementTypeColor(stmt.type)}>{stmt.type}</Tag>
-                  <span>语句 {index + 1}</span>
-                  {stmt.tables.length > 0 && (
-                    <span>
-                      <TableOutlined /> 表: {stmt.tables.join(', ')}
-                    </span>
-                  )}
-                </Space>
-              </List.Item>
-            )}
-          />
+          <div style={{ border: '1px solid #d9d9d9', borderRadius: 6, padding: 8 }}>
+            <ul style={{ margin: 0, paddingLeft: 20 }}>
+              {statements.map((stmt, index) => (
+                <li key={`${stmt.type}-${index}`} style={{ padding: '4px 0' }}>
+                  <Space>
+                    <Tag color={getStatementTypeColor(stmt.type)}>{stmt.type}</Tag>
+                    <span>语句 {index + 1}</span>
+                    {stmt.tables.length > 0 && (
+                      <span>
+                        <TableOutlined /> 表: {stmt.tables.join(', ')}
+                      </span>
+                    )}
+                  </Space>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       )}
 

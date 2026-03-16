@@ -36,6 +36,7 @@ describe('DashboardPage', () => {
       app_data_dir: null,
       app_config_dir: null,
       temp_dir: null,
+      recipe_snapshots_dir: null,
     });
 
     renderWithProviders(<DashboardPage />, {
@@ -62,6 +63,7 @@ describe('DashboardPage', () => {
       app_data_dir: '/tmp/toolsbox/data',
       app_config_dir: '/tmp/toolsbox/config',
       temp_dir: '/tmp/toolsbox',
+      recipe_snapshots_dir: '/tmp/toolsbox/recipe-snapshots',
     });
     mockOpenRuntimePath.mockResolvedValue(true);
 

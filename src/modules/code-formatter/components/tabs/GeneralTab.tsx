@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Button, Space, message, Select, Row, Col, Tooltip, Switch, Alert, List } from 'antd';
+import { Button, Space, message, Select, Row, Col, Tooltip, Switch, Alert } from 'antd';
 import { CopyOutlined, ClearOutlined, FormatPainterOutlined, CompressOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import type { GeneralFormatterLanguage, FormatOptions } from '../../utils/formatter-types';
 import { languageOptions, indentSizeOptions } from '../../utils/constants';
@@ -188,15 +188,16 @@ const GeneralTab: React.FC<GeneralTabProps> = ({ defaultLanguage = 'javascript' 
                 <Alert
                   title="语法错误"
                   description={
-                    <List
-                      size="small"
-                      dataSource={syntaxResult.errors}
-                      renderItem={(err) => (
-                        <List.Item style={{ padding: '4px 0', color: getSeverityColor(err.severity) }}>
+                    <ul style={{ margin: 0, paddingLeft: 20 }}>
+                      {syntaxResult.errors.map((err, index) => (
+                        <li
+                          key={`${err.line}-${err.column}-${index}`}
+                          style={{ padding: '4px 0', color: getSeverityColor(err.severity) }}
+                        >
                           行 {err.line}, 列 {err.column}: {err.message}
-                        </List.Item>
-                      )}
-                    />
+                        </li>
+                      ))}
+                    </ul>
                   }
                   type="error"
                   showIcon
@@ -206,15 +207,16 @@ const GeneralTab: React.FC<GeneralTabProps> = ({ defaultLanguage = 'javascript' 
                 <Alert
                   title="建议"
                   description={
-                    <List
-                      size="small"
-                      dataSource={syntaxResult.warnings}
-                      renderItem={(warn) => (
-                        <List.Item style={{ padding: '4px 0', color: getSeverityColor(warn.severity) }}>
+                    <ul style={{ margin: 0, paddingLeft: 20 }}>
+                      {syntaxResult.warnings.map((warn, index) => (
+                        <li
+                          key={`${warn.line}-${warn.column}-${index}`}
+                          style={{ padding: '4px 0', color: getSeverityColor(warn.severity) }}
+                        >
                           行 {warn.line}, 列 {warn.column}: {warn.message}
-                        </List.Item>
-                      )}
-                    />
+                        </li>
+                      ))}
+                    </ul>
                   }
                   type="warning"
                   showIcon

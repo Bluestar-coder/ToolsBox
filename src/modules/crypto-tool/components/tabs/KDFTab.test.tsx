@@ -26,17 +26,16 @@ vi.mock('antd', async (importOriginal) => {
         value,
         onChange,
         placeholder,
-        addonBefore,
+        id,
+        'aria-label': ariaLabel,
       }: {
         value?: string;
         onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
         placeholder?: string;
-        addonBefore?: React.ReactNode;
+        id?: string;
+        'aria-label'?: string;
       }) => (
-        <label>
-          {addonBefore}
-          <input value={value} onChange={onChange} placeholder={placeholder} />
-        </label>
+        <input id={id} aria-label={ariaLabel} value={value} onChange={onChange} placeholder={placeholder} />
       ),
       {
         TextArea: ({

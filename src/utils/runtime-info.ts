@@ -12,6 +12,7 @@ export interface RuntimeInfo {
   app_data_dir?: string | null;
   app_config_dir?: string | null;
   temp_dir?: string | null;
+  recipe_snapshots_dir?: string | null;
 }
 
 function getWebRuntimeInfo(): RuntimeInfo {
@@ -37,6 +38,7 @@ function getWebRuntimeInfo(): RuntimeInfo {
     app_data_dir: null,
     app_config_dir: null,
     temp_dir: null,
+    recipe_snapshots_dir: null,
   };
 }
 

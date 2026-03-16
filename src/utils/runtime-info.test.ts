@@ -21,6 +21,7 @@ describe('runtime-info', () => {
       native_http: false,
       native_fs: false,
       path_opener: false,
+      recipe_snapshots_dir: null,
     });
   });
 
@@ -41,6 +42,7 @@ describe('runtime-info', () => {
       app_data_dir: '/tmp/data',
       app_config_dir: '/tmp/config',
       temp_dir: '/tmp',
+      recipe_snapshots_dir: '/tmp/data/recipe-snapshots',
     });
 
     const runtimeInfo = await import('./runtime-info');
@@ -48,6 +50,7 @@ describe('runtime-info', () => {
       desktop: true,
       path_opener: true,
       hostname: 'mac',
+      recipe_snapshots_dir: '/tmp/data/recipe-snapshots',
     });
     expect(invokeMock).toHaveBeenCalledWith('get_runtime_info', undefined);
   });

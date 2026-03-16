@@ -313,15 +313,17 @@ const JWTTab: React.FC = () => {
           </Card>
           
           <Space>
-            <Tooltip title={t('modules.crypto.jwt.expiresInTip')}>
-              <Input
-                style={{ width: 120 }}
-                placeholder="1h, 7d, 30m"
-                value={genExpiresIn}
-                onChange={(e) => setGenExpiresIn(e.target.value)}
-                addonBefore="exp"
-              />
-            </Tooltip>
+            <div>
+              <div style={{ marginBottom: 4 }}>exp</div>
+              <Tooltip title={t('modules.crypto.jwt.expiresInTip')}>
+                <Input
+                  style={{ width: 120 }}
+                  placeholder="1h, 7d, 30m"
+                  value={genExpiresIn}
+                  onChange={(e) => setGenExpiresIn(e.target.value)}
+                />
+              </Tooltip>
+            </div>
             <Button type="primary" icon={<SafetyOutlined />} onClick={handleGenerate}>
               {t('modules.crypto.jwt.generate')}
             </Button>

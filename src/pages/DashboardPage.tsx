@@ -25,6 +25,7 @@ const DashboardPage: React.FC = () => {
       { key: 'data', label: 'App Data', value: runtimeInfo.app_data_dir },
       { key: 'config', label: 'Config', value: runtimeInfo.app_config_dir },
       { key: 'temp', label: 'Temp', value: runtimeInfo.temp_dir },
+      { key: 'recipes', label: 'Recipe Snapshots', value: runtimeInfo.recipe_snapshots_dir },
     ].filter((entry): entry is { key: string; label: string; value: string } => !!entry.value);
   }, [runtimeInfo]);
 

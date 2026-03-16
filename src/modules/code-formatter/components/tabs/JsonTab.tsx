@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import {
-  Input, Button, Space, message, Select, Row, Col, Tooltip, Slider, Tree, Tabs, Descriptions, Badge, Alert, List,
+  Input, Button, Space, message, Select, Row, Col, Tooltip, Slider, Tree, Tabs, Descriptions, Badge, Alert,
 } from 'antd';
 import {
   CopyOutlined, ClearOutlined, FormatPainterOutlined, CompressOutlined,
@@ -321,15 +321,13 @@ const JsonTab: React.FC = () => {
             <Alert
               title="JSON 语法错误"
               description={
-                <List
-                  size="small"
-                  dataSource={syntaxResult.errors}
-                  renderItem={(err) => (
-                    <List.Item style={{ padding: '4px 0', color: '#ff4d4f' }}>
+                <ul style={{ margin: 0, paddingLeft: 20 }}>
+                  {syntaxResult.errors.map((err, index) => (
+                    <li key={`${err.line}-${err.column}-${index}`} style={{ padding: '4px 0', color: '#ff4d4f' }}>
                       行 {err.line}, 列 {err.column}: {err.message}
-                    </List.Item>
-                  )}
-                />
+                    </li>
+                  ))}
+                </ul>
               }
               type="error"
               showIcon
@@ -339,15 +337,13 @@ const JsonTab: React.FC = () => {
             <Alert
               title="警告"
               description={
-                <List
-                  size="small"
-                  dataSource={syntaxResult.warnings}
-                  renderItem={(warn) => (
-                    <List.Item style={{ padding: '4px 0' }}>
+                <ul style={{ margin: 0, paddingLeft: 20 }}>
+                  {syntaxResult.warnings.map((warn, index) => (
+                    <li key={`${warn.line}-${warn.column}-${index}`} style={{ padding: '4px 0' }}>
                       行 {warn.line}, 列 {warn.column}: {warn.message}
-                    </List.Item>
-                  )}
-                />
+                    </li>
+                  ))}
+                </ul>
               }
               type="warning"
               showIcon

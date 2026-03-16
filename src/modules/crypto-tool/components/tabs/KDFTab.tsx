@@ -121,20 +121,25 @@ const KDFTab: React.FC = () => {
         <Space orientation="vertical" style={{ width: '100%' }} size="middle">
           <Card size="small" title="PBKDF2 参数">
             <Space orientation="vertical" style={{ width: '100%' }}>
-              <Input
-                addonBefore="密码"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="输入密码"
-              />
-              <Space>
+              <div>
+                <div style={{ marginBottom: 4 }}>密码</div>
                 <Input
-                  addonBefore="盐值"
-                  value={salt}
-                  onChange={(e) => setSalt(e.target.value)}
-                  placeholder="输入盐值"
-                  style={{ width: 300 }}
+                  aria-label="密码"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="输入密码"
                 />
+              </div>
+              <Space>
+                <div style={{ width: 300 }}>
+                  <div style={{ marginBottom: 4 }}>盐值</div>
+                  <Input
+                    aria-label="盐值"
+                    value={salt}
+                    onChange={(e) => setSalt(e.target.value)}
+                    placeholder="输入盐值"
+                  />
+                </div>
                 <Button size="small" onClick={() => setSalt(generateSalt())}>生成盐</Button>
               </Space>
               <Space wrap>
@@ -173,12 +178,15 @@ const KDFTab: React.FC = () => {
                 onChange={(e) => setHmacMessage(e.target.value)}
                 placeholder="输入消息"
               />
-              <Input
-                addonBefore="密钥"
-                value={hmacKey}
-                onChange={(e) => setHmacKey(e.target.value)}
-                placeholder="输入密钥"
-              />
+              <div>
+                <div style={{ marginBottom: 4 }}>密钥</div>
+                <Input
+                  aria-label="密钥"
+                  value={hmacKey}
+                  onChange={(e) => setHmacKey(e.target.value)}
+                  placeholder="输入密钥"
+                />
+              </div>
               <Space wrap>
                 <Text>哈希算法:</Text>
                 <Select value={hmacHash} onChange={setHmacHash} options={hmacHashOptions} style={{ width: 120 }} />
@@ -213,24 +221,33 @@ const KDFTab: React.FC = () => {
         <Space orientation="vertical" style={{ width: '100%' }} size="middle">
           <Card size="small" title="HKDF 参数">
             <Space orientation="vertical" style={{ width: '100%' }}>
-              <Input
-                addonBefore="IKM"
-                value={hkdfIkm}
-                onChange={(e) => setHkdfIkm(e.target.value)}
-                placeholder="输入密钥材料 (Input Keying Material)"
-              />
-              <Input
-                addonBefore="Salt"
-                value={hkdfSalt}
-                onChange={(e) => setHkdfSalt(e.target.value)}
-                placeholder="盐值 (可选)"
-              />
-              <Input
-                addonBefore="Info"
-                value={hkdfInfo}
-                onChange={(e) => setHkdfInfo(e.target.value)}
-                placeholder="上下文信息 (可选)"
-              />
+              <div>
+                <div style={{ marginBottom: 4 }}>IKM</div>
+                <Input
+                  aria-label="IKM"
+                  value={hkdfIkm}
+                  onChange={(e) => setHkdfIkm(e.target.value)}
+                  placeholder="输入密钥材料 (Input Keying Material)"
+                />
+              </div>
+              <div>
+                <div style={{ marginBottom: 4 }}>Salt</div>
+                <Input
+                  aria-label="Salt"
+                  value={hkdfSalt}
+                  onChange={(e) => setHkdfSalt(e.target.value)}
+                  placeholder="盐值 (可选)"
+                />
+              </div>
+              <div>
+                <div style={{ marginBottom: 4 }}>Info</div>
+                <Input
+                  aria-label="Info"
+                  value={hkdfInfo}
+                  onChange={(e) => setHkdfInfo(e.target.value)}
+                  placeholder="上下文信息 (可选)"
+                />
+              </div>
               <Space wrap>
                 <Text>输出长度:</Text>
                 <InputNumber value={hkdfKeyLen} onChange={(v) => setHkdfKeyLen(v || 32)} min={1} max={255} />

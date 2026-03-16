@@ -1,21 +1,26 @@
 import { act } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor } from '@/test/utils';
-import { useContext } from 'react';
+import { useContext, useEffect } from 'react';
 import { PluginProvider } from './PluginContext';
 import { PluginContext } from './definitions';
 import { CONTEXT_EVENTS, contextEventBus } from './ContextEventBus';
 import { logger } from '../utils/logger';
-import type { PluginConfig, PluginEvent, PluginMetadata } from '../plugins/types';
+import type { PluginConfig, PluginEvent, PluginLoadResult, PluginMetadata } from '../plugins/types';
 
 let latestContext: React.ContextType<typeof PluginContext> | undefined;
 
 function Probe() {
-  latestContext = useContext(PluginContext);
+  const context = useContext(PluginContext);
+
+  useEffect(() => {
+    latestContext = context;
+  }, [context]);
+
   return (
     <div>
-      <div data-testid="plugin-loaded">{String(latestContext?.state.loaded)}</div>
-      <div data-testid="plugin-list">{latestContext?.state.list.map((plugin) => plugin.id).join(',') ?? ''}</div>
+      <div data-testid="plugin-loaded">{String(context?.state.loaded)}</div>
+      <div data-testid="plugin-list">{context?.state.list.map((plugin) => plugin.id).join(',') ?? ''}</div>
     </div>
   );
 }
@@ -49,7 +54,15 @@ describe('PluginProvider', () => {
     let currentPlugins: PluginMetadata[] = [];
     let eventHandler: ((event: PluginEvent) => void) | undefined;
 
-    const manager = {
+    const manager: {
+      onEvent: (handler: (event: PluginEvent) => void) => void;
+      offEvent: (handler: (event: PluginEvent) => void) => void;
+      getPlugins: () => PluginMetadata[];
+      loadPlugin: (plugin: PluginConfig) => Promise<PluginLoadResult>;
+      enablePlugin: (pluginId: string) => Promise<boolean>;
+      disablePlugin: (pluginId: string) => Promise<boolean>;
+      unloadPlugin: (pluginId: string) => Promise<boolean>;
+    } = {
       onEvent: vi.fn((handler: (event: PluginEvent) => void) => {
         eventHandler = handler;
       }),
@@ -62,7 +75,7 @@ describe('PluginProvider', () => {
     };
 
     const { unmount } = render(
-      <PluginProvider pluginManager={manager as any}>
+      <PluginProvider pluginManager={manager as unknown as typeof import('../plugins/PluginManager').pluginManager}>
         <Probe />
       </PluginProvider>
     );
@@ -124,7 +137,15 @@ describe('PluginProvider', () => {
     const emitSpy = vi.spyOn(contextEventBus, 'emit');
     let eventHandler: ((event: PluginEvent) => void) | undefined;
 
-    const manager = {
+    const manager: {
+      onEvent: (handler: (event: PluginEvent) => void) => void;
+      offEvent: (handler: (event: PluginEvent) => void) => void;
+      getPlugins: () => PluginMetadata[];
+      loadPlugin: (plugin: PluginConfig) => Promise<PluginLoadResult>;
+      enablePlugin: (pluginId: string) => Promise<boolean>;
+      disablePlugin: (pluginId: string) => Promise<boolean>;
+      unloadPlugin: (pluginId: string) => Promise<boolean>;
+    } = {
       onEvent: vi.fn((handler: (event: PluginEvent) => void) => {
         eventHandler = handler;
       }),
@@ -137,7 +158,7 @@ describe('PluginProvider', () => {
     };
 
     render(
-      <PluginProvider pluginManager={manager as any}>
+      <PluginProvider pluginManager={manager as unknown as typeof import('../plugins/PluginManager').pluginManager}>
         <Probe />
       </PluginProvider>
     );
