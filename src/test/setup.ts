@@ -175,15 +175,60 @@ window.getComputedStyle = ((element: Element, pseudoElt?: string | null) => {
     return style;
   }
 
+  const fallbackValues: Record<string, string> = {
+    'line-height': '22px',
+    lineHeight: '22px',
+    'padding-top': '0px',
+    paddingTop: '0px',
+    'padding-bottom': '0px',
+    paddingBottom: '0px',
+    'padding-left': '0px',
+    paddingLeft: '0px',
+    'padding-right': '0px',
+    paddingRight: '0px',
+    'border-top-width': '1px',
+    borderTopWidth: '1px',
+    'border-bottom-width': '1px',
+    borderBottomWidth: '1px',
+    'border-width': '1px',
+    borderWidth: '1px',
+    'box-sizing': 'border-box',
+    boxSizing: 'border-box',
+    'font-size': '14px',
+    fontSize: '14px',
+    width: '100%',
+    'letter-spacing': 'normal',
+    letterSpacing: 'normal',
+    'white-space': 'pre-wrap',
+    whiteSpace: 'pre-wrap',
+    'word-break': 'break-word',
+    wordBreak: 'break-word',
+  };
+
+  const normalizeStyleValue = (propName: string) => {
+    const value = style.getPropertyValue(propName) || Reflect.get(style, propName);
+    if (typeof value === 'string' && value && !value.includes('var(')) {
+      return value;
+    }
+    return fallbackValues[propName] ?? '';
+  };
+
   return new Proxy(style, {
     get(target, prop, receiver) {
+      if (prop === 'getPropertyValue') {
+        return (name: string) => normalizeStyleValue(name);
+      }
       if (prop === 'lineHeight') {
-        const value = Reflect.get(target, prop, receiver);
-        return typeof value === 'string' && value && !value.includes('var(') ? value : '22px';
+        return normalizeStyleValue('line-height');
       }
       if (prop === 'paddingTop' || prop === 'paddingBottom') {
-        const value = Reflect.get(target, prop, receiver);
-        return typeof value === 'string' && value ? value : '0px';
+        return normalizeStyleValue(String(prop));
+      }
+      if (prop === 'borderTopWidth' || prop === 'borderBottomWidth' || prop === 'borderWidth') {
+        return normalizeStyleValue(String(prop));
+      }
+      if (prop === 'boxSizing' || prop === 'fontSize' || prop === 'width') {
+        return normalizeStyleValue(String(prop));
       }
       return Reflect.get(target, prop, receiver);
     },
