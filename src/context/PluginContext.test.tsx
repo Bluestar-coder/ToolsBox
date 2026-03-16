@@ -135,6 +135,7 @@ describe('PluginProvider', () => {
 
   it('falls back to unknown plugin ids for partial plugin events', async () => {
     const emitSpy = vi.spyOn(contextEventBus, 'emit');
+    vi.spyOn(logger, 'log').mockImplementation(() => {});
     let eventHandler: ((event: PluginEvent) => void) | undefined;
 
     const manager: {

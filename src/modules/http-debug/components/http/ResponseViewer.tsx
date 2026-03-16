@@ -47,7 +47,10 @@ const ResponseViewer: React.FC<ResponseViewerProps> = ({
   if (loading) {
     return (
       <div style={{ textAlign: 'center', padding: 40 }}>
-        <Spin tip={t('modules.httpDebug.sending', '请求发送中...')} />
+        <Spin />
+        <div style={{ marginTop: 12 }}>
+          <Text type="secondary">{t('modules.httpDebug.sending', '请求发送中...')}</Text>
+        </div>
       </div>
     );
   }

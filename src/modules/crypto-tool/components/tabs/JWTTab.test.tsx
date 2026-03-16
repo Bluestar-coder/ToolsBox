@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { fireEvent } from '@testing-library/react';
-import { render, screen, userEvent } from '@/test/utils';
+import { render, screen, userEvent, waitFor } from '@/test/utils';
 import { message } from 'antd';
 import JWTTab from './JWTTab';
 
@@ -64,8 +64,10 @@ describe('JWTTab', () => {
   it('decodes token in decode mode', async () => {
     render(<JWTTab />);
 
-    await userEvent.type(screen.getByPlaceholderText(/粘贴 JWT Token/i), 'mock.jwt.token');
-    await userEvent.click(screen.getByRole('button', { name: /解析 JWT/i }));
+    fireEvent.change(screen.getByPlaceholderText(/粘贴 JWT Token/i), {
+      target: { value: 'mock.jwt.token' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /解析 JWT/i }));
 
     expect(await screen.findByText('Header')).toBeInTheDocument();
     expect(screen.getByText('Payload')).toBeInTheDocument();
@@ -75,10 +77,14 @@ describe('JWTTab', () => {
   it('verifies token with secret when signature check is enabled', async () => {
     render(<JWTTab />);
 
-    await userEvent.type(screen.getByPlaceholderText(/粘贴 JWT Token/i), 'mock.jwt.token');
-    await userEvent.click(screen.getByRole('switch'));
-    await userEvent.type(screen.getByPlaceholderText(/输入密钥/i), 'secret-key');
-    await userEvent.click(screen.getByRole('button', { name: /解析并验证/i }));
+    fireEvent.change(screen.getByPlaceholderText(/粘贴 JWT Token/i), {
+      target: { value: 'mock.jwt.token' },
+    });
+    fireEvent.click(screen.getByRole('switch'));
+    fireEvent.change(screen.getByPlaceholderText(/输入密钥/i), {
+      target: { value: 'secret-key' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /解析并验证/i }));
 
     expect(await screen.findByText(/签名验证通过/i)).toBeInTheDocument();
     expect(jwtMocks.verifyJWTWithSecret).toHaveBeenCalledWith('mock.jwt.token', 'secret-key');
@@ -99,10 +105,14 @@ describe('JWTTab', () => {
 
     render(<JWTTab />);
 
-    await userEvent.type(screen.getByPlaceholderText(/粘贴 JWT Token/i), 'mock.jwt.token');
-    await userEvent.click(screen.getByRole('switch'));
-    await userEvent.type(screen.getByPlaceholderText(/输入公钥/i), 'public-key');
-    await userEvent.click(screen.getByRole('button', { name: /解析并验证/i }));
+    fireEvent.change(screen.getByPlaceholderText(/粘贴 JWT Token/i), {
+      target: { value: 'mock.jwt.token' },
+    });
+    fireEvent.click(screen.getByRole('switch'));
+    fireEvent.change(screen.getByPlaceholderText(/输入公钥/i), {
+      target: { value: 'public-key' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /解析并验证/i }));
 
     expect(await screen.findByText(/签名验证通过/i)).toBeInTheDocument();
     expect(jwtMocks.verifyJWTWithPublicKey).toHaveBeenCalledWith('mock.jwt.token', 'public-key');
@@ -112,7 +122,7 @@ describe('JWTTab', () => {
     render(<JWTTab />);
 
     await userEvent.click(screen.getByRole('tab', { name: /^生成$/i }));
-    await userEvent.click(screen.getByRole('button', { name: /生成 JWT/i }));
+    fireEvent.click(screen.getByRole('button', { name: /生成 JWT/i }));
 
     expect(await screen.findByDisplayValue('generated.jwt.token')).toBeInTheDocument();
     expect(jwtMocks.generateJWTWithSecret).toHaveBeenCalled();
@@ -122,9 +132,9 @@ describe('JWTTab', () => {
     render(<JWTTab />);
 
     await userEvent.click(screen.getByRole('tab', { name: /^生成$/i }));
-    await userEvent.click(screen.getByRole('combobox'));
-    await userEvent.click(await screen.findByText(/RS256 \(RSA SHA-256\)/i));
-    await userEvent.click(screen.getByRole('button', { name: /生成密钥对/i }));
+    fireEvent.mouseDown(screen.getByRole('combobox'));
+    fireEvent.click(await screen.findByText(/RS256 \(RSA SHA-256\)/i));
+    fireEvent.click(screen.getByRole('button', { name: /生成密钥对/i }));
 
     expect(jwtMocks.generateRSAKeyPair).toHaveBeenCalled();
     expect(await screen.findByDisplayValue('priv')).toBeInTheDocument();
@@ -188,7 +198,7 @@ describe('JWTTab', () => {
     expect(screen.getByText('ts:1699996400')).toBeInTheDocument();
   });
 
-  it('warns on missing generate credentials, handles invalid json, and supports ES key generation plus copy failure', async () => {
+  it('warns when a symmetric token is generated without a secret', () => {
     render(<JWTTab />);
 
     fireEvent.click(screen.getByRole('tab', { name: /^生成$/i }));
@@ -196,26 +206,74 @@ describe('JWTTab', () => {
       target: { value: '' },
     });
     fireEvent.click(screen.getByRole('button', { name: /生成 JWT/i }));
-    expect(message.warning).toHaveBeenCalled();
 
+    expect(message.warning).toHaveBeenCalled();
+    expect(jwtMocks.generateJWTWithSecret).not.toHaveBeenCalled();
+  });
+
+  it('warns when an asymmetric token is generated without a private key', async () => {
+    render(<JWTTab />);
+
+    await userEvent.click(screen.getByRole('tab', { name: /^生成$/i }));
     fireEvent.mouseDown(screen.getByRole('combobox'));
     await userEvent.click(await screen.findByText(/ES256 \(ECDSA P-256\)/i));
+    fireEvent.click(screen.getByRole('button', { name: /生成 JWT/i }));
+
+    expect(message.warning).toHaveBeenCalled();
+    expect(jwtMocks.generateJWTWithPrivateKey).not.toHaveBeenCalled();
+  });
+
+  it('generates an ES256 key pair and token', async () => {
+    render(<JWTTab />);
+
+    await userEvent.click(screen.getByRole('tab', { name: /^生成$/i }));
+    fireEvent.mouseDown(screen.getByRole('combobox'));
+    fireEvent.click(await screen.findByText(/ES256 \(ECDSA P-256\)/i));
     fireEvent.click(screen.getByRole('button', { name: /生成密钥对/i }));
+
     expect(jwtMocks.generateECKeyPair).toHaveBeenCalledWith('ES256');
     expect(await screen.findByDisplayValue('ec-priv')).toBeInTheDocument();
     expect(screen.getByDisplayValue('ec-pub')).toBeInTheDocument();
 
-    const payloadInput = screen.getByDisplayValue(/John Doe/) as HTMLTextAreaElement;
-    fireEvent.change(payloadInput, { target: { value: '{bad-json' } });
+    fireEvent.change(screen.getByDisplayValue(/John Doe/), {
+      target: { value: '{"sub":"42"}' },
+    });
     fireEvent.click(screen.getByRole('button', { name: /生成 JWT/i }));
-    expect(message.error).toHaveBeenCalled();
 
-    fireEvent.change(payloadInput, { target: { value: '{"sub":"42"}' } });
-    fireEvent.click(screen.getByRole('button', { name: /生成 JWT/i }));
+    expect(jwtMocks.generateJWTWithPrivateKey).toHaveBeenCalledWith(
+      { sub: '42' },
+      'ec-priv',
+      'ES256',
+      '1h'
+    );
     expect(await screen.findByDisplayValue('generated.private.jwt')).toBeInTheDocument();
+  });
+
+  it('handles invalid JSON payload in generate mode', async () => {
+    render(<JWTTab />);
+
+    await userEvent.click(screen.getByRole('tab', { name: /^生成$/i }));
+    fireEvent.change(screen.getByDisplayValue(/John Doe/), {
+      target: { value: '{bad-json' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /生成 JWT/i }));
+
+    expect(message.error).toHaveBeenCalled();
+    expect(jwtMocks.generateJWTWithSecret).not.toHaveBeenCalled();
+  });
+
+  it('shows copy failure when copying a generated token', async () => {
+    render(<JWTTab />);
+
+    await userEvent.click(screen.getByRole('tab', { name: /^生成$/i }));
+    fireEvent.click(screen.getByRole('button', { name: /生成 JWT/i }));
+    expect(await screen.findByDisplayValue('generated.jwt.token')).toBeInTheDocument();
 
     vi.mocked(navigator.clipboard.writeText).mockRejectedValueOnce(new Error('denied'));
-    fireEvent.click(screen.getByRole('button', { name: /复制/i }));
-    expect(message.error).toHaveBeenCalled();
+    await userEvent.click(screen.getByRole('button', { name: /复制/i }));
+
+    await waitFor(() => {
+      expect(message.error).toHaveBeenCalled();
+    });
   });
 });

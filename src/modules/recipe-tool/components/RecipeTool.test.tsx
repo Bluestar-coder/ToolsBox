@@ -95,7 +95,9 @@ describe('RecipeTool', () => {
     expect(savedRecipes[0].name).toBe('Mock Recipe');
   });
 
-  it('loads valid recipes even when storage contains invalid entries', () => {
+  it('loads valid recipes even when storage contains invalid entries', async () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
     localStorage.setItem(
       'recipe-tool-saved-recipes',
       JSON.stringify([
@@ -131,7 +133,11 @@ describe('RecipeTool', () => {
     );
 
     render(<RecipeTool />);
-    expect(screen.getByRole('button', { name: '加载 (1)' })).toBeEnabled();
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: '加载 (1)' })).toBeEnabled();
+    });
+    expect(warnSpy).toHaveBeenCalled();
   });
 
   it('creates a uniquely named recipe instead of silently overwriting by name', async () => {

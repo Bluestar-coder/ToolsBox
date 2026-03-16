@@ -25,6 +25,7 @@ const ignoredConsoleMessages: RegExp[] = [
   /Test error/,
   /ErrorBoundary caught an error/,
   /invalid value for the .*height.*css style property/i,
+  /`NaN` is an invalid value for the `height` css style property\./,
   /Not implemented: Window's getComputedStyle\(\) method: with pseudo-elements/,
   /\[antd: List\] The `List` component is deprecated/,
   /\[antd: message\] Static function can not consume context/,
@@ -73,6 +74,7 @@ const ignoredStderrMessages: RegExp[] = [
   /Potentially unsafe URL parameter value/,
   /Test error/,
   /invalid value for the .*height.*css style property/i,
+  /`NaN` is an invalid value for the `height` css style property\./,
   /Not implemented: Window's getComputedStyle\(\) method: with pseudo-elements/,
   /\[antd: List\] The `List` component is deprecated/,
   /\[antd: message\] Static function can not consume context/,
@@ -164,7 +166,28 @@ global.ResizeObserver = class ResizeObserver {
 const originalGetComputedStyle = window.getComputedStyle.bind(window);
 window.getComputedStyle = ((element: Element, pseudoElt?: string | null) => {
   void pseudoElt;
-  return originalGetComputedStyle(element);
+  const style = originalGetComputedStyle(element);
+  const needsTextareaNormalization =
+    element instanceof HTMLTextAreaElement ||
+    (element instanceof HTMLElement && element.matches('textarea, .ant-input-textarea textarea'));
+
+  if (!needsTextareaNormalization) {
+    return style;
+  }
+
+  return new Proxy(style, {
+    get(target, prop, receiver) {
+      if (prop === 'lineHeight') {
+        const value = Reflect.get(target, prop, receiver);
+        return typeof value === 'string' && value && !value.includes('var(') ? value : '22px';
+      }
+      if (prop === 'paddingTop' || prop === 'paddingBottom') {
+        const value = Reflect.get(target, prop, receiver);
+        return typeof value === 'string' && value ? value : '0px';
+      }
+      return Reflect.get(target, prop, receiver);
+    },
+  }) as CSSStyleDeclaration;
 }) as typeof window.getComputedStyle;
 
 // 为 TextArea 提供稳定行高，避免 autoSize 在测试环境计算出 NaN

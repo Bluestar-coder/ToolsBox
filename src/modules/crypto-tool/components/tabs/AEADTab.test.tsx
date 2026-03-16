@@ -25,11 +25,13 @@ vi.mock('antd', async (importOriginal) => {
         value,
         onChange,
         placeholder,
+        readOnly,
       }: {
         value?: string;
         onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
         placeholder?: string;
-      }) => <input value={value} onChange={onChange} placeholder={placeholder} />,
+        readOnly?: boolean;
+      }) => <input value={value} onChange={onChange} placeholder={placeholder} readOnly={readOnly} />,
       {
         TextArea: ({
           value,
