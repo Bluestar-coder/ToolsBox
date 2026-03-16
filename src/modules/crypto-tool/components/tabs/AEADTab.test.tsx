@@ -186,4 +186,62 @@ describe('AEADTab', () => {
     await userEvent.click(screen.getByRole('button', { name: /加密/i }));
     expect(message.error).toHaveBeenCalledWith('ChaCha20-Poly1305 密钥必须是 32 字节');
   });
+
+  it('shows warnings for missing fields and decrypt failures', async () => {
+    render(<AEADTab activeTab="aes-gcm" />);
+
+    await userEvent.click(screen.getByRole('button', { name: /^复制$/i }));
+    expect(message.warning).toHaveBeenCalledWith('没有可复制的内容');
+
+    await userEvent.click(screen.getByRole('button', { name: /加密/i }));
+    expect(message.warning).toHaveBeenCalledWith('请输入要加密的内容');
+
+    await userEvent.type(screen.getByPlaceholderText(/请在这里填写原文\/密文/i), 'cipher-hex');
+    await userEvent.type(screen.getByPlaceholderText(/16或32字节/i), 'key16');
+    await userEvent.type(screen.getByPlaceholderText(/推荐12字节/i), 'iv12');
+
+    await userEvent.click(screen.getByRole('button', { name: /解密/i }));
+    expect(message.warning).toHaveBeenCalledWith('请输入认证标签 (Tag)');
+
+    await userEvent.type(screen.getByPlaceholderText(/解密时需要输入加密生成的Tag/i), 'tag-hex');
+    aeadMocks.nobleAesGcmDecrypt.mockImplementationOnce(() => {
+      throw new Error('boom');
+    });
+    await userEvent.click(screen.getByRole('button', { name: /解密/i }));
+    expect(await screen.findByText(/解密失败: 认证标签验证失败或密钥\/IV 错误/i)).toBeInTheDocument();
+  });
+
+  it('supports base64 formatting, random generation and aes-siv validation branches', async () => {
+    render(<AEADTab activeTab="aes-siv" />);
+
+    await userEvent.selectOptions(screen.getByLabelText(/随机生成/i), '32');
+    expect(aeadMocks.generateRandomBytes).toHaveBeenCalledWith('32');
+    expect(aeadMocks.uint8ArrayToHex).toHaveBeenCalled();
+
+    await userEvent.click(screen.getByRole('button', { name: /随机12B/i }));
+    expect(aeadMocks.generateRandomBytes).toHaveBeenCalledWith(12);
+
+    await userEvent.clear(screen.getByPlaceholderText(/16或32字节/i));
+    await userEvent.type(screen.getByPlaceholderText(/16或32字节/i), 'badkey');
+    await userEvent.type(screen.getByPlaceholderText(/请在这里填写原文\/密文/i), 'payload');
+    await userEvent.type(screen.getByPlaceholderText(/推荐12字节/i), 'iv12');
+    await userEvent.click(screen.getByRole('button', { name: /加密/i }));
+    expect(message.error).toHaveBeenCalledWith('AES-SIV 密钥长度必须是 16 或 32 字节');
+
+    await userEvent.clear(screen.getByPlaceholderText(/16或32字节/i));
+    await userEvent.type(screen.getByPlaceholderText(/16或32字节/i), 'key16');
+    await userEvent.selectOptions(screen.getAllByLabelText('aead-select')[3], 'Base64');
+    aeadMocks.aesSivEncrypt.mockReturnValueOnce({ ciphertext: '61626364', tag: '0102' });
+    await userEvent.click(screen.getByRole('button', { name: /加密/i }));
+    expect(await screen.findByDisplayValue('YWJjZA==')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/解密时需要输入加密生成的Tag/i)).toHaveValue('AQI=');
+
+    await userEvent.selectOptions(screen.getAllByLabelText('aead-select')[2], 'Base64');
+    await userEvent.clear(screen.getByPlaceholderText(/请在这里填写原文\/密文/i));
+    await userEvent.type(screen.getByPlaceholderText(/请在这里填写原文\/密文/i), 'YWJjZA==');
+    await userEvent.clear(screen.getByPlaceholderText(/解密时需要输入加密生成的Tag/i));
+    await userEvent.type(screen.getByPlaceholderText(/解密时需要输入加密生成的Tag/i), 'AQI=');
+    await userEvent.click(screen.getByRole('button', { name: /解密/i }));
+    expect(aeadMocks.aesSivDecrypt).toHaveBeenCalledWith('61626364', '0102', expect.any(Uint8Array), expect.any(Uint8Array));
+  });
 });
