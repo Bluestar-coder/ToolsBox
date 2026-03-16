@@ -56,9 +56,9 @@ describe('IpNetworkTool', () => {
     expect(screen.getByText('Port Reference')).toBeInTheDocument();
   });
 
-  it('displays IP Converter tab by default', () => {
+  it('displays IP Converter tab by default', async () => {
     render(<IpNetworkTool />);
-    expect(screen.getByTestId('ip-converter-tab')).toBeInTheDocument();
+    expect(await screen.findByTestId('ip-converter-tab')).toBeVisible();
   });
 
   it('switches to CIDR Calculator tab when clicked', async () => {
@@ -66,7 +66,7 @@ describe('IpNetworkTool', () => {
     render(<IpNetworkTool />);
     
     await user.click(screen.getByText('CIDR Calculator'));
-    expect(screen.getByTestId('cidr-calculator-tab')).toBeInTheDocument();
+    expect(await screen.findByTestId('cidr-calculator-tab')).toBeVisible();
   });
 
   it('switches to Subnet Divider tab when clicked', async () => {
@@ -74,7 +74,7 @@ describe('IpNetworkTool', () => {
     render(<IpNetworkTool />);
     
     await user.click(screen.getByText('Subnet Divider'));
-    expect(screen.getByTestId('subnet-divider-tab')).toBeInTheDocument();
+    expect(await screen.findByTestId('subnet-divider-tab')).toBeVisible();
   });
 
   it('switches to Geolocation tab when clicked', async () => {
@@ -82,7 +82,7 @@ describe('IpNetworkTool', () => {
     render(<IpNetworkTool />);
     
     await user.click(screen.getByText('Geolocation'));
-    expect(screen.getByTestId('geolocation-tab')).toBeInTheDocument();
+    expect(await screen.findByTestId('geolocation-tab')).toBeVisible();
   });
 
   it('switches to Port Reference tab when clicked', async () => {
@@ -90,6 +90,6 @@ describe('IpNetworkTool', () => {
     render(<IpNetworkTool />);
     
     await user.click(screen.getByText('Port Reference'));
-    expect(screen.getByTestId('port-reference-tab')).toBeInTheDocument();
+    expect(await screen.findByTestId('port-reference-tab')).toBeVisible();
   });
 });

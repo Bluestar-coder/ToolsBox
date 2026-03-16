@@ -1,57 +1,67 @@
-import React, { useState } from 'react';
+import React, { Suspense, useState } from 'react';
 import { Card, Tabs } from 'antd';
 import { useTranslation } from 'react-i18next';
-import IpConverterTab from './tabs/IpConverterTab';
-import CidrCalculatorTab from './tabs/CidrCalculatorTab';
-import SubnetDividerTab from './tabs/SubnetDividerTab';
-import GeolocationTab from './tabs/GeolocationTab';
-import PortReferenceTab from './tabs/PortReferenceTab';
-import SubnetMaskConverterTab from './tabs/SubnetMaskConverterTab';
+
+export type IpNetworkTabKey =
+  | 'converter'
+  | 'cidr'
+  | 'subnet'
+  | 'subnetMask'
+  | 'geolocation'
+  | 'port';
+
+const ipNetworkTabComponents: Record<IpNetworkTabKey, React.ComponentType<Record<string, never>>> = {
+  converter: React.lazy(() => import('./tabs/IpConverterTab')),
+  cidr: React.lazy(() => import('./tabs/CidrCalculatorTab')),
+  subnet: React.lazy(() => import('./tabs/SubnetDividerTab')),
+  subnetMask: React.lazy(() => import('./tabs/SubnetMaskConverterTab')),
+  geolocation: React.lazy(() => import('./tabs/GeolocationTab')),
+  port: React.lazy(() => import('./tabs/PortReferenceTab')),
+};
 
 const IpNetworkTool: React.FC = () => {
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState('converter');
+  const [activeTab, setActiveTab] = useState<IpNetworkTabKey>('converter');
 
   const tabItems = [
     {
       key: 'converter',
       label: t('modules.ipNetwork.tabs.converter'),
-      children: <IpConverterTab />,
     },
     {
       key: 'cidr',
       label: t('modules.ipNetwork.tabs.cidr'),
-      children: <CidrCalculatorTab />,
     },
     {
       key: 'subnet',
       label: t('modules.ipNetwork.tabs.subnet'),
-      children: <SubnetDividerTab />,
     },
     {
       key: 'subnetMask',
       label: t('modules.ipNetwork.tabs.subnetMask'),
-      children: <SubnetMaskConverterTab />,
     },
     {
       key: 'geolocation',
       label: t('modules.ipNetwork.tabs.geolocation'),
-      children: <GeolocationTab />,
     },
     {
       key: 'port',
       label: t('modules.ipNetwork.tabs.port'),
-      children: <PortReferenceTab />,
     },
   ];
+
+  const ActiveTabComponent = ipNetworkTabComponents[activeTab];
 
   return (
     <Card title={t('modules.ipNetwork.title')} variant="borderless">
       <Tabs
         activeKey={activeTab}
-        onChange={setActiveTab}
+        onChange={(value) => setActiveTab(value as IpNetworkTabKey)}
         items={tabItems}
       />
+      <Suspense fallback={null}>
+        <ActiveTabComponent />
+      </Suspense>
     </Card>
   );
 };
