@@ -195,7 +195,7 @@ export async function generateJWTWithPrivateKey(
  * 生成 RSA 密钥对
  */
 export async function generateRSAKeyPair(): Promise<{ publicKey: string; privateKey: string }> {
-  const { publicKey, privateKey } = await jose.generateKeyPair('RS256');
+  const { publicKey, privateKey } = await jose.generateKeyPair('RS256', { extractable: true });
   
   const publicKeyPem = await jose.exportSPKI(publicKey);
   const privateKeyPem = await jose.exportPKCS8(privateKey);
@@ -207,7 +207,7 @@ export async function generateRSAKeyPair(): Promise<{ publicKey: string; private
  * 生成 EC 密钥对
  */
 export async function generateECKeyPair(algorithm: 'ES256' | 'ES384' | 'ES512' = 'ES256'): Promise<{ publicKey: string; privateKey: string }> {
-  const { publicKey, privateKey } = await jose.generateKeyPair(algorithm);
+  const { publicKey, privateKey } = await jose.generateKeyPair(algorithm, { extractable: true });
   
   const publicKeyPem = await jose.exportSPKI(publicKey);
   const privateKeyPem = await jose.exportPKCS8(privateKey);
