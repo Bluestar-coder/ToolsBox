@@ -10,7 +10,14 @@ type GlobalWithBarcode = typeof globalThis & {
     detect: (source: ImageBitmapSource) => Promise<Array<{ rawValue?: string }>>;
   };
   createImageBitmap?: (blob: Blob) => Promise<{ close?: () => void }>;
+  __TAURI_INTERNALS__?: unknown;
 };
+
+const invokeMock = vi.hoisted(() => vi.fn());
+
+vi.mock('@tauri-apps/api/core', () => ({
+  invoke: invokeMock,
+}));
 
 describe('barcode-detector', () => {
   const runtime = globalThis as GlobalWithBarcode;
@@ -21,6 +28,8 @@ describe('barcode-detector', () => {
 
   beforeEach(() => {
     vi.restoreAllMocks();
+    invokeMock.mockReset();
+    delete runtime.__TAURI_INTERNALS__;
   });
 
   afterEach(() => {
@@ -57,6 +66,43 @@ describe('barcode-detector', () => {
 
     expect(result).toBe('toolsbox://qr-result');
     expect(detect).toHaveBeenCalledTimes(1);
+    expect(close).toHaveBeenCalledTimes(1);
+  });
+
+  it('falls back to tauri native qr decoding when browser detector is unavailable or returns no value', async () => {
+    runtime.BarcodeDetector = undefined;
+    runtime.createImageBitmap = undefined;
+    runtime.__TAURI_INTERNALS__ = {};
+    invokeMock.mockResolvedValueOnce('tauri-qr-result');
+    const blob = new Blob(['demo'], { type: 'image/png' });
+    Object.defineProperty(blob, 'arrayBuffer', {
+      configurable: true,
+      value: vi.fn().mockResolvedValue(new Uint8Array([1, 2, 3]).buffer),
+    });
+
+    const resultWithoutDetector = await detectQrCodeFromBlob(blob);
+
+    expect(resultWithoutDetector).toBe('tauri-qr-result');
+    expect(invokeMock).toHaveBeenCalledWith('decode_qr_image', { bytes: expect.any(Array) });
+
+    const close = vi.fn();
+    const detect = vi.fn().mockResolvedValue([{ rawValue: '' }]);
+    class MockBarcodeDetector {
+      detect = detect;
+    }
+
+    runtime.createImageBitmap = vi.fn(async () => ({ close }));
+    runtime.BarcodeDetector = MockBarcodeDetector as unknown as GlobalWithBarcode['BarcodeDetector'];
+    invokeMock.mockResolvedValueOnce('tauri-second-result');
+    const secondBlob = new Blob(['demo-2'], { type: 'image/png' });
+    Object.defineProperty(secondBlob, 'arrayBuffer', {
+      configurable: true,
+      value: vi.fn().mockResolvedValue(new Uint8Array([4, 5, 6]).buffer),
+    });
+
+    const resultWithEmptyBrowserDetection = await detectQrCodeFromBlob(secondBlob);
+
+    expect(resultWithEmptyBrowserDetection).toBe('tauri-second-result');
     expect(close).toHaveBeenCalledTimes(1);
   });
 

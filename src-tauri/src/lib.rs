@@ -2,6 +2,7 @@ use std::env;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
+use image::ImageReader;
 use tauri::command;
 use tauri::Manager;
 use serde::{Deserialize, Serialize};
@@ -359,6 +360,34 @@ fn read_recipe_snapshot(app: tauri::AppHandle, path: String) -> Result<String, S
         .map_err(|error| format!("Failed to read recipe snapshot: {error}"))
 }
 
+#[command]
+fn decode_qr_image(bytes: Vec<u8>) -> Result<String, String> {
+    if bytes.is_empty() {
+        return Err("QR image bytes cannot be empty".to_string());
+    }
+
+    let reader = ImageReader::new(std::io::Cursor::new(bytes))
+        .with_guessed_format()
+        .map_err(|error| format!("Failed to detect image format: {error}"))?;
+    let image = reader
+        .decode()
+        .map_err(|error| format!("Failed to decode image: {error}"))?
+        .to_luma8();
+
+    let mut prepared_image = rqrr::PreparedImage::prepare(image);
+    let grids = prepared_image.detect_grids();
+
+    for grid in grids {
+        if let Ok((_meta, content)) = grid.decode() {
+            if !content.trim().is_empty() {
+                return Ok(content);
+            }
+        }
+    }
+
+    Err("No QR code detected in image".to_string())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -370,7 +399,8 @@ pub fn run() {
             open_path_in_system,
             save_recipe_snapshot,
             list_recipe_snapshots,
-            read_recipe_snapshot
+            read_recipe_snapshot,
+            decode_qr_image
         ])
         .setup(|app| {
             if cfg!(debug_assertions) {

@@ -14,6 +14,15 @@ type NativeCameraSession = {
   stop: () => Promise<void>;
 };
 
+function canUseTauriQrDecode(): boolean {
+  try {
+    const tauriGlobal = globalThis as typeof globalThis & { __TAURI_INTERNALS__?: unknown };
+    return typeof window !== 'undefined' && !!tauriGlobal.__TAURI_INTERNALS__;
+  } catch {
+    return false;
+  }
+}
+
 function getBarcodeDetectorCtor(): BarcodeDetectorCtor | null {
   const browser = globalThis as BrowserWithBarcodeDetector;
   return browser.BarcodeDetector ?? null;
@@ -28,10 +37,26 @@ function getQrCodeValue(results: NativeBarcode[]): string | null {
   return match?.rawValue ?? null;
 }
 
+async function detectQrCodeWithTauri(blob: Blob): Promise<string | null> {
+  if (!canUseTauriQrDecode()) {
+    return null;
+  }
+
+  try {
+    const { invoke } = await import('@tauri-apps/api/core');
+    const buffer = await blob.arrayBuffer();
+    const bytes = Array.from(new Uint8Array(buffer));
+    const result = await invoke<string>('decode_qr_image', { bytes });
+    return result.trim() ? result : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function detectQrCodeFromBlob(blob: Blob): Promise<string | null> {
   const BarcodeDetector = getBarcodeDetectorCtor();
   if (!BarcodeDetector || typeof createImageBitmap !== 'function') {
-    return null;
+    return detectQrCodeWithTauri(blob);
   }
 
   const imageBitmap = await createImageBitmap(blob);
@@ -39,7 +64,11 @@ export async function detectQrCodeFromBlob(blob: Blob): Promise<string | null> {
   try {
     const detector = new BarcodeDetector({ formats: ['qr_code'] });
     const results = await detector.detect(imageBitmap);
-    return getQrCodeValue(results);
+    const value = getQrCodeValue(results);
+    if (value) {
+      return value;
+    }
+    return detectQrCodeWithTauri(blob);
   } finally {
     if (typeof imageBitmap.close === 'function') {
       imageBitmap.close();
