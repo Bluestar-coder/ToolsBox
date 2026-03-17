@@ -18,6 +18,9 @@ const chunkGroups = [
     patterns: [
       'node_modules/rc-util/',
       'node_modules/@rc-component/util/',
+      'node_modules/@rc-component/context/',
+      'node_modules/@rc-component/motion/',
+      'node_modules/@rc-component/portal/',
       'node_modules/rc-motion/',
     ],
   },
@@ -45,9 +48,16 @@ const chunkGroups = [
     patterns: [
       'node_modules/antd/es/dropdown/',
       'node_modules/antd/es/menu/',
+      'node_modules/@rc-component/dropdown/',
       'node_modules/@rc-component/trigger/',
       'node_modules/rc-menu/',
       'node_modules/rc-dropdown/',
+    ],
+  },
+  {
+    name: 'antd-skeleton',
+    patterns: [
+      'node_modules/antd/es/skeleton/',
     ],
   },
   {
@@ -61,6 +71,8 @@ const chunkGroups = [
     name: 'antd-input',
     patterns: [
       'node_modules/antd/es/input/',
+      'node_modules/@rc-component/input/',
+      'node_modules/@rc-component/textarea/',
       'node_modules/rc-input/',
       'node_modules/rc-textarea/',
     ],
@@ -79,6 +91,8 @@ const chunkGroups = [
       'node_modules/antd/es/checkbox/',
       'node_modules/antd/es/radio/',
       'node_modules/antd/es/switch/',
+      'node_modules/@rc-component/checkbox/',
+      'node_modules/@rc-component/form/',
       'node_modules/rc-field-form/',
       'node_modules/rc-checkbox/',
       'node_modules/rc-switch/',
@@ -88,6 +102,7 @@ const chunkGroups = [
     name: 'antd-input-number',
     patterns: [
       'node_modules/antd/es/input-number/',
+      'node_modules/@rc-component/input-number/',
       'node_modules/rc-input-number/',
     ],
   },
@@ -106,6 +121,9 @@ const chunkGroups = [
       'node_modules/antd/es/tabs/',
       'node_modules/antd/es/collapse/',
       'node_modules/antd/es/pagination/',
+      'node_modules/@rc-component/tabs/',
+      'node_modules/@rc-component/collapse/',
+      'node_modules/@rc-component/pagination/',
       'node_modules/rc-tabs/',
       'node_modules/rc-collapse/',
       'node_modules/rc-pagination/',
@@ -115,6 +133,7 @@ const chunkGroups = [
     name: 'antd-table',
     patterns: [
       'node_modules/antd/es/table/',
+      'node_modules/@rc-component/table/',
       'node_modules/rc-table/',
     ],
   },
@@ -123,6 +142,8 @@ const chunkGroups = [
     patterns: [
       'node_modules/antd/es/list/',
       'node_modules/antd/es/tree/',
+      'node_modules/@rc-component/tree/',
+      'node_modules/@rc-component/tree-select/',
       'node_modules/rc-tree/',
       'node_modules/rc-virtual-list/',
     ],
@@ -145,6 +166,9 @@ const chunkGroups = [
       'node_modules/antd/es/modal/',
       'node_modules/antd/es/popconfirm/',
       'node_modules/antd/es/tooltip/',
+      'node_modules/@rc-component/dialog/',
+      'node_modules/@rc-component/notification/',
+      'node_modules/@rc-component/tooltip/',
       'node_modules/rc-dialog/',
       'node_modules/rc-notification/',
       'node_modules/rc-tooltip/',
