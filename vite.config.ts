@@ -63,6 +63,7 @@ const chunkGroups = [
   {
     name: 'antd-overflow',
     patterns: [
+      'node_modules/@rc-component/resize-observer/',
       'node_modules/rc-overflow/',
       'node_modules/rc-resize-observer/',
     ],
@@ -81,19 +82,27 @@ const chunkGroups = [
     name: 'antd-select',
     patterns: [
       'node_modules/antd/es/select/',
+      'node_modules/@rc-component/select/',
       'node_modules/rc-select/',
     ],
   },
   {
-    name: 'antd-form-core',
+    name: 'antd-form',
     patterns: [
       'node_modules/antd/es/form/',
+      'node_modules/@rc-component/form/',
+      'node_modules/@rc-component/async-validator/',
+      'node_modules/rc-field-form/',
+    ],
+  },
+  {
+    name: 'antd-toggle',
+    patterns: [
       'node_modules/antd/es/checkbox/',
       'node_modules/antd/es/radio/',
       'node_modules/antd/es/switch/',
       'node_modules/@rc-component/checkbox/',
-      'node_modules/@rc-component/form/',
-      'node_modules/rc-field-form/',
+      'node_modules/@rc-component/switch/',
       'node_modules/rc-checkbox/',
       'node_modules/rc-switch/',
     ],
@@ -116,16 +125,26 @@ const chunkGroups = [
     ],
   },
   {
-    name: 'antd-nav',
+    name: 'antd-tabs',
     patterns: [
       'node_modules/antd/es/tabs/',
-      'node_modules/antd/es/collapse/',
-      'node_modules/antd/es/pagination/',
       'node_modules/@rc-component/tabs/',
-      'node_modules/@rc-component/collapse/',
-      'node_modules/@rc-component/pagination/',
       'node_modules/rc-tabs/',
+    ],
+  },
+  {
+    name: 'antd-collapse',
+    patterns: [
+      'node_modules/antd/es/collapse/',
+      'node_modules/@rc-component/collapse/',
       'node_modules/rc-collapse/',
+    ],
+  },
+  {
+    name: 'antd-pagination',
+    patterns: [
+      'node_modules/antd/es/pagination/',
+      'node_modules/@rc-component/pagination/',
       'node_modules/rc-pagination/',
     ],
   },
@@ -138,14 +157,24 @@ const chunkGroups = [
     ],
   },
   {
-    name: 'antd-tree-list',
+    name: 'antd-virtual-list',
+    patterns: [
+      'node_modules/rc-virtual-list/',
+    ],
+  },
+  {
+    name: 'antd-list',
     patterns: [
       'node_modules/antd/es/list/',
+    ],
+  },
+  {
+    name: 'antd-tree',
+    patterns: [
       'node_modules/antd/es/tree/',
       'node_modules/@rc-component/tree/',
       'node_modules/@rc-component/tree-select/',
       'node_modules/rc-tree/',
-      'node_modules/rc-virtual-list/',
     ],
   },
   {
