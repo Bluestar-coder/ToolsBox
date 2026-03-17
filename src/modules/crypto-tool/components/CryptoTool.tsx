@@ -71,7 +71,7 @@ export interface CryptoToolState {
   subTab: string;
 }
 
-interface CryptoToolProps {
+export interface CryptoToolProps {
   initialType?: string;
 }
 

@@ -2,9 +2,10 @@
  * Recipe工具页面组件
  */
 
-import React from 'react';
-import RecipeTool from '../modules/recipe-tool/components/RecipeTool';
+import React, { Suspense, lazy } from 'react';
 import ModulePageShell from '../components/ModulePageShell';
+
+const LazyRecipeTool = lazy(() => import('../modules/recipe-tool/components/RecipeTool'));
 
 /**
  * Recipe工具页面
@@ -12,7 +13,9 @@ import ModulePageShell from '../components/ModulePageShell';
 const RecipePage: React.FC = () => {
   return (
     <ModulePageShell moduleId="recipe-tool">
-      <RecipeTool />
+      <Suspense fallback={null}>
+        <LazyRecipeTool />
+      </Suspense>
     </ModulePageShell>
   );
 };

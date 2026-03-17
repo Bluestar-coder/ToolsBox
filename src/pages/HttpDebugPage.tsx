@@ -1,6 +1,7 @@
-import React from 'react';
-import HttpDebugTool from '../modules/http-debug/components/HttpDebugTool';
+import React, { Suspense, lazy } from 'react';
 import ModulePageShell from '../components/ModulePageShell';
+
+const LazyHttpDebugTool = lazy(() => import('../modules/http-debug/components/HttpDebugTool'));
 
 /**
  * HTTP 调试工具页面组件
@@ -8,7 +9,9 @@ import ModulePageShell from '../components/ModulePageShell';
 const HttpDebugPage: React.FC = () => {
   return (
     <ModulePageShell moduleId="http-debug">
-      <HttpDebugTool />
+      <Suspense fallback={null}>
+        <LazyHttpDebugTool />
+      </Suspense>
     </ModulePageShell>
   );
 };

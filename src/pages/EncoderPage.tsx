@@ -1,11 +1,13 @@
-import React, { useEffect } from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import EncoderDecoder, { type EncoderCategoryKey } from '../modules/encoder-decoder/components/EncoderDecoder';
+import type { EncoderCategoryKey } from '../modules/encoder-decoder/components/EncoderDecoder';
 import { useEncodingContext } from '../hooks/useEncodingContext';
 import type { EncoderType, OperationType } from '../modules/encoder-decoder/utils/encoders';
 import { baseEncoders, otherEncoders, utfEncoders } from '../modules/encoder-decoder/utils/constants';
 import ModulePageShell from '../components/ModulePageShell';
 import { EncodingProvider } from '../context/EncodingContext';
+
+const LazyEncoderDecoder = lazy(() => import('../modules/encoder-decoder/components/EncoderDecoder'));
 
 function resolveEncoderCategory(type?: string): EncoderCategoryKey {
   if (!type) {
@@ -68,7 +70,9 @@ const EncoderPageContent: React.FC = () => {
 
   return (
     <ModulePageShell moduleId="encoder-decoder">
-      <EncoderDecoder initialCategory={initialCategory} />
+      <Suspense fallback={null}>
+        <LazyEncoderDecoder initialCategory={initialCategory} />
+      </Suspense>
     </ModulePageShell>
   );
 };
