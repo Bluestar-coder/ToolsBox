@@ -47,4 +47,28 @@ describe('SmartParseTab', () => {
       expect(message.success).toHaveBeenCalledWith('已复制');
     });
   });
+
+  it('handles invalid input, quick presets, and clipboard failures', async () => {
+    render(<SmartParseTab />);
+
+    fireEvent.click(screen.getByRole('button', { name: '今天开始' }));
+    expect((screen.getByPlaceholderText(/试试输入/) as HTMLTextAreaElement).value).toBe('today');
+
+    fireEvent.click(screen.getByRole('button', { name: /解析/ }));
+    await waitFor(() => {
+      expect((screen.getByPlaceholderText('解析结果将显示在这里') as HTMLTextAreaElement).value).toContain('Unix时间戳(秒):');
+    });
+
+    vi.mocked(navigator.clipboard.writeText).mockRejectedValueOnce(new Error('denied'));
+    fireEvent.click(screen.getByRole('button', { name: /复制结果/ }));
+    await waitFor(() => {
+      expect(message.error).toHaveBeenCalledWith('复制失败');
+    });
+
+    fireEvent.change(screen.getByPlaceholderText(/试试输入/), {
+      target: { value: 'not-a-time' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /解析/ }));
+    expect((screen.getByPlaceholderText('解析结果将显示在这里') as HTMLTextAreaElement).value).toBe('无法解析输入的时间格式');
+  });
 });
