@@ -8,9 +8,10 @@ import React, {
   useTransition,
   memo
 } from 'react';
-import { Card, Input, Row, Col, Typography, Divider, Tag, Table, Button, Space, Alert, Select, InputNumber } from 'antd';
+import { Card, Input, Row, Col, Typography, Divider, Tag, Button, Space, Alert, Select, InputNumber } from 'antd';
 import { CopyOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
+import SimpleDataTable, { type SimpleTableColumn } from '../SimpleDataTable';
 import type {
   SubnetMaskInfo,
   NetworkInfo,
@@ -166,7 +167,7 @@ const SubnetMaskConverterTab: React.FC = () => {
   const recommendedCidr = useMemo(() => recommendSubnetMask(requiredHosts), [requiredHosts]);
   
   // 子网规划表格列定义
-  const subnetPlanColumns = useMemo(() => [
+  const subnetPlanColumns = useMemo<SimpleTableColumn<SubnetPlan>[]>(() => [
     {
       title: t('modules.ipNetwork.subnetMaskConverter.index'),
       dataIndex: 'index',
@@ -198,7 +199,7 @@ const SubnetMaskConverterTab: React.FC = () => {
     {
       title: t('modules.ipNetwork.subnetMaskConverter.ipRange'),
       key: 'ipRange',
-      render: (record: SubnetPlan) => (
+      render: (_value, record: SubnetPlan) => (
         <Space>
           <Text code>{record.firstUsableIp} - {record.lastUsableIp}</Text>
           <CopyButton 
@@ -481,7 +482,7 @@ const SubnetMaskConverterTab: React.FC = () => {
           </Row>
           
           {subnetPlans.length > 0 && (
-            <Table
+            <SimpleDataTable<SubnetPlan>
               columns={subnetPlanColumns}
               dataSource={subnetPlans}
               pagination={{ 
@@ -490,10 +491,8 @@ const SubnetMaskConverterTab: React.FC = () => {
                 pageSizeOptions: ['10', '20', '50', '100'],
                 showTotal: (total) => `共 ${total} 条`
               }}
-              size="small"
               rowKey="index"
               scroll={{ y: 400 }}
-              virtual={subnetPlans.length > 50}
             />
           )}
         </InfoCard>

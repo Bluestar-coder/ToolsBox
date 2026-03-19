@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { Input, Select, Button, Table, Space, Tag, InputNumber } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
+import { Input, Select, Button, Space, Tag, InputNumber } from 'antd';
 import { useTranslation } from 'react-i18next';
+import SimpleDataTable, { type SimpleTableColumn } from '../SimpleDataTable';
 import {
   searchByPort,
   searchByService,
@@ -69,7 +69,7 @@ const PortReferenceTab: React.FC = () => {
     return t(`modules.ipNetwork.portReference.riskLevel.${level}`);
   };
 
-  const columns: ColumnsType<PortEntry> = [
+  const columns: SimpleTableColumn<PortEntry>[] = [
     {
       title: t('modules.ipNetwork.portReference.colPort'),
       dataIndex: 'port',
@@ -194,11 +194,10 @@ const PortReferenceTab: React.FC = () => {
       </Space>
 
       {results.length > 0 && (
-        <Table<PortEntry>
+        <SimpleDataTable<PortEntry>
           columns={columns}
           dataSource={results}
           rowKey={(record) => `${record.port}-${record.protocol}`}
-          size="small"
           pagination={results.length > 50 ? { pageSize: 50, showSizeChanger: true } : false}
           scroll={{ x: 'max-content' }}
         />

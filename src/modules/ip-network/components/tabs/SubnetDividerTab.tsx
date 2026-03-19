@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
-import { Input, Card, Radio, InputNumber, Button, Table, Alert, Space } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
+import { Input, Card, Radio, InputNumber, Button, Alert, Space } from 'antd';
 import { useTranslation } from 'react-i18next';
+import SimpleDataTable, { type SimpleTableColumn } from '../SimpleDataTable';
 import { isValidCidr } from '../../utils/validators';
 import {
   divideBySubnetCount,
@@ -58,7 +58,7 @@ const SubnetDividerTab: React.FC = () => {
     }
   }, [cidrInput, divideMode, subnetCount, hostsPerSubnet, t]);
 
-  const columns: ColumnsType<SubnetEntry> = [
+  const columns: SimpleTableColumn<SubnetEntry>[] = [
     {
       title: t('modules.ipNetwork.subnet.colIndex'),
       dataIndex: 'index',
@@ -158,11 +158,10 @@ const SubnetDividerTab: React.FC = () => {
             prefix: result.newPrefixLength,
           })}
         >
-          <Table<SubnetEntry>
+          <SimpleDataTable<SubnetEntry>
             columns={columns}
             dataSource={result.subnets}
             rowKey="index"
-            size="small"
             pagination={result.subnets.length > 20 ? { pageSize: 20 } : false}
             scroll={{ x: 'max-content' }}
           />

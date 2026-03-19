@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
-import { Input, Button, Table, Alert, Space, Spin, Card, Tag } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
+import { Input, Button, Alert, Space, Spin, Card, Tag } from 'antd';
 import { useTranslation } from 'react-i18next';
+import SimpleDataTable, { type SimpleTableColumn } from '../SimpleDataTable';
 import { queryGeolocation, batchQueryGeolocation, queryMyIp, queryMyIpDetailed } from '../../utils/geolocation-api';
 import type { GeolocationInfo } from '../../utils/types';
 
@@ -86,7 +86,7 @@ const GeolocationTab: React.FC = () => {
     }
   }, [t]);
 
-  const columns: ColumnsType<GeolocationInfo> = [
+  const columns: SimpleTableColumn<GeolocationInfo>[] = [
     {
       title: t('modules.ipNetwork.geolocation.colIp'),
       dataIndex: 'ip',
@@ -200,11 +200,10 @@ const GeolocationTab: React.FC = () => {
       )}
 
       {results.length > 0 && !loading && (
-        <Table<GeolocationInfo>
+        <SimpleDataTable<GeolocationInfo>
           columns={columns}
           dataSource={results}
           rowKey="ip"
-          size="small"
           pagination={results.length > 20 ? { pageSize: 20 } : false}
           scroll={{ x: 'max-content' }}
         />

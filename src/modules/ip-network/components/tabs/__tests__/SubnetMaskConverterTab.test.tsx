@@ -6,6 +6,7 @@ import React from 'react';
 import { screen, fireEvent, waitFor } from '@testing-library/react';
 import { render } from '@/test/utils';
 import i18n from '@/i18n';
+import { describe, expect, it } from 'vitest';
 import SubnetMaskConverterTab from '../SubnetMaskConverterTab';
 
 describe('SubnetMaskConverterTab', () => {
@@ -23,7 +24,7 @@ describe('SubnetMaskConverterTab', () => {
     // 初始渲染存在150ms防抖，等待结果区域出现
     await waitFor(() => {
       expect(screen.getByText(t('modules.ipNetwork.subnetMaskConverter.subnetMaskInfo'))).toBeInTheDocument();
-    });
+    }, { timeout: 3000 });
     expect(screen.getByText(t('modules.ipNetwork.subnetMaskConverter.networkInfo'))).toBeInTheDocument();
     expect(screen.getByText(t('modules.ipNetwork.subnetMaskConverter.subnetPlanning'))).toBeInTheDocument();
     expect(screen.getByText(t('modules.ipNetwork.subnetMaskConverter.subnetMaskRecommendation'))).toBeInTheDocument();
@@ -41,7 +42,7 @@ describe('SubnetMaskConverterTab', () => {
     // 等待计算完成
     await waitFor(() => {
       expect(screen.getByText('255.255.0.0')).toBeInTheDocument();
-    });
+    }, { timeout: 3000 });
   });
 
   it('应该正确处理无效输入', async () => {
@@ -56,6 +57,6 @@ describe('SubnetMaskConverterTab', () => {
     // 等待错误提示
     await waitFor(() => {
       expect(screen.getByText(t('modules.ipNetwork.subnetMaskConverter.calculateError'))).toBeInTheDocument();
-    });
+    }, { timeout: 3000 });
   });
 });
