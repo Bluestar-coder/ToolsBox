@@ -13,6 +13,6 @@ describe('FormatterPage', () => {
       </MemoryRouter>
     );
 
-    expect(await screen.findByText(/输入 HTTP 报文 \/ cURL 命令/i)).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: /格式化/i })).toBeInTheDocument();
   });
 });

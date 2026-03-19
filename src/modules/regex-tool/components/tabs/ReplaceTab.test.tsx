@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { render, screen, userEvent, waitFor } from '@/test/utils';
+import { fireEvent, render, screen, waitFor } from '@/test/utils';
 import ReplaceTab from './ReplaceTab';
 
 describe('ReplaceTab', () => {
@@ -11,9 +11,9 @@ describe('ReplaceTab', () => {
     const sourceInput = screen.getByPlaceholderText(/输入要处理的文本|Enter text to process/i);
     const outputInput = screen.getAllByRole('textbox').at(-1);
 
-    await userEvent.type(patternInput, '(foo)');
-    await userEvent.type(replacementInput, '$1-bar');
-    await userEvent.type(sourceInput, 'foo baz foo');
+    fireEvent.change(patternInput, { target: { value: '(foo)' } });
+    fireEvent.change(replacementInput, { target: { value: '$1-bar' } });
+    fireEvent.change(sourceInput, { target: { value: 'foo baz foo' } });
 
     await waitFor(() => {
       expect(outputInput).toHaveValue('foo-bar baz foo-bar');
